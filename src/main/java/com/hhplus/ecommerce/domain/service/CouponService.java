@@ -5,6 +5,7 @@ import com.hhplus.ecommerce.domain.entity.UserCoupon;
 import com.hhplus.ecommerce.domain.repository.UserCouponRepository;
 import com.hhplus.ecommerce.domain.vo.Money;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 쿠폰 사용 관련 비즈니스 로직을 처리하는 서비스
@@ -27,6 +28,7 @@ public class CouponService {
      * @param userId 사용자 ID (검증용)
      * @return 사용된 UserCoupon
      */
+    @Transactional
     public UserCoupon useCoupon(Long userCouponId, Long userId) {
         UserCoupon userCoupon = userCouponRepository.findById(userCouponId)
                 .orElseThrow(() -> new IllegalArgumentException("쿠폰을 찾을 수 없습니다: " + userCouponId));
@@ -38,7 +40,7 @@ public class CouponService {
 
         // 쿠폰 사용 처리
         userCoupon.use();
-        userCouponRepository.save(userCoupon);
+        // 더티 체킹으로 자동 저장 (save() 불필요)
 
         return userCoupon;
     }
@@ -48,12 +50,13 @@ public class CouponService {
      *
      * @param userCouponId 사용자 쿠폰 ID
      */
+    @Transactional
     public void cancelCoupon(Long userCouponId) {
         UserCoupon userCoupon = userCouponRepository.findById(userCouponId)
                 .orElseThrow(() -> new IllegalArgumentException("쿠폰을 찾을 수 없습니다: " + userCouponId));
 
         userCoupon.cancel();
-        userCouponRepository.save(userCoupon);
+        // 더티 체킹으로 자동 저장 (save() 불필요)
     }
 
     /**

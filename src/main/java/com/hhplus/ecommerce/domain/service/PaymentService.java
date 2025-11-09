@@ -8,6 +8,7 @@ import com.hhplus.ecommerce.domain.repository.PaymentRepository;
 import com.hhplus.ecommerce.domain.vo.Money;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 결제 관련 비즈니스 로직을 처리하는 서비스
@@ -45,16 +46,17 @@ public class PaymentService {
      *
      * @param payment 결제
      */
+    @Transactional
     public void sendToDataPlatform(Payment payment) {
         try {
             // 실제 환경에서는 외부 API 호출 등의 로직이 들어갑니다.
             // 현재는 시뮬레이션으로 성공 처리
             payment.updateDataTransmissionStatus(DataTransmissionStatus.SUCCESS);
-            paymentRepository.save(payment);
+            // 더티 체킹으로 자동 저장 (save() 불필요)
             log.info("데이터 플랫폼 전송 성공: 결제 ID={}", payment.getId());
         } catch (Exception e) {
             payment.updateDataTransmissionStatus(DataTransmissionStatus.FAILED);
-            paymentRepository.save(payment);
+            // 더티 체킹으로 자동 저장 (save() 불필요)
             log.error("데이터 플랫폼 전송 실패: 결제 ID={}", payment.getId(), e);
         }
     }

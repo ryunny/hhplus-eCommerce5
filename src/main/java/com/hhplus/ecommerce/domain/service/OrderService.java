@@ -12,6 +12,7 @@ import com.hhplus.ecommerce.domain.vo.Money;
 import com.hhplus.ecommerce.domain.vo.Phone;
 import com.hhplus.ecommerce.domain.vo.Quantity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -99,11 +100,12 @@ public class OrderService {
      * @param orderId 주문 ID
      * @param status 변경할 상태
      */
+    @Transactional
     public void updateOrderStatus(Long orderId, OrderStatus status) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다: " + orderId));
         order.updateStatus(status);
-        orderRepository.save(order);
+        // 더티 체킹으로 자동 저장 (save() 불필요)
     }
 
     /**

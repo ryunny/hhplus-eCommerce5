@@ -6,6 +6,7 @@ import com.hhplus.ecommerce.domain.repository.OrderItemRepository;
 import com.hhplus.ecommerce.domain.repository.ProductRepository;
 import com.hhplus.ecommerce.domain.vo.Quantity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,17 +65,17 @@ public class ProductService {
 
     /**
      * 재고 차감
-     * 비즈니스 로직(재고 차감)과 영속화를 함께 처리
-     *
-     * DB 전환 시: Repository의 findById에 @Lock(LockModeType.PESSIMISTIC_WRITE) 적용 필요
+     * 비관적 락과 더티 체킹을 활용하여 동시성 제어
      *
      * @param productId 상품 ID
      * @param quantity 차감할 수량
      */
+    @Transactional
     public void decreaseStock(Long productId, Quantity quantity) {
-        Product product = getProduct(productId);
+        Product product = productRepository.findByIdWithLock(productId)
+                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다: " + productId));
         product.decreaseStock(quantity);
-        productRepository.save(product);
+        // 더티 체킹으로 자동 저장 (save() 불필요)
     }
 
     /**
@@ -83,10 +84,12 @@ public class ProductService {
      * @param productId 상품 ID
      * @param quantity 복구할 수량
      */
+    @Transactional
     public void increaseStock(Long productId, Quantity quantity) {
-        Product product = getProduct(productId);
+        Product product = productRepository.findByIdWithLock(productId)
+                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다: " + productId));
         product.increaseStock(quantity);
-        productRepository.save(product);
+        // 더티 체킹으로 자동 저장 (save() 불필요)
     }
 
     /**

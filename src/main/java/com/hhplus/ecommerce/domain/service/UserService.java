@@ -4,6 +4,7 @@ import com.hhplus.ecommerce.domain.entity.User;
 import com.hhplus.ecommerce.domain.repository.UserRepository;
 import com.hhplus.ecommerce.domain.vo.Money;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 사용자 관련 비즈니스 로직을 처리하는 서비스
@@ -43,17 +44,17 @@ public class UserService {
 
     /**
      * 잔액 차감
-     * 비즈니스 로직(잔액 차감)과 영속화를 함께 처리
-     *
-     * DB 전환 시: Repository의 findById에 @Lock(LockModeType.PESSIMISTIC_WRITE) 적용 필요
+     * 비관적 락과 더티 체킹을 활용하여 동시성 제어
      *
      * @param userId 사용자 ID
      * @param amount 차감할 금액
      */
+    @Transactional
     public void deductBalance(Long userId, Money amount) {
-        User user = getUser(userId);
+        User user = userRepository.findByIdWithLock(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
         user.deductBalance(amount);
-        userRepository.save(user);
+        // 더티 체킹으로 자동 저장 (save() 불필요)
     }
 
     /**
@@ -62,9 +63,11 @@ public class UserService {
      * @param userId 사용자 ID
      * @param amount 충전할 금액
      */
+    @Transactional
     public void chargeBalance(Long userId, Money amount) {
-        User user = getUser(userId);
+        User user = userRepository.findByIdWithLock(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
         user.chargeBalance(amount);
-        userRepository.save(user);
+        // 더티 체킹으로 자동 저장 (save() 불필요)
     }
 }

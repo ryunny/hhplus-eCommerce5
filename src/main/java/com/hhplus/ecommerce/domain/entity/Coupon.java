@@ -2,27 +2,52 @@ package com.hhplus.ecommerce.domain.entity;
 
 import com.hhplus.ecommerce.domain.vo.DiscountRate;
 import com.hhplus.ecommerce.domain.vo.Money;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "coupons")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Coupon {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false, length = 100)
     private String name;
+
+    @Column(nullable = false, length = 50)
     private String couponType;
+
+    @Column
     private DiscountRate discountRate;
+
+    @Column
     private Money discountAmount;
+
+    @Column
     private Money minOrderAmount;
+
+    @Column(nullable = false)
     private Integer totalQuantity;
+
+    @Column(nullable = false)
     private Integer issuedQuantity = 0;
+
+    @Column(nullable = false)
     private LocalDateTime startDate;
+
+    @Column(nullable = false)
     private LocalDateTime endDate;
-    private boolean useQueue = false; // 대기열 사용 여부 (기본값: 즉시 발급)
+
+    @Column(nullable = false)
+    private boolean useQueue = false;
 
     public Coupon(String name, String couponType, DiscountRate discountRate,
                   Money discountAmount, Money minOrderAmount, Integer totalQuantity,

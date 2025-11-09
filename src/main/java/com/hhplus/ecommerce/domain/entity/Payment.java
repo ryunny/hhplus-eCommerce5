@@ -3,21 +3,41 @@ package com.hhplus.ecommerce.domain.entity;
 import com.hhplus.ecommerce.domain.enums.DataTransmissionStatus;
 import com.hhplus.ecommerce.domain.enums.PaymentStatus;
 import com.hhplus.ecommerce.domain.vo.Money;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "payments")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Payment {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id", nullable = false, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private Order order;
+
+    @Column(nullable = false)
     private Money paidAmount;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
     private PaymentStatus status;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
     private DataTransmissionStatus dataTransmissionStatus;
+
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     public Payment(Order order, Money paidAmount, PaymentStatus status,

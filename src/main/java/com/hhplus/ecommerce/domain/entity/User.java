@@ -3,21 +3,38 @@ package com.hhplus.ecommerce.domain.entity;
 import com.hhplus.ecommerce.domain.vo.Email;
 import com.hhplus.ecommerce.domain.vo.Money;
 import com.hhplus.ecommerce.domain.vo.Phone;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "users")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false, length = 100)
     private String name;
+
+    @Column(nullable = false, unique = true)
     private Email email;
+
+    @Column(nullable = false, length = 20)
     private Phone phone;
+
+    @Column(nullable = false)
     private Money balance;
+
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     public User(String name, Email email, Phone phone) {

@@ -25,18 +25,18 @@ public class CartController {
     private final RemoveFromCartUseCase removeFromCartUseCase;
     private final ClearCartUseCase clearCartUseCase;
 
-    @PostMapping("/{userId}/items")
+    @PostMapping("/{publicId}/items")
     public ResponseEntity<CartItemResponse> addToCart(
-            @PathVariable Long userId,
+            @PathVariable String publicId,
             @RequestBody AddCartItemRequest request) {
-        AddToCartCommand command = new AddToCartCommand(userId, request.productId(), request.quantity());
+        AddToCartCommand command = new AddToCartCommand(publicId, request.productId(), request.quantity());
         CartItem cartItem = addToCartUseCase.execute(command);
         return ResponseEntity.ok(CartItemResponse.from(cartItem));
     }
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<List<CartItemResponse>> getCartItems(@PathVariable Long userId) {
-        GetCartItemsQuery query = new GetCartItemsQuery(userId);
+    @GetMapping("/{publicId}")
+    public ResponseEntity<List<CartItemResponse>> getCartItems(@PathVariable String publicId) {
+        GetCartItemsQuery query = new GetCartItemsQuery(publicId);
         List<CartItem> cartItems = getCartItemsUseCase.execute(query);
         List<CartItemResponse> response = cartItems.stream()
                 .map(CartItemResponse::from)
@@ -50,9 +50,9 @@ public class CartController {
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/{userId}/clear")
-    public ResponseEntity<Void> clearCart(@PathVariable Long userId) {
-        clearCartUseCase.execute(userId);
+    @DeleteMapping("/{publicId}/clear")
+    public ResponseEntity<Void> clearCart(@PathVariable String publicId) {
+        clearCartUseCase.execute(publicId);
         return ResponseEntity.noContent().build();
     }
 }

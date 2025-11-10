@@ -120,6 +120,17 @@ public class OrderService {
     }
 
     /**
+     * 주문 조회 (Order Number 기반)
+     *
+     * @param orderNumber 주문 번호 (UUID)
+     * @return 주문
+     */
+    public Order getOrderByOrderNumber(String orderNumber) {
+        return orderRepository.findByOrderNumber(orderNumber)
+                .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다: " + orderNumber));
+    }
+
+    /**
      * 사용자 주문 목록 조회
      *
      * @param userId 사용자 ID
@@ -127,5 +138,15 @@ public class OrderService {
      */
     public List<Order> getUserOrders(Long userId) {
         return orderRepository.findByUserId(userId);
+    }
+
+    /**
+     * 사용자 주문 목록 조회 (Public ID 기반)
+     *
+     * @param publicId 사용자 Public ID (UUID)
+     * @return 주문 목록
+     */
+    public List<Order> getUserOrdersByPublicId(String publicId) {
+        return orderRepository.findByUserPublicId(publicId);
     }
 }

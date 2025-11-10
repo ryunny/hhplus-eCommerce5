@@ -1,10 +1,16 @@
 package com.hhplus.ecommerce.domain.repository;
 
 import com.hhplus.ecommerce.domain.entity.Refund;
-import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
-public interface RefundRepository extends JpaRepository<Refund, Long> {
+public interface RefundRepository {
+    Refund save(Refund refund);
+
+    Optional<Refund> findById(Long id);
+
     List<Refund> findByOrderId(Long orderId);
+
+    void deleteById(Long id);
 }

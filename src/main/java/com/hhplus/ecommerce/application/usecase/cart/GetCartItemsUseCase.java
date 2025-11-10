@@ -22,6 +22,6 @@ public class GetCartItemsUseCase {
     }
 
     public List<CartItem> execute(GetCartItemsQuery query) {
-        return cartService.getCartItems(query.userId());
+        return cartService.getCartItemsByPublicId(query.publicId());
     }
 }

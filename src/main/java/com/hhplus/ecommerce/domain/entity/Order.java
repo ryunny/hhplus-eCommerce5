@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "orders")
@@ -20,6 +21,9 @@ public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(unique = true, nullable = false, length = 36)
+    private String orderNumber;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
@@ -68,6 +72,13 @@ public class Order {
         this.finalAmount = finalAmount;
         this.status = status;
         this.createdAt = LocalDateTime.now();
+    }
+
+    @PrePersist
+    private void generateOrderNumber() {
+        if (this.orderNumber == null) {
+            this.orderNumber = UUID.randomUUID().toString();
+        }
     }
 
     public void updateStatus(OrderStatus newStatus) {

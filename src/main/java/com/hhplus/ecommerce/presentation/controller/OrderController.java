@@ -23,24 +23,24 @@ public class OrderController {
     private final GetOrderUseCase getOrderUseCase;
     private final GetUserOrdersUseCase getUserOrdersUseCase;
 
-    @PostMapping("/{userId}")
+    @PostMapping("/{publicId}")
     public ResponseEntity<OrderResponse> createOrder(
-            @PathVariable Long userId,
+            @PathVariable String publicId,
             @RequestBody CreateOrderRequest request) {
-        Order order = placeOrderUseCase.execute(userId, request);
+        Order order = placeOrderUseCase.execute(publicId, request);
         return ResponseEntity.ok(OrderResponse.from(order));
     }
 
-    @GetMapping("/{orderId}")
-    public ResponseEntity<OrderResponse> getOrder(@PathVariable Long orderId) {
-        GetOrderQuery query = new GetOrderQuery(orderId);
+    @GetMapping("/{orderNumber}")
+    public ResponseEntity<OrderResponse> getOrder(@PathVariable String orderNumber) {
+        GetOrderQuery query = new GetOrderQuery(orderNumber);
         Order order = getOrderUseCase.execute(query);
         return ResponseEntity.ok(OrderResponse.from(order));
     }
 
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<OrderResponse>> getUserOrders(@PathVariable Long userId) {
-        GetUserOrdersQuery query = new GetUserOrdersQuery(userId);
+    @GetMapping("/user/{publicId}")
+    public ResponseEntity<List<OrderResponse>> getUserOrders(@PathVariable String publicId) {
+        GetUserOrdersQuery query = new GetUserOrdersQuery(publicId);
         List<Order> orders = getUserOrdersUseCase.execute(query);
         List<OrderResponse> response = orders.stream()
                 .map(OrderResponse::from)

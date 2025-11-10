@@ -22,6 +22,6 @@ public class GetAvailableCouponsUseCase {
     }
 
     public List<UserCoupon> execute(GetAvailableCouponsQuery query) {
-        return couponService.getAvailableCoupons(query.userId());
+        return couponService.getAvailableCouponsByPublicId(query.publicId());
     }
 }

@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "users")
@@ -20,6 +21,9 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(unique = true, nullable = false, length = 36)
+    private String publicId;
 
     @Column(nullable = false, length = 100)
     private String name;
@@ -43,6 +47,13 @@ public class User {
         this.phone = phone;
         this.balance = Money.zero();
         this.createdAt = LocalDateTime.now();
+    }
+
+    @PrePersist
+    private void generatePublicId() {
+        if (this.publicId == null) {
+            this.publicId = UUID.randomUUID().toString();
+        }
     }
 
     public void chargeBalance(Money amount) {

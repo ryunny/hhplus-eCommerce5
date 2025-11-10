@@ -22,6 +22,6 @@ public class JoinCouponQueueUseCase {
 
     @Transactional
     public CouponQueue execute(JoinCouponQueueCommand command) {
-        return couponService.joinQueue(command.userId(), command.couponId());
+        return couponService.joinQueueByPublicId(command.publicId(), command.couponId());
     }
 }

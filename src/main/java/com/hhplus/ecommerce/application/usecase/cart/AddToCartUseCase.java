@@ -24,6 +24,6 @@ public class AddToCartUseCase {
     @Transactional
     public CartItem execute(AddToCartCommand command) {
         Quantity quantity = new Quantity(command.quantity());
-        return cartService.addToCart(command.userId(), command.productId(), quantity);
+        return cartService.addToCartByPublicId(command.publicId(), command.productId(), quantity);
     }
 }

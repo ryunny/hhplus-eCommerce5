@@ -22,6 +22,6 @@ public class GetUserOrdersUseCase {
     }
 
     public List<Order> execute(GetUserOrdersQuery query) {
-        return orderService.getUserOrders(query.userId());
+        return orderService.getUserOrdersByPublicId(query.publicId());
     }
 }

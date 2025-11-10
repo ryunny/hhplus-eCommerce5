@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "payments")
@@ -20,6 +21,9 @@ public class Payment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(unique = true, nullable = false, length = 36)
+    private String paymentId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
@@ -51,6 +55,13 @@ public class Payment {
 
     public void updateStatus(PaymentStatus newStatus) {
         this.status = newStatus;
+    }
+
+    @PrePersist
+    private void generatePaymentId() {
+        if (this.paymentId == null) {
+            this.paymentId = UUID.randomUUID().toString();
+        }
     }
 
     public void updateDataTransmissionStatus(DataTransmissionStatus newStatus) {

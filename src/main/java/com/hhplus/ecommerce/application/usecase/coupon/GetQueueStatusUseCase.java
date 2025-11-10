@@ -20,6 +20,6 @@ public class GetQueueStatusUseCase {
     }
 
     public CouponQueue execute(GetQueueStatusQuery query) {
-        return couponService.getQueueStatus(query.userId(), query.couponId());
+        return couponService.getQueueStatusByPublicId(query.publicId(), query.couponId());
     }
 }

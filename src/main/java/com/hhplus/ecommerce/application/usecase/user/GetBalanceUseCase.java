@@ -20,6 +20,6 @@ public class GetBalanceUseCase {
     }
 
     public User execute(GetBalanceQuery query) {
-        return userService.getUser(query.userId());
+        return userService.getUserByPublicId(query.publicId());
     }
 }

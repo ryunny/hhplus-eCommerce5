@@ -33,11 +33,11 @@ public class IssueCouponUseCase {
         // 2. 쿠폰 설정에 따라 발급 방식 선택
         if (coupon.isUseQueue()) {
             // 대기열 방식: 대기열에 추가만 하고 반환
-            couponService.joinQueue(command.userId(), command.couponId());
+            couponService.joinQueueByPublicId(command.publicId(), command.couponId());
             return null; // 대기 중 (스케줄러가 처리)
         } else {
             // 즉시 발급 방식
-            return couponService.issueCoupon(command.userId(), command.couponId());
+            return couponService.issueCouponByPublicId(command.publicId(), command.couponId());
         }
     }
 }

@@ -40,11 +40,11 @@ public class CouponController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/{couponId}/issue/{userId}")
+    @PostMapping("/{couponId}/issue/{publicId}")
     public ResponseEntity<?> issueCoupon(
             @PathVariable Long couponId,
-            @PathVariable Long userId) {
-        IssueCouponCommand command = new IssueCouponCommand(userId, couponId);
+            @PathVariable String publicId) {
+        IssueCouponCommand command = new IssueCouponCommand(publicId, couponId);
         UserCoupon userCoupon = issueCouponUseCase.execute(command);
 
         if (userCoupon == null) {
@@ -57,9 +57,9 @@ public class CouponController {
         return ResponseEntity.ok(UserCouponResponse.from(userCoupon));
     }
 
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<UserCouponResponse>> getUserCoupons(@PathVariable Long userId) {
-        GetUserCouponsQuery query = new GetUserCouponsQuery(userId);
+    @GetMapping("/user/{publicId}")
+    public ResponseEntity<List<UserCouponResponse>> getUserCoupons(@PathVariable String publicId) {
+        GetUserCouponsQuery query = new GetUserCouponsQuery(publicId);
         List<UserCoupon> userCoupons = getUserCouponsUseCase.execute(query);
         List<UserCouponResponse> response = userCoupons.stream()
                 .map(UserCouponResponse::from)
@@ -67,9 +67,9 @@ public class CouponController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/user/{userId}/available")
-    public ResponseEntity<List<UserCouponResponse>> getAvailableCoupons(@PathVariable Long userId) {
-        GetAvailableCouponsQuery query = new GetAvailableCouponsQuery(userId);
+    @GetMapping("/user/{publicId}/available")
+    public ResponseEntity<List<UserCouponResponse>> getAvailableCoupons(@PathVariable String publicId) {
+        GetAvailableCouponsQuery query = new GetAvailableCouponsQuery(publicId);
         List<UserCoupon> userCoupons = getAvailableCouponsUseCase.execute(query);
         List<UserCouponResponse> response = userCoupons.stream()
                 .map(UserCouponResponse::from)
@@ -82,11 +82,11 @@ public class CouponController {
     /**
      * 대기열 진입 (선착순 쿠폰)
      */
-    @PostMapping("/{couponId}/queue/join/{userId}")
+    @PostMapping("/{couponId}/queue/join/{publicId}")
     public ResponseEntity<CouponQueueResponse> joinQueue(
             @PathVariable Long couponId,
-            @PathVariable Long userId) {
-        JoinCouponQueueCommand command = new JoinCouponQueueCommand(userId, couponId);
+            @PathVariable String publicId) {
+        JoinCouponQueueCommand command = new JoinCouponQueueCommand(publicId, couponId);
         CouponQueue queue = joinCouponQueueUseCase.execute(command);
         return ResponseEntity.ok(CouponQueueResponse.from(queue));
     }
@@ -94,11 +94,11 @@ public class CouponController {
     /**
      * 대기 상태 조회
      */
-    @GetMapping("/{couponId}/queue/status/{userId}")
+    @GetMapping("/{couponId}/queue/status/{publicId}")
     public ResponseEntity<CouponQueueResponse> getQueueStatus(
             @PathVariable Long couponId,
-            @PathVariable Long userId) {
-        GetQueueStatusQuery query = new GetQueueStatusQuery(userId, couponId);
+            @PathVariable String publicId) {
+        GetQueueStatusQuery query = new GetQueueStatusQuery(publicId, couponId);
         CouponQueue queue = getQueueStatusUseCase.execute(query);
         return ResponseEntity.ok(CouponQueueResponse.from(queue));
     }

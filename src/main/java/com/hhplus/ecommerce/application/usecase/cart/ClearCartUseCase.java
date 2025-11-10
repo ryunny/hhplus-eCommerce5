@@ -19,7 +19,7 @@ public class ClearCartUseCase {
     }
 
     @Transactional
-    public void execute(Long userId) {
-        cartService.clearCart(userId);
+    public void execute(String publicId) {
+        cartService.clearCartByPublicId(publicId);
     }
 }

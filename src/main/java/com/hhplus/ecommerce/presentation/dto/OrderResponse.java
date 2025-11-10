@@ -5,8 +5,8 @@ import com.hhplus.ecommerce.domain.entity.Order;
 import java.time.LocalDateTime;
 
 public record OrderResponse(
-        Long orderId,
-        Long userId,
+        String orderNumber,
+        String userPublicId,
         Long totalAmount,
         Long discountAmount,
         Long finalAmount,
@@ -15,8 +15,8 @@ public record OrderResponse(
 ) {
     public static OrderResponse from(Order order) {
         return new OrderResponse(
-                order.getId(),
-                order.getUser().getId(),
+                order.getOrderNumber(),
+                order.getUser().getPublicId(),
                 order.getTotalAmount().getAmount(),
                 order.getDiscountAmount().getAmount(),
                 order.getFinalAmount().getAmount(),

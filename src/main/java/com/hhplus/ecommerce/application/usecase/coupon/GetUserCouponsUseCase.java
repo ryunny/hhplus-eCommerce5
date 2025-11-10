@@ -22,6 +22,6 @@ public class GetUserCouponsUseCase {
     }
 
     public List<UserCoupon> execute(GetUserCouponsQuery query) {
-        return couponService.getUserCoupons(query.userId());
+        return couponService.getUserCouponsByPublicId(query.publicId());
     }
 }

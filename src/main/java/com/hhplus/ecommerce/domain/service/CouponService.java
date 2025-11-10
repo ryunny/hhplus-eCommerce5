@@ -441,4 +441,66 @@ public class CouponService {
             }
         }
     }
+
+    // ===== UUID 기반 메서드 (Public ID 사용) =====
+
+    /**
+     * 사용자의 쿠폰 목록 조회 (Public ID 기반)
+     *
+     * @param publicId 사용자 Public ID (UUID)
+     * @return 사용자 쿠폰 목록
+     */
+    public List<UserCoupon> getUserCouponsByPublicId(String publicId) {
+        User user = userService.getUserByPublicId(publicId);
+        return getUserCoupons(user.getId());
+    }
+
+    /**
+     * 사용자의 사용 가능한 쿠폰 목록 조회 (Public ID 기반)
+     *
+     * @param publicId 사용자 Public ID (UUID)
+     * @return 사용 가능한 쿠폰 목록
+     */
+    public List<UserCoupon> getAvailableCouponsByPublicId(String publicId) {
+        User user = userService.getUserByPublicId(publicId);
+        return getAvailableCoupons(user.getId());
+    }
+
+    /**
+     * 즉시 쿠폰 발급 (Public ID 기반)
+     *
+     * @param publicId 사용자 Public ID (UUID)
+     * @param couponId 쿠폰 ID
+     * @return 발급된 UserCoupon
+     */
+    @Transactional
+    public UserCoupon issueCouponByPublicId(String publicId, Long couponId) {
+        User user = userService.getUserByPublicId(publicId);
+        return issueCoupon(user.getId(), couponId);
+    }
+
+    /**
+     * 선착순 쿠폰 대기열 진입 (Public ID 기반)
+     *
+     * @param publicId 사용자 Public ID (UUID)
+     * @param couponId 쿠폰 ID
+     * @return 생성된 CouponQueue
+     */
+    @Transactional
+    public CouponQueue joinQueueByPublicId(String publicId, Long couponId) {
+        User user = userService.getUserByPublicId(publicId);
+        return joinQueue(user.getId(), couponId);
+    }
+
+    /**
+     * 대기 상태 조회 (Public ID 기반)
+     *
+     * @param publicId 사용자 Public ID (UUID)
+     * @param couponId 쿠폰 ID
+     * @return 대기열 정보
+     */
+    public CouponQueue getQueueStatusByPublicId(String publicId, Long couponId) {
+        User user = userService.getUserByPublicId(publicId);
+        return getQueueStatus(user.getId(), couponId);
+    }
 }

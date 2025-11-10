@@ -50,14 +50,14 @@ public class PlaceOrderUseCase {
      * 주문 생성 및 결제 실행
      * 트랜잭션 내에서 실행되어 예외 발생 시 자동 롤백됩니다.
      *
-     * @param userId 사용자 ID
+     * @param publicId 사용자 Public ID (UUID)
      * @param request 주문 요청 DTO
      * @return 생성된 주문
      */
     @Transactional
-    public Order execute(Long userId, CreateOrderRequest request) {
+    public Order execute(String publicId, CreateOrderRequest request) {
         // 1. 사용자 조회
-        User user = userService.getUser(userId);
+        User user = userService.getUserByPublicId(publicId);
 
         // 2. 상품 조회 및 수량 변환
         List<Long> productIds = request.items().stream()
@@ -82,7 +82,7 @@ public class PlaceOrderUseCase {
         Money discountAmount = Money.zero();
 
         if (request.userCouponId() != null) {
-            userCoupon = couponService.useCoupon(request.userCouponId(), userId);
+            userCoupon = couponService.useCoupon(request.userCouponId(), user.getId());
             discountAmount = couponService.calculateDiscount(userCoupon, totalAmount);
         }
 
@@ -114,7 +114,7 @@ public class PlaceOrderUseCase {
         }
 
         // 9. 잔액 차감
-        userService.deductBalance(userId, finalAmount);
+        userService.deductBalanceByPublicId(publicId, finalAmount);
 
         // 10. 결제 생성
         Payment payment = paymentService.createPayment(order, finalAmount);
@@ -125,8 +125,8 @@ public class PlaceOrderUseCase {
         // 12. 데이터 플랫폼 전송 (비동기 처리 시뮬레이션)
         paymentService.sendToDataPlatform(payment);
 
-        log.info("주문 생성 완료: 주문 ID={}, 사용자 ID={}, 최종 금액={}",
-                order.getId(), userId, finalAmount.getAmount());
+        log.info("주문 생성 완료: 주문 ID={}, 사용자 Public ID={}, 최종 금액={}",
+                order.getId(), publicId, finalAmount.getAmount());
 
         return order;
     }

@@ -1,7 +1,7 @@
 package com.hhplus.ecommerce.presentation.dto;
 
 public record UserBalanceResponse(
-        Long userId,
+        String publicId,
         Long balance
 ) {
 }

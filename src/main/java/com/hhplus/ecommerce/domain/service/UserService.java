@@ -30,6 +30,17 @@ public class UserService {
     }
 
     /**
+     * 사용자 조회 (Public ID 기반)
+     *
+     * @param publicId 사용자 Public ID (UUID)
+     * @return 사용자 엔티티
+     */
+    public User getUserByPublicId(String publicId) {
+        return userRepository.findByPublicId(publicId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + publicId));
+    }
+
+    /**
      * 잔액 충분성 검증
      *
      * @param user 사용자
@@ -58,6 +69,21 @@ public class UserService {
     }
 
     /**
+     * 잔액 차감 (Public ID 기반)
+     * 비관적 락과 더티 체킹을 활용하여 동시성 제어
+     *
+     * @param publicId 사용자 Public ID (UUID)
+     * @param amount 차감할 금액
+     */
+    @Transactional
+    public void deductBalanceByPublicId(String publicId, Money amount) {
+        User user = userRepository.findByPublicIdWithLock(publicId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + publicId));
+        user.deductBalance(amount);
+        // 더티 체킹으로 자동 저장 (save() 불필요)
+    }
+
+    /**
      * 잔액 충전
      *
      * @param userId 사용자 ID
@@ -68,6 +94,22 @@ public class UserService {
     public User chargeBalance(Long userId, Money amount) {
         User user = userRepository.findByIdWithLock(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
+        user.chargeBalance(amount);
+        // 더티 체킹으로 자동 저장 (save() 불필요)
+        return user;
+    }
+
+    /**
+     * 잔액 충전 (Public ID 기반)
+     *
+     * @param publicId 사용자 Public ID (UUID)
+     * @param amount 충전할 금액
+     * @return 충전 후 사용자 정보
+     */
+    @Transactional
+    public User chargeBalanceByPublicId(String publicId, Money amount) {
+        User user = userRepository.findByPublicIdWithLock(publicId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + publicId));
         user.chargeBalance(amount);
         // 더티 체킹으로 자동 저장 (save() 불필요)
         return user;

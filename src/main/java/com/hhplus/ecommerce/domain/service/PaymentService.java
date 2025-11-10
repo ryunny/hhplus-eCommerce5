@@ -41,6 +41,17 @@ public class PaymentService {
     }
 
     /**
+     * 결제 조회 (Payment ID 기반)
+     *
+     * @param paymentId 결제 ID (UUID)
+     * @return 결제
+     */
+    public Payment getPaymentByPaymentId(String paymentId) {
+        return paymentRepository.findByPaymentId(paymentId)
+                .orElseThrow(() -> new IllegalArgumentException("결제를 찾을 수 없습니다: " + paymentId));
+    }
+
+    /**
      * 데이터 플랫폼 전송
      * 외부 시스템에 결제 데이터를 전송합니다.
      *

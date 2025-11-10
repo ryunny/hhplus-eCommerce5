@@ -20,6 +20,6 @@ public class GetOrderUseCase {
     }
 
     public Order execute(GetOrderQuery query) {
-        return orderService.getOrder(query.orderId());
+        return orderService.getOrderByOrderNumber(query.orderNumber());
     }
 }

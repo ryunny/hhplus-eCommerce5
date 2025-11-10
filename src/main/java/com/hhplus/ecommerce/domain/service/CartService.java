@@ -60,6 +60,20 @@ public class CartService {
     }
 
     /**
+     * 장바구니에 상품 추가 (Public ID 기반)
+     *
+     * @param publicId 사용자 Public ID (UUID)
+     * @param productId 상품 ID
+     * @param quantity 수량
+     * @return 장바구니 아이템
+     */
+    @Transactional
+    public CartItem addToCartByPublicId(String publicId, Long productId, Quantity quantity) {
+        User user = userService.getUserByPublicId(publicId);
+        return addToCart(user.getId(), productId, quantity);
+    }
+
+    /**
      * 사용자의 장바구니 아이템 조회
      *
      * @param userId 사용자 ID
@@ -67,6 +81,17 @@ public class CartService {
      */
     public List<CartItem> getCartItems(Long userId) {
         return cartItemRepository.findByUserId(userId);
+    }
+
+    /**
+     * 사용자의 장바구니 아이템 조회 (Public ID 기반)
+     *
+     * @param publicId 사용자 Public ID (UUID)
+     * @return 장바구니 아이템 목록
+     */
+    public List<CartItem> getCartItemsByPublicId(String publicId) {
+        User user = userService.getUserByPublicId(publicId);
+        return getCartItems(user.getId());
     }
 
     /**
@@ -87,5 +112,16 @@ public class CartService {
     @Transactional
     public void clearCart(Long userId) {
         cartItemRepository.deleteByUserId(userId);
+    }
+
+    /**
+     * 장바구니 전체 비우기 (Public ID 기반)
+     *
+     * @param publicId 사용자 Public ID (UUID)
+     */
+    @Transactional
+    public void clearCartByPublicId(String publicId) {
+        User user = userService.getUserByPublicId(publicId);
+        clearCart(user.getId());
     }
 }

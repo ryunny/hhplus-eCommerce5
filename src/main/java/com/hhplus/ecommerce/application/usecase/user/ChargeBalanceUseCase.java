@@ -24,6 +24,6 @@ public class ChargeBalanceUseCase {
     @Transactional
     public User execute(ChargeBalanceCommand command) {
         Money amount = new Money(command.amount());
-        return userService.chargeBalance(command.userId(), amount);
+        return userService.chargeBalanceByPublicId(command.publicId(), amount);
     }
 }

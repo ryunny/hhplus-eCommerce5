@@ -52,7 +52,7 @@ public class OrderService {
     }
 
     /**
-     * 주문 생성
+     * 주문 생성 (직접 배송 정보 입력)
      *
      * @param user 사용자
      * @param userCoupon 사용자 쿠폰 (optional, null 가능)
@@ -70,6 +70,7 @@ public class OrderService {
         Order order = new Order(
                 user,
                 userCoupon,
+                null, // ShippingAddress 미사용
                 recipientName,
                 address,
                 phone,

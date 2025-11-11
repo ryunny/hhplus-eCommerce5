@@ -66,12 +66,13 @@ public class MockOrderRepository implements OrderRepository {
 
     // Helper methods for creating test data
     public Order createOrder(Long id, User user, UserCoupon userCoupon,
-                            String recipientName, String shippingAddress,
-                            String shippingPhone, Long totalAmount,
+                            String recipientName, String address,
+                            String phone, Long totalAmount,
                             Long discountAmount, Long finalAmount,
                             OrderStatus status) {
-        Order order = new Order(user, userCoupon, recipientName, shippingAddress,
-                new Phone(shippingPhone), new Money(totalAmount), new Money(discountAmount), new Money(finalAmount), status);
+        Order order = new Order(user, userCoupon, null,
+                recipientName, address, new Phone(phone),
+                new Money(totalAmount), new Money(discountAmount), new Money(finalAmount), status);
         setId(order, id);
         setCreatedAt(order, LocalDateTime.now());
         return order;

@@ -56,7 +56,7 @@ class ProductServiceIntegrationTest extends BaseIntegrationTest {
         assertThat(foundProduct).isNotNull();
         assertThat(foundProduct.getName()).isEqualTo("노트북");
         assertThat(foundProduct.getPrice().getAmount()).isEqualTo(1000000L);
-        assertThat(foundProduct.getStock().getValue()).isEqualTo(10);
+        assertThat(foundProduct.getStock().getQuantity()).isEqualTo(10);
     }
 
     @Test
@@ -72,7 +72,7 @@ class ProductServiceIntegrationTest extends BaseIntegrationTest {
 
         // then
         Product updatedProduct = productRepository.findById(savedProduct.getId()).orElseThrow();
-        assertThat(updatedProduct.getStock().getValue()).isEqualTo(90); // 100 - 10
+        assertThat(updatedProduct.getStock().getQuantity()).isEqualTo(90); // 100 - 10
     }
 
     @Test
@@ -92,7 +92,7 @@ class ProductServiceIntegrationTest extends BaseIntegrationTest {
 
         // then - 재고는 변경되지 않아야 함
         Product unchangedProduct = productRepository.findById(savedProduct.getId()).orElseThrow();
-        assertThat(unchangedProduct.getStock().getValue()).isEqualTo(5);
+        assertThat(unchangedProduct.getStock().getQuantity()).isEqualTo(5);
     }
 
     @Test
@@ -109,7 +109,7 @@ class ProductServiceIntegrationTest extends BaseIntegrationTest {
 
         // then
         Product updatedProduct = productRepository.findById(savedProduct.getId()).orElseThrow();
-        assertThat(updatedProduct.getStock().getValue()).isEqualTo(8); // 10 - 5 + 3
+        assertThat(updatedProduct.getStock().getQuantity()).isEqualTo(8); // 10 - 5 + 3
     }
 
     @Test
@@ -171,7 +171,7 @@ class ProductServiceIntegrationTest extends BaseIntegrationTest {
         // then
         assertThat(lockedProduct).isNotNull();
         assertThat(lockedProduct.getName()).isEqualTo("노트북");
-        assertThat(lockedProduct.getStock().getValue()).isEqualTo(10);
+        assertThat(lockedProduct.getStock().getQuantity()).isEqualTo(10);
     }
 
     @Test

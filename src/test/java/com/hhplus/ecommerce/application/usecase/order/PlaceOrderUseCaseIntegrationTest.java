@@ -104,8 +104,8 @@ class PlaceOrderUseCaseIntegrationTest extends BaseIntegrationTest {
         // then - 재고 차감 검증
         Product updatedProduct1 = productRepository.findById(product1.getId()).orElseThrow();
         Product updatedProduct2 = productRepository.findById(product2.getId()).orElseThrow();
-        assertThat(updatedProduct1.getStock().getValue()).isEqualTo(9); // 10 - 1
-        assertThat(updatedProduct2.getStock().getValue()).isEqualTo(18); // 20 - 2
+        assertThat(updatedProduct1.getStock().getQuantity()).isEqualTo(9); // 10 - 1
+        assertThat(updatedProduct2.getStock().getQuantity()).isEqualTo(18); // 20 - 2
 
         // then - 잔액 차감 검증
         User updatedUser = userRepository.findById(user.getId()).orElseThrow();
@@ -135,7 +135,7 @@ class PlaceOrderUseCaseIntegrationTest extends BaseIntegrationTest {
         Coupon coupon = createPercentageCoupon("10% 할인", 10);
         couponRepository.save(coupon);
         UserCoupon userCoupon = userCouponRepository.save(
-                new UserCoupon(user, coupon, java.time.LocalDateTime.now().plusDays(7))
+                new UserCoupon(user, coupon, com.hhplus.ecommerce.domain.enums.CouponStatus.UNUSED, java.time.LocalDateTime.now().plusDays(7))
         );
 
         // given - 주문 요청 생성
@@ -193,7 +193,7 @@ class PlaceOrderUseCaseIntegrationTest extends BaseIntegrationTest {
 
         // then - 재고는 변경되지 않아야 함 (롤백)
         Product unchangedProduct = productRepository.findById(product.getId()).orElseThrow();
-        assertThat(unchangedProduct.getStock().getValue()).isEqualTo(5);
+        assertThat(unchangedProduct.getStock().getQuantity()).isEqualTo(5);
 
         // then - 잔액도 변경되지 않아야 함 (롤백)
         User unchangedUser = userRepository.findById(user.getId()).orElseThrow();
@@ -233,7 +233,7 @@ class PlaceOrderUseCaseIntegrationTest extends BaseIntegrationTest {
 
         // then - 재고는 변경되지 않아야 함 (롤백)
         Product unchangedProduct = productRepository.findById(product.getId()).orElseThrow();
-        assertThat(unchangedProduct.getStock().getValue()).isEqualTo(10);
+        assertThat(unchangedProduct.getStock().getQuantity()).isEqualTo(10);
 
         // then - 잔액도 변경되지 않아야 함
         User unchangedUser = userRepository.findById(user.getId()).orElseThrow();
@@ -280,9 +280,9 @@ class PlaceOrderUseCaseIntegrationTest extends BaseIntegrationTest {
         Product updated1 = productRepository.findById(product1.getId()).orElseThrow();
         Product updated2 = productRepository.findById(product2.getId()).orElseThrow();
         Product updated3 = productRepository.findById(product3.getId()).orElseThrow();
-        assertThat(updated1.getStock().getValue()).isEqualTo(98);  // 100 - 2
-        assertThat(updated2.getStock().getValue()).isEqualTo(197); // 200 - 3
-        assertThat(updated3.getStock().getValue()).isEqualTo(149); // 150 - 1
+        assertThat(updated1.getStock().getQuantity()).isEqualTo(98);  // 100 - 2
+        assertThat(updated2.getStock().getQuantity()).isEqualTo(197); // 200 - 3
+        assertThat(updated3.getStock().getQuantity()).isEqualTo(149); // 150 - 1
 
         // then - 주문 아이템 수 검증
         List<OrderItem> orderItems = orderItemRepository.findByOrderId(order.getId());

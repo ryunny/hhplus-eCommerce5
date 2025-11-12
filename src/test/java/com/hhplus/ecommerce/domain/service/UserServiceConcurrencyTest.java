@@ -97,7 +97,7 @@ class UserServiceConcurrencyTest extends BaseIntegrationTest {
                     readyLatch.countDown();
                     startLatch.await();
 
-                    userService.useBalance(user.getId(), new Money(1000L));
+                    userService.deductBalance(user.getId(), new Money(1000L));
                 } catch (Exception e) {
                     // 예외 무시
                 } finally {
@@ -142,7 +142,7 @@ class UserServiceConcurrencyTest extends BaseIntegrationTest {
                     readyLatch.countDown();
                     startLatch.await();
 
-                    userService.useBalance(user.getId(), new Money(1000L));
+                    userService.deductBalance(user.getId(), new Money(1000L));
                     successCount.incrementAndGet();
                 } catch (IllegalStateException e) {
                     failCount.incrementAndGet();
@@ -212,7 +212,7 @@ class UserServiceConcurrencyTest extends BaseIntegrationTest {
                     readyLatch.countDown();
                     startLatch.await();
 
-                    userService.useBalance(user.getId(), new Money(1000L));
+                    userService.deductBalance(user.getId(), new Money(1000L));
                     successUseCount.incrementAndGet();
                 } catch (Exception e) {
                     // 잔액 부족 시 무시
@@ -263,7 +263,7 @@ class UserServiceConcurrencyTest extends BaseIntegrationTest {
                     readyLatch.countDown();
                     startLatch.await();
 
-                    userService.useBalance(user.getId(), new Money(1000L));
+                    userService.deductBalance(user.getId(), new Money(1000L));
                     successCount.incrementAndGet();
                 } catch (Exception e) {
                     failCount.incrementAndGet();
@@ -312,7 +312,7 @@ class UserServiceConcurrencyTest extends BaseIntegrationTest {
                     readyLatch.countDown();
                     startLatch.await();
 
-                    userService.chargeBalance(user.getId(), new Money(amount));
+                    userService.chargeBalance(user.getId(), new Money((long) amount));
                     totalCharged.addAndGet(amount);
                 } catch (Exception e) {
                     // 예외 무시

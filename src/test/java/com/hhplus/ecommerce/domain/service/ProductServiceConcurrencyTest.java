@@ -87,7 +87,7 @@ class ProductServiceConcurrencyTest extends BaseIntegrationTest {
 
         // then - 재고가 0이 되어야 함
         Product updatedProduct = productRepository.findById(savedProduct.getId()).orElseThrow();
-        assertThat(updatedProduct.getStock().getValue()).isEqualTo(0);
+        assertThat(updatedProduct.getStock().getQuantity()).isEqualTo(0);
     }
 
     @Test
@@ -137,7 +137,7 @@ class ProductServiceConcurrencyTest extends BaseIntegrationTest {
 
         // then - 재고가 정확히 0
         Product updatedProduct = productRepository.findById(savedProduct.getId()).orElseThrow();
-        assertThat(updatedProduct.getStock().getValue()).isEqualTo(0);
+        assertThat(updatedProduct.getStock().getQuantity()).isEqualTo(0);
     }
 
     @Test
@@ -198,7 +198,7 @@ class ProductServiceConcurrencyTest extends BaseIntegrationTest {
 
         // then - 최종 재고는 100 - 30 + 20 = 90
         Product updatedProduct = productRepository.findById(savedProduct.getId()).orElseThrow();
-        assertThat(updatedProduct.getStock().getValue()).isEqualTo(90);
+        assertThat(updatedProduct.getStock().getQuantity()).isEqualTo(90);
     }
 
     @Test
@@ -248,7 +248,7 @@ class ProductServiceConcurrencyTest extends BaseIntegrationTest {
 
         // then - 재고 0
         Product updatedProduct = productRepository.findById(savedProduct.getId()).orElseThrow();
-        assertThat(updatedProduct.getStock().getValue()).isEqualTo(0);
+        assertThat(updatedProduct.getStock().getQuantity()).isEqualTo(0);
     }
 
     @Test
@@ -294,7 +294,7 @@ class ProductServiceConcurrencyTest extends BaseIntegrationTest {
 
         // then - 실제 차감된 재고와 DB의 재고가 일치
         Product updatedProduct = productRepository.findById(savedProduct.getId()).orElseThrow();
-        assertThat(updatedProduct.getStock().getValue()).isEqualTo(1000 - totalDecreased.get());
+        assertThat(updatedProduct.getStock().getQuantity()).isEqualTo(1000 - totalDecreased.get());
     }
 
     // Helper method

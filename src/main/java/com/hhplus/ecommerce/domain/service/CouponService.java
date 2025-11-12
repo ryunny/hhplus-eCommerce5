@@ -17,9 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * 쿠폰 관련 비즈니스 로직을 처리하는 서비스
@@ -27,9 +24,6 @@ import java.util.concurrent.locks.ReentrantLock;
 @Slf4j
 @Service
 public class CouponService {
-
-    private static final int LOCK_TIMEOUT_SECONDS = 5;
-    private final ConcurrentHashMap<Long, ReentrantLock> couponLocks = new ConcurrentHashMap<>();
 
     private final UserCouponRepository userCouponRepository;
     private final CouponRepository couponRepository;
@@ -156,7 +150,7 @@ public class CouponService {
     /**
      * 즉시 쿠폰 발급
      *
-     * ReentrantLock을 사용하여 동시성 제어를 수행합니다.
+     * DB 비관적 락(Pessimistic Lock)을 사용하여 동시성 제어를 수행합니다.
      * 선착순 쿠폰의 경우 Race Condition을 방지하여 정확한 수량만큼만 발급됩니다.
      *
      * @param userId 사용자 ID
@@ -165,55 +159,39 @@ public class CouponService {
      */
     @Transactional
     public UserCoupon issueCoupon(Long userId, Long couponId) {
-        // 쿠폰별 락 객체 획득 (공정성 보장)
-        ReentrantLock lock = couponLocks.computeIfAbsent(couponId, k -> new ReentrantLock(true));
+        // 1. 사용자 조회
+        User user = userService.getUser(userId);
 
-        try {
-            // 타임아웃과 함께 락 획득 시도
-            if (!lock.tryLock(LOCK_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
-                throw new IllegalStateException("쿠폰 발급 요청이 혼잡합니다. 다시 시도해주세요.");
-            }
+        // 2. 쿠폰 정보 조회 (비관적 락 - SELECT ... FOR UPDATE)
+        Coupon coupon = couponRepository.findByIdWithLock(couponId)
+                .orElseThrow(() -> new IllegalArgumentException("쿠폰을 찾을 수 없습니다: " + couponId));
 
-            try {
-                // 1. 사용자 조회
-                User user = userService.getUser(userId);
-
-                // 2. 쿠폰 정보 조회 (락 안에서 최신 데이터 조회)
-                Coupon coupon = getCoupon(couponId);
-
-                // 3. 이미 발급받았는지 확인
-                Optional<UserCoupon> existingCoupon = userCouponRepository.findByUserIdAndCouponId(userId, couponId);
-                if (existingCoupon.isPresent()) {
-                    throw new IllegalStateException("이미 발급받은 쿠폰입니다.");
-                }
-
-                // 4. 발급 가능 여부 확인 (락 안에서 체크 - Race Condition 방지!)
-                if (!coupon.isIssuable()) {
-                    throw new IllegalStateException("쿠폰의 모든 수량이 소진되었습니다.");
-                }
-
-                // 5. 트랜잭션 처리 (원자적 실행)
-                // 5-1. 발급 수량 증가 (락 안에서 실행)
-                coupon.increaseIssuedQuantity();
-                couponRepository.save(coupon);
-
-                // 5-2. 사용자 쿠폰 생성
-                UserCoupon userCoupon = new UserCoupon(
-                        user,
-                        coupon,
-                        CouponStatus.UNUSED,
-                        coupon.getEndDate()
-                );
-                userCouponRepository.save(userCoupon);
-
-                return userCoupon;
-            } finally {
-                lock.unlock();
-            }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new IllegalStateException("쿠폰 발급이 중단되었습니다.", e);
+        // 3. 이미 발급받았는지 확인
+        Optional<UserCoupon> existingCoupon = userCouponRepository.findByUserIdAndCouponId(userId, couponId);
+        if (existingCoupon.isPresent()) {
+            throw new IllegalStateException("이미 발급받은 쿠폰입니다.");
         }
+
+        // 4. 발급 가능 여부 확인 (DB 락으로 보호됨 - Race Condition 방지!)
+        if (!coupon.isIssuable()) {
+            throw new IllegalStateException("쿠폰의 모든 수량이 소진되었습니다.");
+        }
+
+        // 5. 트랜잭션 처리 (원자적 실행)
+        // 5-1. 발급 수량 증가
+        coupon.increaseIssuedQuantity();
+        couponRepository.save(coupon);
+
+        // 5-2. 사용자 쿠폰 생성
+        UserCoupon userCoupon = new UserCoupon(
+                user,
+                coupon,
+                CouponStatus.UNUSED,
+                coupon.getEndDate()
+        );
+        userCouponRepository.save(userCoupon);
+
+        return userCoupon;
     }
 
     // ===== 쿠폰 만료 =====
@@ -234,32 +212,22 @@ public class CouponService {
 
         for (UserCoupon userCoupon : allUnusedCoupons) {
             if (userCoupon.getExpiresAt().isBefore(now)) {
-                // 쿠폰별 락 획득 (동시성 제어)
-                Long couponId = userCoupon.getCoupon().getId();
-                ReentrantLock lock = couponLocks.computeIfAbsent(couponId, k -> new ReentrantLock(true));
-
                 try {
-                    // 타임아웃과 함께 락 획득
-                    if (lock.tryLock(LOCK_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
-                        try {
-                            // 만료 처리 (락 안에서 처리)
-                            userCoupon.expire();
-                            userCouponRepository.save(userCoupon);
+                    // 만료 처리
+                    userCoupon.expire();
+                    userCouponRepository.save(userCoupon);
 
-                            Coupon coupon = userCoupon.getCoupon();
-                            coupon.decreaseIssuedQuantity();
-                            couponRepository.save(coupon);
+                    // 쿠폰 발급 수량 감소 (비관적 락)
+                    Long couponId = userCoupon.getCoupon().getId();
+                    Coupon coupon = couponRepository.findByIdWithLock(couponId)
+                            .orElseThrow(() -> new IllegalArgumentException("쿠폰을 찾을 수 없습니다: " + couponId));
+                    coupon.decreaseIssuedQuantity();
+                    couponRepository.save(coupon);
 
-                            expiredCount++;
-                        } finally {
-                            lock.unlock();
-                        }
-                    }
-                    // 락 획득 실패 시 건너뛰기 (다음 배치에서 처리)
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    // 인터럽트 발생 시 배치 중단
-                    break;
+                    expiredCount++;
+                } catch (Exception e) {
+                    log.error("쿠폰 만료 처리 실패: userCouponId={}", userCoupon.getId(), e);
+                    // 다음 배치에서 재시도
                 }
             }
         }
@@ -357,65 +325,55 @@ public class CouponService {
      */
     @Transactional
     public void processQueueItem(CouponQueue queue) {
-        ReentrantLock lock = couponLocks.computeIfAbsent(queue.getCoupon().getId(), k -> new ReentrantLock(true));
-
         try {
-            if (!lock.tryLock(LOCK_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
-                log.warn("락 획득 실패: queueId={}", queue.getId());
+            // 상태 변경: WAITING -> PROCESSING
+            queue.updateStatus(CouponQueueStatus.PROCESSING);
+            couponQueueRepository.save(queue);
+
+            // 최신 쿠폰 정보 조회 (비관적 락 - SELECT ... FOR UPDATE)
+            Coupon coupon = couponRepository.findByIdWithLock(queue.getCoupon().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("쿠폰을 찾을 수 없습니다: " + queue.getCoupon().getId()));
+
+            // 이미 발급받았는지 확인
+            Optional<UserCoupon> existing = userCouponRepository.findByUserIdAndCouponId(
+                    queue.getUser().getId(), coupon.getId());
+            if (existing.isPresent()) {
+                queue.updateStatus(CouponQueueStatus.FAILED);
+                queue.setFailedReason("이미 발급받은 쿠폰입니다.");
+                couponQueueRepository.save(queue);
+                log.warn("이미 발급: userId={}, couponId={}", queue.getUser().getId(), coupon.getId());
                 return;
             }
 
-            try {
-                // 상태 변경: WAITING -> PROCESSING
-                queue.updateStatus(CouponQueueStatus.PROCESSING);
+            // 발급 가능 여부 확인 (DB 락으로 보호됨)
+            if (!coupon.isIssuable()) {
+                queue.updateStatus(CouponQueueStatus.FAILED);
+                queue.setFailedReason("쿠폰의 모든 수량이 소진되었습니다.");
                 couponQueueRepository.save(queue);
-
-                // 최신 쿠폰 정보 조회
-                Coupon coupon = getCoupon(queue.getCoupon().getId());
-
-                // 이미 발급받았는지 확인
-                Optional<UserCoupon> existing = userCouponRepository.findByUserIdAndCouponId(
-                        queue.getUser().getId(), coupon.getId());
-                if (existing.isPresent()) {
-                    queue.setFailedReason("이미 발급받은 쿠폰입니다.");
-                    couponQueueRepository.save(queue);
-                    log.warn("이미 발급: userId={}, couponId={}", queue.getUser().getId(), coupon.getId());
-                    return;
-                }
-
-                // 발급 가능 여부 확인
-                if (!coupon.isIssuable()) {
-                    queue.setFailedReason("쿠폰의 모든 수량이 소진되었습니다.");
-                    couponQueueRepository.save(queue);
-                    log.warn("수량 소진: couponId={}", coupon.getId());
-                    return;
-                }
-
-                // 쿠폰 발급
-                coupon.increaseIssuedQuantity();
-                couponRepository.save(coupon);
-
-                UserCoupon userCoupon = new UserCoupon(
-                        queue.getUser(),
-                        coupon,
-                        CouponStatus.UNUSED,
-                        coupon.getEndDate()
-                );
-                userCouponRepository.save(userCoupon);
-
-                // 상태 변경: PROCESSING -> COMPLETED
-                queue.updateStatus(CouponQueueStatus.COMPLETED);
-                couponQueueRepository.save(queue);
-
-                log.info("쿠폰 발급 완료: userId={}, couponId={}", queue.getUser().getId(), coupon.getId());
-
-            } finally {
-                lock.unlock();
+                log.warn("수량 소진: couponId={}", coupon.getId());
+                return;
             }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            log.error("대기열 처리 중단: queueId={}", queue.getId(), e);
+
+            // 쿠폰 발급
+            coupon.increaseIssuedQuantity();
+            couponRepository.save(coupon);
+
+            UserCoupon userCoupon = new UserCoupon(
+                    queue.getUser(),
+                    coupon,
+                    CouponStatus.UNUSED,
+                    coupon.getEndDate()
+            );
+            userCouponRepository.save(userCoupon);
+
+            // 상태 변경: PROCESSING -> COMPLETED
+            queue.updateStatus(CouponQueueStatus.COMPLETED);
+            couponQueueRepository.save(queue);
+
+            log.info("쿠폰 발급 완료: userId={}, couponId={}", queue.getUser().getId(), coupon.getId());
+
         } catch (Exception e) {
+            queue.updateStatus(CouponQueueStatus.FAILED);
             queue.setFailedReason("발급 처리 중 오류: " + e.getMessage());
             couponQueueRepository.save(queue);
             log.error("대기열 처리 실패: queueId={}", queue.getId(), e);

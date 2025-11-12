@@ -52,8 +52,11 @@ public class PaymentService {
     }
 
     /**
-     * 데이터 플랫폼 전송
-     * 외부 시스템에 결제 데이터를 전송합니다.
+     * 데이터 플랫폼 전송 (Outbox Processor에서 호출)
+     * 외부 시스템에 결제 완료 데이터를 전송합니다.
+     *
+     * 이 메서드는 OutboxProcessor 스케줄러에서 비동기로 호출되며,
+     * 주문 트랜잭션과 완전히 분리되어 실행됩니다.
      *
      * @param payment 결제
      */
@@ -61,14 +64,17 @@ public class PaymentService {
     public void sendToDataPlatform(Payment payment) {
         try {
             // 실제 환경에서는 외부 API 호출 등의 로직이 들어갑니다.
+            // 예: RestTemplate.postForEntity(dataplatformUrl, payment, ...)
+
             // 현재는 시뮬레이션으로 성공 처리
             payment.updateDataTransmissionStatus(DataTransmissionStatus.SUCCESS);
-            // 더티 체킹으로 자동 저장 (save() 불필요)
-            log.info("데이터 플랫폼 전송 성공: 결제 ID={}", payment.getId());
+            paymentRepository.save(payment);  // 명시적 저장
+            log.info("데이터 플랫폼 전송 성공: 결제 ID={}, 주문 ID={}", payment.getId(), payment.getOrder().getId());
         } catch (Exception e) {
             payment.updateDataTransmissionStatus(DataTransmissionStatus.FAILED);
-            // 더티 체킹으로 자동 저장 (save() 불필요)
+            paymentRepository.save(payment);  // 명시적 저장
             log.error("데이터 플랫폼 전송 실패: 결제 ID={}", payment.getId(), e);
+            throw e;  // 재시도를 위해 예외 전파
         }
     }
 }

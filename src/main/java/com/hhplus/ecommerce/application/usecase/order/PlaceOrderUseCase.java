@@ -22,7 +22,8 @@ import java.util.List;
  * - ProductService: 상품 조회, 재고 검증/차감
  * - OrderService: 주문 생성, 주문 아이템 생성
  * - CouponService: 쿠폰 사용, 할인 계산
- * - PaymentService: 결제 생성, 데이터 플랫폼 전송
+ * - PaymentService: 결제 생성
+ * - OutboxService: 데이터 플랫폼 전송 이벤트 저장 (Outbox Pattern)
  */
 @Slf4j
 @Service
@@ -33,17 +34,20 @@ public class PlaceOrderUseCase {
     private final UserService userService;
     private final CouponService couponService;
     private final PaymentService paymentService;
+    private final com.hhplus.ecommerce.domain.service.OutboxService outboxService;
 
     public PlaceOrderUseCase(OrderService orderService,
                             ProductService productService,
                             UserService userService,
                             CouponService couponService,
-                            PaymentService paymentService) {
+                            PaymentService paymentService,
+                            com.hhplus.ecommerce.domain.service.OutboxService outboxService) {
         this.orderService = orderService;
         this.productService = productService;
         this.userService = userService;
         this.couponService = couponService;
         this.paymentService = paymentService;
+        this.outboxService = outboxService;
     }
 
     /**
@@ -122,8 +126,9 @@ public class PlaceOrderUseCase {
         // 11. 주문 상태 변경
         orderService.updateOrderStatus(order.getId(), com.hhplus.ecommerce.domain.enums.OrderStatus.PAID);
 
-        // 12. 데이터 플랫폼 전송 (비동기 처리 시뮬레이션)
-        paymentService.sendToDataPlatform(payment);
+        // 12. 데이터 플랫폼 전송 이벤트 저장 (Outbox Pattern)
+        // 트랜잭션 커밋 후 스케줄러가 비동기로 처리합니다.
+        outboxService.savePaymentCompletedEvent(payment);
 
         log.info("주문 생성 완료: 주문 ID={}, 사용자 Public ID={}, 최종 금액={}",
                 order.getId(), publicId, finalAmount.getAmount());

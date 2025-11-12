@@ -1,0 +1,518 @@
+<mxfile host="app.diagrams.net" modified="2025-11-12T00:00:00.000Z" agent="Claude" version="24.7.17">
+  <diagram name="E-Commerce ERD" id="ecommerce-erd">
+    <mxGraphModel dx="1800" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2000" pageHeight="1400" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Domain Groups -->
+        <mxCell id="user-domain-box" value="👤 사용자 도메인" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=left;spacingLeft=10;fontStyle=1;fontSize=14;opacity=30;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="280" height="360" as="geometry" />
+        </mxCell>
+
+        <mxCell id="order-domain-box" value="📦 주문 도메인" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;verticalAlign=top;align=left;spacingLeft=10;fontStyle=1;fontSize=14;opacity=30;" vertex="1" parent="1">
+          <mxGeometry x="360" y="40" width="860" height="360" as="geometry" />
+        </mxCell>
+
+        <mxCell id="product-domain-box" value="🛍️ 상품 도메인" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;align=left;spacingLeft=10;fontStyle=1;fontSize=14;opacity=30;" vertex="1" parent="1">
+          <mxGeometry x="1260" y="40" width="400" height="360" as="geometry" />
+        </mxCell>
+
+        <mxCell id="coupon-domain-box" value="🎟️ 쿠폰 도메인" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;verticalAlign=top;align=left;spacingLeft=10;fontStyle=1;fontSize=14;opacity=30;" vertex="1" parent="1">
+          <mxGeometry x="40" y="440" width="580" height="360" as="geometry" />
+        </mxCell>
+
+        <mxCell id="cart-domain-box" value="🛒 장바구니 도메인" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;verticalAlign=top;align=left;spacingLeft=10;fontStyle=1;fontSize=14;opacity=30;" vertex="1" parent="1">
+          <mxGeometry x="660" y="440" width="340" height="200" as="geometry" />
+        </mxCell>
+
+        <mxCell id="payment-domain-box" value="💳 결제/환불 도메인" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;verticalAlign=top;align=left;spacingLeft=10;fontStyle=1;fontSize=14;opacity=30;" vertex="1" parent="1">
+          <mxGeometry x="1040" y="440" width="340" height="360" as="geometry" />
+        </mxCell>
+
+        <!-- Users Table -->
+        <mxCell id="users" value="users" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="60" y="80" width="240" height="210" as="geometry" />
+        </mxCell>
+        <mxCell id="users-1" value="🔑 id: BIGINT (PK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontStyle=1" vertex="1" parent="users">
+          <mxGeometry y="30" width="240" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="users-2" value="   publicId: VARCHAR(36) 🆔" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="users">
+          <mxGeometry y="56" width="240" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="users-3" value="   name: VARCHAR(100)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="users">
+          <mxGeometry y="82" width="240" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="users-4" value="   email: Email (VO) 📧" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="users">
+          <mxGeometry y="108" width="240" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="users-5" value="   phone: Phone (VO) 📞" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="users">
+          <mxGeometry y="134" width="240" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="users-6" value="   balance: Money (VO) 💰" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="users">
+          <mxGeometry y="160" width="240" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="users-7" value="   createdAt: TIMESTAMP ⏰" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="users">
+          <mxGeometry y="186" width="240" height="24" as="geometry" />
+        </mxCell>
+
+        <!-- Shipping Addresses Table -->
+        <mxCell id="shipping_addresses" value="shipping_addresses" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="60" y="320" width="240" height="158" as="geometry" />
+        </mxCell>
+        <mxCell id="shipping_addresses-1" value="🔑 id: BIGINT (PK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontStyle=1" vertex="1" parent="shipping_addresses">
+          <mxGeometry y="30" width="240" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="shipping_addresses-2" value="🔗 user_id: BIGINT (FK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontColor=#0066CC;" vertex="1" parent="shipping_addresses">
+          <mxGeometry y="56" width="240" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="shipping_addresses-3" value="   addressName: VARCHAR(50) 🏷️" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="shipping_addresses">
+          <mxGeometry y="82" width="240" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="shipping_addresses-4" value="   recipientName / address / phone" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="shipping_addresses">
+          <mxGeometry y="108" width="240" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="shipping_addresses-5" value="   isDefault: BOOLEAN" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="shipping_addresses">
+          <mxGeometry y="134" width="240" height="24" as="geometry" />
+        </mxCell>
+
+        <!-- Orders Table (Center) -->
+        <mxCell id="orders" value="orders" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="380" y="80" width="300" height="288" as="geometry" />
+        </mxCell>
+        <mxCell id="orders-1" value="🔑 id: BIGINT (PK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontStyle=1" vertex="1" parent="orders">
+          <mxGeometry y="30" width="300" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="orders-2" value="   orderNumber: VARCHAR(36) 🆔" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="orders">
+          <mxGeometry y="56" width="300" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="orders-3" value="🔗 user_id: BIGINT (FK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontColor=#0066CC;" vertex="1" parent="orders">
+          <mxGeometry y="82" width="300" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="orders-4" value="🔗 user_coupon_id: BIGINT (FK, NULL)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontColor=#9673a6;" vertex="1" parent="orders">
+          <mxGeometry y="108" width="300" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="orders-5" value="🔗 shipping_address_id: BIGINT (FK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontColor=#0066CC;" vertex="1" parent="orders">
+          <mxGeometry y="134" width="300" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="orders-6" value="   📸 Snapshot: recipientName, address, phone" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fillColor=#f5f5f5;" vertex="1" parent="orders">
+          <mxGeometry y="160" width="300" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="orders-7" value="   totalAmount / discountAmount / finalAmount" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="orders">
+          <mxGeometry y="186" width="300" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="orders-8" value="   status: OrderStatus (ENUM) 📊" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="orders">
+          <mxGeometry y="212" width="300" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="orders-9" value="   createdAt: TIMESTAMP ⏰" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="orders">
+          <mxGeometry y="238" width="300" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="orders-10" value="   ※ 스냅샷 패턴 적용" style="text;strokeColor=none;fillColor=#fff2cc;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontStyle=2;strokeColor=#d6b656;" vertex="1" parent="orders">
+          <mxGeometry y="264" width="300" height="24" as="geometry" />
+        </mxCell>
+
+        <!-- Order Items Table -->
+        <mxCell id="order_items" value="order_items" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="720" y="80" width="240" height="158" as="geometry" />
+        </mxCell>
+        <mxCell id="order_items-1" value="🔑 id: BIGINT (PK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontStyle=1" vertex="1" parent="order_items">
+          <mxGeometry y="30" width="240" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="order_items-2" value="🔗 order_id: BIGINT (FK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontColor=#d79b00;" vertex="1" parent="order_items">
+          <mxGeometry y="56" width="240" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="order_items-3" value="🔗 product_id: BIGINT (FK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontColor=#82b366;" vertex="1" parent="order_items">
+          <mxGeometry y="82" width="240" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="order_items-4" value="   quantity: Quantity (VO)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="order_items">
+          <mxGeometry y="108" width="240" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="order_items-5" value="   unitPrice / subtotal: Money (VO)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="order_items">
+          <mxGeometry y="134" width="240" height="24" as="geometry" />
+        </mxCell>
+
+        <!-- Products Table -->
+        <mxCell id="products" value="products" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1400" y="80" width="240" height="158" as="geometry" />
+        </mxCell>
+        <mxCell id="products-1" value="🔑 id: BIGINT (PK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontStyle=1" vertex="1" parent="products">
+          <mxGeometry y="30" width="240" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="products-2" value="🔗 category_id: BIGINT (FK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontColor=#82b366;" vertex="1" parent="products">
+          <mxGeometry y="56" width="240" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="products-3" value="   name / description" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="products">
+          <mxGeometry y="82" width="240" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="products-4" value="   price: Money (VO) 💰" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="products">
+          <mxGeometry y="108" width="240" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="products-5" value="   stock: Stock (VO) 📦" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="products">
+          <mxGeometry y="134" width="240" height="24" as="geometry" />
+        </mxCell>
+
+        <!-- Categories Table -->
+        <mxCell id="categories" value="categories" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1280" y="80" width="100" height="82" as="geometry" />
+        </mxCell>
+        <mxCell id="categories-1" value="🔑 id: BIGINT" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontStyle=1" vertex="1" parent="categories">
+          <mxGeometry y="30" width="100" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="categories-2" value="   name" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="categories">
+          <mxGeometry y="56" width="100" height="26" as="geometry" />
+        </mxCell>
+
+        <!-- Payments Table -->
+        <mxCell id="payments" value="payments" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="480" width="300" height="158" as="geometry" />
+        </mxCell>
+        <mxCell id="payments-1" value="🔑 id: BIGINT (PK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontStyle=1" vertex="1" parent="payments">
+          <mxGeometry y="30" width="300" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="payments-2" value="   paymentId: VARCHAR(36) 🆔" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="payments">
+          <mxGeometry y="56" width="300" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="payments-3" value="🔗 order_id: BIGINT (FK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontColor=#d79b00;" vertex="1" parent="payments">
+          <mxGeometry y="82" width="300" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="payments-4" value="   paidAmount: Money (VO) 💰" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="payments">
+          <mxGeometry y="108" width="300" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="payments-5" value="   status / dataTransmissionStatus 📊" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="payments">
+          <mxGeometry y="134" width="300" height="24" as="geometry" />
+        </mxCell>
+
+        <!-- Refunds Table -->
+        <mxCell id="refunds" value="refunds" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="680" width="300" height="108" as="geometry" />
+        </mxCell>
+        <mxCell id="refunds-1" value="🔑 id: BIGINT (PK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontStyle=1" vertex="1" parent="refunds">
+          <mxGeometry y="30" width="300" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="refunds-2" value="🔗 order_id: BIGINT (FK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontColor=#d79b00;" vertex="1" parent="refunds">
+          <mxGeometry y="56" width="300" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="refunds-3" value="   refundAmount / reason / status" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="refunds">
+          <mxGeometry y="82" width="300" height="26" as="geometry" />
+        </mxCell>
+
+        <!-- Coupons Table -->
+        <mxCell id="coupons" value="coupons" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="60" y="480" width="280" height="184" as="geometry" />
+        </mxCell>
+        <mxCell id="coupons-1" value="🔑 id: BIGINT (PK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontStyle=1" vertex="1" parent="coupons">
+          <mxGeometry y="30" width="280" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="coupons-2" value="   name / couponType 🎟️" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="coupons">
+          <mxGeometry y="56" width="280" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="coupons-3" value="   discountRate / discountAmount (VO)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="coupons">
+          <mxGeometry y="82" width="280" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="coupons-4" value="   minOrderAmount: Money (VO)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="coupons">
+          <mxGeometry y="108" width="280" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="coupons-5" value="   totalQuantity / issuedQuantity 📊" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="coupons">
+          <mxGeometry y="134" width="280" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="coupons-6" value="   startDate / endDate / useQueue ⏰" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="coupons">
+          <mxGeometry y="160" width="280" height="24" as="geometry" />
+        </mxCell>
+
+        <!-- User Coupons Table -->
+        <mxCell id="user_coupons" value="user_coupons" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="380" y="480" width="220" height="132" as="geometry" />
+        </mxCell>
+        <mxCell id="user_coupons-1" value="🔑 id: BIGINT (PK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontStyle=1" vertex="1" parent="user_coupons">
+          <mxGeometry y="30" width="220" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="user_coupons-2" value="🔗 user_id: BIGINT (FK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontColor=#0066CC;" vertex="1" parent="user_coupons">
+          <mxGeometry y="56" width="220" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="user_coupons-3" value="🔗 coupon_id: BIGINT (FK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontColor=#9673a6;" vertex="1" parent="user_coupons">
+          <mxGeometry y="82" width="220" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="user_coupons-4" value="   status / issuedAt / expiresAt" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="user_coupons">
+          <mxGeometry y="108" width="220" height="24" as="geometry" />
+        </mxCell>
+
+        <!-- Coupon Queues Table -->
+        <mxCell id="coupon_queues" value="coupon_queues" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="60" y="700" width="280" height="158" as="geometry" />
+        </mxCell>
+        <mxCell id="coupon_queues-1" value="🔑 id: BIGINT (PK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontStyle=1" vertex="1" parent="coupon_queues">
+          <mxGeometry y="30" width="280" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="coupon_queues-2" value="🔗 user_id: BIGINT (FK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontColor=#0066CC;" vertex="1" parent="coupon_queues">
+          <mxGeometry y="56" width="280" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="coupon_queues-3" value="🔗 coupon_id: BIGINT (FK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontColor=#9673a6;" vertex="1" parent="coupon_queues">
+          <mxGeometry y="82" width="280" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="coupon_queues-4" value="   status: CouponQueueStatus (ENUM)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="coupon_queues">
+          <mxGeometry y="108" width="280" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="coupon_queues-5" value="   queuePosition / processedAt 🔢" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="coupon_queues">
+          <mxGeometry y="134" width="280" height="24" as="geometry" />
+        </mxCell>
+
+        <!-- Cart Items Table -->
+        <mxCell id="cart_items" value="cart_items" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="680" y="480" width="300" height="108" as="geometry" />
+        </mxCell>
+        <mxCell id="cart_items-1" value="🔑 id: BIGINT (PK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontStyle=1" vertex="1" parent="cart_items">
+          <mxGeometry y="30" width="300" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="cart_items-2" value="🔗 user_id: BIGINT (FK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontColor=#0066CC;" vertex="1" parent="cart_items">
+          <mxGeometry y="56" width="300" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="cart_items-3" value="🔗 product_id: BIGINT (FK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontColor=#82b366;" vertex="1" parent="cart_items">
+          <mxGeometry y="82" width="300" height="26" as="geometry" />
+        </mxCell>
+
+        <!-- Relationships -->
+
+        <!-- User -> ShippingAddress (1:N) -->
+        <mxCell id="rel-user-shipping" value="" style="edgeStyle=orthogonalEdgeStyle;fontSize=12;html=1;endArrow=ERmany;startArrow=ERone;rounded=0;strokeWidth=2;strokeColor=#6c8ebf;" edge="1" parent="1" source="users-7" target="shipping_addresses-2">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint x="150" y="300" as="sourcePoint" />
+            <mxPoint x="150" y="320" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rel-user-shipping-label" value="1:N" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontStyle=1;fillColor=#ffffff;" vertex="1" connectable="0" parent="rel-user-shipping">
+          <mxGeometry x="-0.2" y="1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- User -> Order (1:N) -->
+        <mxCell id="rel-user-order" value="" style="edgeStyle=orthogonalEdgeStyle;fontSize=12;html=1;endArrow=ERmany;startArrow=ERone;rounded=0;strokeWidth=2;strokeColor=#6c8ebf;" edge="1" parent="1" source="users-1" target="orders-3">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint x="300" y="145" as="sourcePoint" />
+            <mxPoint x="380" y="145" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rel-user-order-label" value="1:N" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontStyle=1;fillColor=#ffffff;" vertex="1" connectable="0" parent="rel-user-order">
+          <mxGeometry x="-0.1" y="1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- ShippingAddress -> Order (1:N) -->
+        <mxCell id="rel-shipping-order" value="" style="edgeStyle=orthogonalEdgeStyle;fontSize=12;html=1;endArrow=ERmany;startArrow=ERone;rounded=0;strokeWidth=2;strokeColor=#6c8ebf;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="shipping_addresses-1" target="orders-5">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint x="300" y="350" as="sourcePoint" />
+            <mxPoint x="380" y="227" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="330" y="363" />
+              <mxPoint x="330" y="227" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rel-shipping-order-label" value="1:N" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontStyle=1;fillColor=#ffffff;" vertex="1" connectable="0" parent="rel-shipping-order">
+          <mxGeometry x="-0.1" y="1" relative="1" as="geometry">
+            <mxPoint x="-1" y="-10" as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- UserCoupon -> Order (1:N) -->
+        <mxCell id="rel-usercoupon-order" value="" style="edgeStyle=orthogonalEdgeStyle;fontSize=12;html=1;endArrow=ERmany;startArrow=ERzeroToOne;rounded=0;strokeWidth=2;strokeColor=#9673a6;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="user_coupons-1" target="orders-4">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint x="600" y="523" as="sourcePoint" />
+            <mxPoint x="380" y="201" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="350" y="523" />
+              <mxPoint x="350" y="201" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rel-usercoupon-order-label" value="0..1:N" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontStyle=1;fillColor=#ffffff;" vertex="1" connectable="0" parent="rel-usercoupon-order">
+          <mxGeometry x="-0.1" y="1" relative="1" as="geometry">
+            <mxPoint x="1" y="-10" as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Order -> OrderItem (1:N) -->
+        <mxCell id="rel-order-orderitem" value="" style="edgeStyle=orthogonalEdgeStyle;fontSize=12;html=1;endArrow=ERmany;startArrow=ERone;rounded=0;strokeWidth=2;strokeColor=#d79b00;" edge="1" parent="1" source="orders-1" target="order_items-2">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint x="680" y="123" as="sourcePoint" />
+            <mxPoint x="720" y="123" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rel-order-orderitem-label" value="1:N" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontStyle=1;fillColor=#ffffff;" vertex="1" connectable="0" parent="rel-order-orderitem">
+          <mxGeometry x="-0.1" y="1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Order -> Payment (1:N) -->
+        <mxCell id="rel-order-payment" value="" style="edgeStyle=orthogonalEdgeStyle;fontSize=12;html=1;endArrow=ERmany;startArrow=ERone;rounded=0;strokeWidth=2;strokeColor=#d79b00;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="orders-8" target="payments-3">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint x="680" y="305" as="sourcePoint" />
+            <mxPoint x="1060" y="575" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="1020" y="305" />
+              <mxPoint x="1020" y="575" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rel-order-payment-label" value="1:N" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontStyle=1;fillColor=#ffffff;" vertex="1" connectable="0" parent="rel-order-payment">
+          <mxGeometry x="-0.1" y="1" relative="1" as="geometry">
+            <mxPoint x="1" y="-10" as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Order -> Refund (1:N) -->
+        <mxCell id="rel-order-refund" value="" style="edgeStyle=orthogonalEdgeStyle;fontSize=12;html=1;endArrow=ERmany;startArrow=ERone;rounded=0;strokeWidth=2;strokeColor=#d79b00;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="orders-9" target="refunds-2">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint x="680" y="331" as="sourcePoint" />
+            <mxPoint x="1060" y="749" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="1000" y="331" />
+              <mxPoint x="1000" y="749" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rel-order-refund-label" value="1:N" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontStyle=1;fillColor=#ffffff;" vertex="1" connectable="0" parent="rel-order-refund">
+          <mxGeometry x="-0.1" y="1" relative="1" as="geometry">
+            <mxPoint x="1" y="-10" as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Product -> OrderItem (1:N) -->
+        <mxCell id="rel-product-orderitem" value="" style="edgeStyle=orthogonalEdgeStyle;fontSize=12;html=1;endArrow=ERmany;startArrow=ERone;rounded=0;strokeWidth=2;strokeColor=#82b366;entryX=1;entryY=0.5;entryDx=0;entryDy=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="products-1" target="order_items-3">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint x="1380" y="123" as="sourcePoint" />
+            <mxPoint x="960" y="175" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="1200" y="123" />
+              <mxPoint x="1200" y="175" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rel-product-orderitem-label" value="1:N" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontStyle=1;fillColor=#ffffff;" vertex="1" connectable="0" parent="rel-product-orderitem">
+          <mxGeometry x="-0.1" y="1" relative="1" as="geometry">
+            <mxPoint x="1" y="-10" as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Category -> Product (1:N) -->
+        <mxCell id="rel-category-product" value="" style="edgeStyle=orthogonalEdgeStyle;fontSize=12;html=1;endArrow=ERmany;startArrow=ERone;rounded=0;strokeWidth=2;strokeColor=#82b366;" edge="1" parent="1" source="categories-1" target="products-2">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint x="1380" y="123" as="sourcePoint" />
+            <mxPoint x="1400" y="123" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rel-category-product-label" value="1:N" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontStyle=1;fillColor=#ffffff;" vertex="1" connectable="0" parent="rel-category-product">
+          <mxGeometry x="-0.1" y="1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- User -> CartItem (1:N) -->
+        <mxCell id="rel-user-cart" value="" style="edgeStyle=orthogonalEdgeStyle;fontSize=12;html=1;endArrow=ERmany;startArrow=ERone;rounded=0;strokeWidth=2;strokeColor=#6c8ebf;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="users-5" target="cart_items-2">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint x="300" y="227" as="sourcePoint" />
+            <mxPoint x="680" y="549" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="340" y="227" />
+              <mxPoint x="340" y="549" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rel-user-cart-label" value="1:N" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontStyle=1;fillColor=#ffffff;" vertex="1" connectable="0" parent="rel-user-cart">
+          <mxGeometry x="-0.1" y="1" relative="1" as="geometry">
+            <mxPoint x="1" y="-10" as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Product -> CartItem (1:N) -->
+        <mxCell id="rel-product-cart" value="" style="edgeStyle=orthogonalEdgeStyle;fontSize=12;html=1;endArrow=ERmany;startArrow=ERone;rounded=0;strokeWidth=2;strokeColor=#82b366;entryX=1;entryY=0.5;entryDx=0;entryDy=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="products-4" target="cart_items-3">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint x="1380" y="201" as="sourcePoint" />
+            <mxPoint x="980" y="575" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="1180" y="201" />
+              <mxPoint x="1180" y="575" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rel-product-cart-label" value="1:N" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontStyle=1;fillColor=#ffffff;" vertex="1" connectable="0" parent="rel-product-cart">
+          <mxGeometry x="-0.1" y="1" relative="1" as="geometry">
+            <mxPoint x="1" y="-10" as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- User -> UserCoupon (1:N) -->
+        <mxCell id="rel-user-usercoupon" value="" style="edgeStyle=orthogonalEdgeStyle;fontSize=12;html=1;endArrow=ERmany;startArrow=ERone;rounded=0;strokeWidth=2;strokeColor=#6c8ebf;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="users" target="user_coupons-2">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint x="180" y="300" as="sourcePoint" />
+            <mxPoint x="380" y="549" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="180" y="549" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rel-user-usercoupon-label" value="1:N" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontStyle=1;fillColor=#ffffff;" vertex="1" connectable="0" parent="rel-user-usercoupon">
+          <mxGeometry x="-0.1" y="1" relative="1" as="geometry">
+            <mxPoint x="1" y="-10" as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Coupon -> UserCoupon (1:N) -->
+        <mxCell id="rel-coupon-usercoupon" value="" style="edgeStyle=orthogonalEdgeStyle;fontSize=12;html=1;endArrow=ERmany;startArrow=ERone;rounded=0;strokeWidth=2;strokeColor=#9673a6;" edge="1" parent="1" source="coupons-1" target="user_coupons-3">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint x="340" y="523" as="sourcePoint" />
+            <mxPoint x="380" y="575" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rel-coupon-usercoupon-label" value="1:N" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontStyle=1;fillColor=#ffffff;" vertex="1" connectable="0" parent="rel-coupon-usercoupon">
+          <mxGeometry x="-0.1" y="1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- User -> CouponQueue (1:N) -->
+        <mxCell id="rel-user-couponqueue" value="" style="edgeStyle=orthogonalEdgeStyle;fontSize=12;html=1;endArrow=ERmany;startArrow=ERone;rounded=0;strokeWidth=2;strokeColor=#6c8ebf;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="users" target="coupon_queues">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint x="190" y="300" as="sourcePoint" />
+            <mxPoint x="200" y="700" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="180" y="660" />
+              <mxPoint x="200" y="660" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rel-user-couponqueue-label" value="1:N" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontStyle=1;fillColor=#ffffff;" vertex="1" connectable="0" parent="rel-user-couponqueue">
+          <mxGeometry x="-0.1" y="1" relative="1" as="geometry">
+            <mxPoint x="1" y="-10" as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Coupon -> CouponQueue (1:N) -->
+        <mxCell id="rel-coupon-couponqueue" value="" style="edgeStyle=orthogonalEdgeStyle;fontSize=12;html=1;endArrow=ERmany;startArrow=ERone;rounded=0;strokeWidth=2;strokeColor=#9673a6;" edge="1" parent="1" source="coupons" target="coupon_queues-3">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint x="200" y="670" as="sourcePoint" />
+            <mxPoint x="200" y="700" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rel-coupon-couponqueue-label" value="1:N" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontStyle=1;fillColor=#ffffff;" vertex="1" connectable="0" parent="rel-coupon-couponqueue">
+          <mxGeometry x="-0.1" y="1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Legend -->
+        <mxCell id="legend" value="📌 범례&#xa;&#xa;🔑 Primary Key&#xa;🔗 Foreign Key&#xa;📸 Snapshot (이력 보존)&#xa;VO = Value Object&#xa;&#xa;✨ 주요 패턴&#xa;• 스냅샷 패턴 (Order)&#xa;  배송지 정보 이력 보존&#xa;&#xa;• 쿠폰 큐 시스템&#xa;  선착순 발급 대기열" style="text;html=1;strokeColor=#666666;fillColor=#f5f5f5;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;fontColor=#333333;fontSize=12;spacingLeft=10;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="1420" y="480" width="220" height="260" as="geometry" />
+        </mxCell>
+
+        <!-- Domain Flow Annotation -->
+        <mxCell id="flow-annotation" value="💡 핵심 플로우&#xa;&#xa;1️⃣ 사용자 → 상품 장바구니 추가&#xa;2️⃣ 쿠폰 발급 (큐 시스템)&#xa;3️⃣ 주문 생성 (배송지 스냅샷)&#xa;4️⃣ 결제 처리&#xa;5️⃣ 필요시 환불 처리" style="text;html=1;strokeColor=#d79b00;fillColor=#ffe6cc;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;fontColor=#333333;fontSize=12;spacingLeft=10;spacingTop=10;fontStyle=0" vertex="1" parent="1">
+          <mxGeometry x="1420" y="280" width="220" height="160" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

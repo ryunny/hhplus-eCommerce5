@@ -473,7 +473,6 @@ public class CouponService {
      * @param couponId 쿠폰 ID
      * @return 발급된 UserCoupon
      */
-    @Transactional
     public UserCoupon issueCouponByPublicId(String publicId, Long couponId) {
         User user = userService.getUserByPublicId(publicId);
         return issueCoupon(user.getId(), couponId);
@@ -486,7 +485,6 @@ public class CouponService {
      * @param couponId 쿠폰 ID
      * @return 생성된 CouponQueue
      */
-    @Transactional
     public CouponQueue joinQueueByPublicId(String publicId, Long couponId) {
         User user = userService.getUserByPublicId(publicId);
         return joinQueue(user.getId(), couponId);

@@ -10,11 +10,15 @@ import java.util.List;
 import java.util.Optional;
 
 public interface CartItemJpaRepository extends JpaRepository<CartItem, Long> {
-    List<CartItem> findByUserId(Long userId);
+    /**
+     * N+1 문제 해결: Product를 Fetch Join으로 한 번에 조회
+     */
+    @Query("SELECT c FROM CartItem c JOIN FETCH c.product WHERE c.user.id = :userId")
+    List<CartItem> findByUserId(@Param("userId") Long userId);
 
     Optional<CartItem> findByUserIdAndProductId(Long userId, Long productId);
 
     @Modifying
-    @Query("DELETE FROM CartItem c WHERE c.userId = :userId")
+    @Query("DELETE FROM CartItem c WHERE c.user.id = :userId")
     void deleteByUserId(@Param("userId") Long userId);
 }

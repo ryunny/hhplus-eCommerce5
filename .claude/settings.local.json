@@ -18,7 +18,12 @@
       "Bash(git log:*)",
       "Bash(git branch:*)",
       "Bash(git remote:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(docker-compose down:*)",
+      "Bash(docker exec:*)",
+      "Bash(taskkill:*)",
+      "Bash(powershell -Command \"Stop-Process -Id 6380 -Force\")",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []

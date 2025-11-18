@@ -24,6 +24,7 @@ public class UserService {
      * @param userId 사용자 ID
      * @return 사용자 엔티티
      */
+    @Transactional(readOnly = true)
     public User getUser(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
@@ -35,6 +36,7 @@ public class UserService {
      * @param publicId 사용자 Public ID (UUID)
      * @return 사용자 엔티티
      */
+    @Transactional(readOnly = true)
     public User getUserByPublicId(String publicId) {
         return userRepository.findByPublicId(publicId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + publicId));
@@ -55,32 +57,84 @@ public class UserService {
 
     /**
      * 잔액 차감
-     * 비관적 락과 더티 체킹을 활용하여 동시성 제어
+     *
+     * 트랜잭션 범위를 최소화하여 DB 락 시간을 줄입니다.
+     * - 트랜잭션 밖: 사용자 조회, 사전 검증
+     * - 트랜잭션 안: 비관적 락 + 재검증 + 차감만
+     *
+     * @param userId 사용자 ID
+     * @param amount 차감할 금액
+     */
+    public void deductBalance(Long userId, Money amount) {
+        // 1. 사전 조회 (트랜잭션 밖)
+        User user = getUser(userId);
+
+        // 2. 사전 검증 (트랜잭션 밖)
+        validateBalance(user, amount);
+
+        // 3. 실제 차감만 트랜잭션 안에서 (락 시간 최소화)
+        deductBalanceWithLock(userId, amount);
+    }
+
+    /**
+     * 잔액 차감 (DB 락 사용 - 트랜잭션 범위 최소화)
      *
      * @param userId 사용자 ID
      * @param amount 차감할 금액
      */
     @Transactional
-    public void deductBalance(Long userId, Money amount) {
+    private void deductBalanceWithLock(Long userId, Money amount) {
+        // 락 시작!
         User user = userRepository.findByIdWithLock(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
+
+        // 재검증 (동시성 문제 대비)
+        if (!user.hasEnoughBalance(amount)) {
+            throw new IllegalStateException("잔액이 부족합니다.");
+        }
+
         user.deductBalance(amount);
-        // 더티 체킹으로 자동 저장 (save() 불필요)
+        // 더티 체킹으로 자동 저장
+        // 락 해제!
     }
 
     /**
      * 잔액 차감 (Public ID 기반)
-     * 비관적 락과 더티 체킹을 활용하여 동시성 제어
+     *
+     * 트랜잭션 범위를 최소화하여 DB 락 시간을 줄입니다.
      *
      * @param publicId 사용자 Public ID (UUID)
      * @param amount 차감할 금액
      */
-    @Transactional
     public void deductBalanceByPublicId(String publicId, Money amount) {
+        // 1. 사전 조회 (트랜잭션 밖)
+        User user = getUserByPublicId(publicId);
+
+        // 2. 사전 검증 (트랜잭션 밖)
+        validateBalance(user, amount);
+
+        // 3. 실제 차감만 트랜잭션 안에서
+        deductBalanceByPublicIdWithLock(publicId, amount);
+    }
+
+    /**
+     * 잔액 차감 (Public ID 기반, DB 락 사용)
+     *
+     * @param publicId 사용자 Public ID
+     * @param amount 차감할 금액
+     */
+    @Transactional
+    private void deductBalanceByPublicIdWithLock(String publicId, Money amount) {
         User user = userRepository.findByPublicIdWithLock(publicId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + publicId));
+
+        // 재검증
+        if (!user.hasEnoughBalance(amount)) {
+            throw new IllegalStateException("잔액이 부족합니다.");
+        }
+
         user.deductBalance(amount);
-        // 더티 체킹으로 자동 저장 (save() 불필요)
+        // 더티 체킹으로 자동 저장
     }
 
     /**

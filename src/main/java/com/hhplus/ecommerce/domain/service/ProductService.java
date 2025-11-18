@@ -32,6 +32,7 @@ public class ProductService {
      * @param productId 상품 ID
      * @return 상품 엔티티
      */
+    @Transactional(readOnly = true)
     public Product getProduct(Long productId) {
         return productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다: " + productId));
@@ -43,10 +44,13 @@ public class ProductService {
      * @param productIds 상품 ID 목록
      * @return 상품 엔티티 목록
      */
+    @Transactional(readOnly = true)
     public List<Product> getProducts(List<Long> productIds) {
         List<Product> products = new ArrayList<>();
         for (Long productId : productIds) {
-            products.add(getProduct(productId));
+            Product product = productRepository.findById(productId)
+                    .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다: " + productId));
+            products.add(product);
         }
         return products;
     }
@@ -66,17 +70,45 @@ public class ProductService {
 
     /**
      * 재고 차감
-     * 비관적 락과 더티 체킹을 활용하여 동시성 제어
+     *
+     * 트랜잭션 범위를 최소화하여 DB 락 시간을 줄입니다.
+     * - 트랜잭션 밖: 상품 조회, 사전 검증
+     * - 트랜잭션 안: 비관적 락 + 재검증 + 재고 차감만
+     *
+     * @param productId 상품 ID
+     * @param quantity 차감할 수량
+     */
+    public void decreaseStock(Long productId, Quantity quantity) {
+        // 1. 사전 조회 (트랜잭션 밖 - 일반 SELECT)
+        Product product = getProduct(productId);
+
+        // 2. 사전 검증 (트랜잭션 밖)
+        validateStock(product, quantity);
+
+        // 3. 실제 재고 차감만 트랜잭션 안에서 (락 시간 최소화)
+        decreaseStockWithLock(productId, quantity);
+    }
+
+    /**
+     * 재고 차감 (DB 락 사용 - 트랜잭션 범위 최소화)
      *
      * @param productId 상품 ID
      * @param quantity 차감할 수량
      */
     @Transactional
-    public void decreaseStock(Long productId, Quantity quantity) {
+    private void decreaseStockWithLock(Long productId, Quantity quantity) {
+        // 락 시작!
         Product product = productRepository.findByIdWithLock(productId)
                 .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다: " + productId));
+
+        // 재검증 (동시성 문제 대비)
+        if (!product.hasSufficientStock(quantity)) {
+            throw new IllegalStateException("재고가 부족합니다: " + product.getName());
+        }
+
         product.decreaseStock(quantity);
-        // 더티 체킹으로 자동 저장 (save() 불필요)
+        // 더티 체킹으로 자동 저장
+        // 락 해제!
     }
 
     /**
@@ -98,6 +130,7 @@ public class ProductService {
      *
      * @return 전체 상품 목록
      */
+    @Transactional(readOnly = true)
     public List<Product> getAllProducts() {
         return productRepository.findAll();
     }

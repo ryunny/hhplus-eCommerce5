@@ -64,6 +64,7 @@ public class OrderService {
      * @param finalAmount 최종 결제 금액
      * @return 생성된 주문
      */
+    @Transactional
     public Order createOrder(User user, UserCoupon userCoupon,
                             String recipientName, String address, Phone phone,
                             Money totalAmount, Money discountAmount, Money finalAmount) {
@@ -90,6 +91,7 @@ public class OrderService {
      * @param quantity 수량
      * @return 생성된 주문 아이템
      */
+    @Transactional
     public OrderItem createOrderItem(Order order, Product product, Quantity quantity) {
         OrderItem orderItem = OrderItem.create(order, product, quantity);
         return orderItemRepository.save(orderItem);
@@ -115,6 +117,7 @@ public class OrderService {
      * @param orderId 주문 ID
      * @return 주문
      */
+    @Transactional(readOnly = true)
     public Order getOrder(Long orderId) {
         return orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다: " + orderId));
@@ -126,6 +129,7 @@ public class OrderService {
      * @param orderNumber 주문 번호 (UUID)
      * @return 주문
      */
+    @Transactional(readOnly = true)
     public Order getOrderByOrderNumber(String orderNumber) {
         return orderRepository.findByOrderNumber(orderNumber)
                 .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다: " + orderNumber));
@@ -137,6 +141,7 @@ public class OrderService {
      * @param userId 사용자 ID
      * @return 주문 목록
      */
+    @Transactional(readOnly = true)
     public List<Order> getUserOrders(Long userId) {
         return orderRepository.findByUserId(userId);
     }
@@ -147,6 +152,7 @@ public class OrderService {
      * @param publicId 사용자 Public ID (UUID)
      * @return 주문 목록
      */
+    @Transactional(readOnly = true)
     public List<Order> getUserOrdersByPublicId(String publicId) {
         return orderRepository.findByUserPublicId(publicId);
     }

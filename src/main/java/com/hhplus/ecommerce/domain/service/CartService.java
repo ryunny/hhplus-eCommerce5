@@ -79,6 +79,7 @@ public class CartService {
      * @param userId 사용자 ID
      * @return 장바구니 아이템 목록
      */
+    @Transactional(readOnly = true)
     public List<CartItem> getCartItems(Long userId) {
         return cartItemRepository.findByUserId(userId);
     }
@@ -89,6 +90,7 @@ public class CartService {
      * @param publicId 사용자 Public ID (UUID)
      * @return 장바구니 아이템 목록
      */
+    @Transactional(readOnly = true)
     public List<CartItem> getCartItemsByPublicId(String publicId) {
         User user = userService.getUserByPublicId(publicId);
         return getCartItems(user.getId());

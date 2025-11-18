@@ -30,6 +30,7 @@ public class PaymentService {
      * @param amount 결제 금액
      * @return 생성된 결제
      */
+    @Transactional
     public Payment createPayment(Order order, Money amount) {
         Payment payment = new Payment(
                 order,
@@ -46,6 +47,7 @@ public class PaymentService {
      * @param paymentId 결제 ID (UUID)
      * @return 결제
      */
+    @Transactional(readOnly = true)
     public Payment getPaymentByPaymentId(String paymentId) {
         return paymentRepository.findByPaymentId(paymentId)
                 .orElseThrow(() -> new IllegalArgumentException("결제를 찾을 수 없습니다: " + paymentId));

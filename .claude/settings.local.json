@@ -23,7 +23,12 @@
       "Bash(docker exec:*)",
       "Bash(taskkill:*)",
       "Bash(powershell -Command \"Stop-Process -Id 6380 -Force\")",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(docker-compose up:*)",
+      "Bash(timeout 60 bash:*)",
+      "Bash(./gradlew --stop)",
+      "Bash(./gradlew cleanTest test:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []

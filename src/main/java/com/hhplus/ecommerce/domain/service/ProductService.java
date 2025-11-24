@@ -5,12 +5,14 @@ import com.hhplus.ecommerce.domain.entity.Product;
 import com.hhplus.ecommerce.domain.repository.OrderItemRepository;
 import com.hhplus.ecommerce.domain.repository.ProductRepository;
 import com.hhplus.ecommerce.domain.vo.Quantity;
+import com.hhplus.ecommerce.infrastructure.lock.RedisPubSubLock;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 상품 관련 비즈니스 로직을 처리하는 서비스
@@ -20,10 +22,12 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final OrderItemRepository orderItemRepository;
+    private final RedisPubSubLock pubSubLock;
 
-    public ProductService(ProductRepository productRepository, OrderItemRepository orderItemRepository) {
+    public ProductService(ProductRepository productRepository, OrderItemRepository orderItemRepository, RedisPubSubLock pubSubLock) {
         this.productRepository = productRepository;
         this.orderItemRepository = orderItemRepository;
+        this.pubSubLock = pubSubLock;
     }
 
     /**
@@ -69,11 +73,11 @@ public class ProductService {
     }
 
     /**
-     * 재고 차감
+     * 재고 차감 (Redis Pub/Sub Lock 사용 - 분산 환경 대응)
      *
-     * 트랜잭션 범위를 최소화하여 DB 락 시간을 줄입니다.
+     * Redis Pub/Sub Lock을 사용하여 분산 환경에서도 동시성을 제어합니다.
      * - 트랜잭션 밖: 상품 조회, 사전 검증
-     * - 트랜잭션 안: 비관적 락 + 재검증 + 재고 차감만
+     * - Redis 락 획득 → DB 트랜잭션 (재검증 + 재고 차감) → Redis 락 해제
      *
      * @param productId 상품 ID
      * @param quantity 차감할 수량
@@ -85,20 +89,43 @@ public class ProductService {
         // 2. 사전 검증 (트랜잭션 밖)
         validateStock(product, quantity);
 
-        // 3. 실제 재고 차감만 트랜잭션 안에서 (락 시간 최소화)
+        // 3. Redis 락 사용하여 재고 차감
         decreaseStockWithLock(productId, quantity);
     }
 
     /**
-     * 재고 차감 (DB 락 사용 - 트랜잭션 범위 최소화)
+     * 재고 차감 (Redis Pub/Sub Lock 사용 - 트랜잭션 범위 최소화)
+     *
+     * @param productId 상품 ID
+     * @param quantity 차감할 수량
+     */
+    private void decreaseStockWithLock(Long productId, Quantity quantity) {
+        String lockKey = "product:stock:" + productId;
+
+        // Redis Pub/Sub Lock 획득 (최대 5초 대기)
+        if (!pubSubLock.tryLock(lockKey, 5, TimeUnit.SECONDS)) {
+            throw new IllegalStateException("재고 처리 중입니다. 잠시 후 다시 시도해주세요.");
+        }
+
+        try {
+            // DB 트랜잭션 실행 (락 보호 영역)
+            decreaseStockTransaction(productId, quantity);
+        } finally {
+            // Redis 락 해제 (반드시 실행)
+            pubSubLock.unlock(lockKey);
+        }
+    }
+
+    /**
+     * 재고 차감 트랜잭션 (Redis 락으로 보호됨)
      *
      * @param productId 상품 ID
      * @param quantity 차감할 수량
      */
     @Transactional
-    private void decreaseStockWithLock(Long productId, Quantity quantity) {
-        // 락 시작!
-        Product product = productRepository.findByIdWithLock(productId)
+    private void decreaseStockTransaction(Long productId, Quantity quantity) {
+        // 상품 조회 (일반 SELECT - Redis 락이 동시성 보장)
+        Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다: " + productId));
 
         // 재검증 (동시성 문제 대비)
@@ -108,21 +135,43 @@ public class ProductService {
 
         product.decreaseStock(quantity);
         // 더티 체킹으로 자동 저장
-        // 락 해제!
     }
 
     /**
-     * 재고 복구 (주문 취소 시 사용)
+     * 재고 복구 (주문 취소 시 사용, Redis Pub/Sub Lock 사용)
+     *
+     * @param productId 상품 ID
+     * @param quantity 복구할 수량
+     */
+    public void increaseStock(Long productId, Quantity quantity) {
+        String lockKey = "product:stock:" + productId;
+
+        // Redis Pub/Sub Lock 획득 (최대 5초 대기)
+        if (!pubSubLock.tryLock(lockKey, 5, TimeUnit.SECONDS)) {
+            throw new IllegalStateException("재고 처리 중입니다. 잠시 후 다시 시도해주세요.");
+        }
+
+        try {
+            // DB 트랜잭션 실행 (락 보호 영역)
+            increaseStockTransaction(productId, quantity);
+        } finally {
+            // Redis 락 해제 (반드시 실행)
+            pubSubLock.unlock(lockKey);
+        }
+    }
+
+    /**
+     * 재고 복구 트랜잭션 (Redis 락으로 보호됨)
      *
      * @param productId 상품 ID
      * @param quantity 복구할 수량
      */
     @Transactional
-    public void increaseStock(Long productId, Quantity quantity) {
-        Product product = productRepository.findByIdWithLock(productId)
+    private void increaseStockTransaction(Long productId, Quantity quantity) {
+        Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다: " + productId));
         product.increaseStock(quantity);
-        // 더티 체킹으로 자동 저장 (save() 불필요)
+        // 더티 체킹으로 자동 저장
     }
 
     /**

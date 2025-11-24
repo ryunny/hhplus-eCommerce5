@@ -10,6 +10,7 @@ import com.hhplus.ecommerce.domain.repository.CouponQueueRepository;
 import com.hhplus.ecommerce.domain.repository.CouponRepository;
 import com.hhplus.ecommerce.domain.repository.UserCouponRepository;
 import com.hhplus.ecommerce.domain.vo.Money;
+import com.hhplus.ecommerce.infrastructure.lock.RedisPubSubLock;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 쿠폰 관련 비즈니스 로직을 처리하는 서비스
@@ -29,15 +31,18 @@ public class CouponService {
     private final CouponRepository couponRepository;
     private final CouponQueueRepository couponQueueRepository;
     private final UserService userService;
+    private final RedisPubSubLock pubSubLock;
 
     public CouponService(UserCouponRepository userCouponRepository,
                         CouponRepository couponRepository,
                         CouponQueueRepository couponQueueRepository,
-                        UserService userService) {
+                        UserService userService,
+                        RedisPubSubLock pubSubLock) {
         this.userCouponRepository = userCouponRepository;
         this.couponRepository = couponRepository;
         this.couponQueueRepository = couponQueueRepository;
         this.userService = userService;
+        this.pubSubLock = pubSubLock;
     }
 
     // ===== 쿠폰 조회 =====
@@ -186,19 +191,43 @@ public class CouponService {
     }
 
     /**
-     * 쿠폰 발급 (DB 락 사용 - 트랜잭션 범위 최소화)
+     * 쿠폰 발급 (Redis Pub/Sub Lock 사용 - 분산 환경 대응)
      *
-     * 비관적 락을 사용하여 동시성을 제어하며, 락 시간을 최소화합니다.
-     * - 락 획득 → 재검증 → 쓰기 → 락 해제 (최소 시간)
+     * Redis Pub/Sub Lock을 사용하여 분산 환경에서도 동시성을 제어합니다.
+     * - Redis 락 획득 → DB 트랜잭션 (재검증 + 쓰기) → Redis 락 해제
+     *
+     * @param user 사용자
+     * @param couponId 쿠폰 ID
+     * @return 발급된 UserCoupon
+     */
+    private UserCoupon issueCouponWithLock(User user, Long couponId) {
+        String lockKey = "coupon:issue:" + couponId;
+
+        // Redis Pub/Sub Lock 획득 (최대 5초 대기)
+        if (!pubSubLock.tryLock(lockKey, 5, TimeUnit.SECONDS)) {
+            throw new IllegalStateException("쿠폰 발급 처리 중입니다. 잠시 후 다시 시도해주세요.");
+        }
+
+        try {
+            // DB 트랜잭션 실행 (락 보호 영역)
+            return issueCouponTransaction(user, couponId);
+        } finally {
+            // Redis 락 해제 (반드시 실행)
+            pubSubLock.unlock(lockKey);
+        }
+    }
+
+    /**
+     * 쿠폰 발급 트랜잭션 (Redis 락으로 보호됨)
      *
      * @param user 사용자
      * @param couponId 쿠폰 ID
      * @return 발급된 UserCoupon
      */
     @Transactional
-    private UserCoupon issueCouponWithLock(User user, Long couponId) {
-        // 1. 쿠폰 조회 (비관적 락 - SELECT ... FOR UPDATE) - 락 시작!
-        Coupon coupon = couponRepository.findByIdWithLock(couponId)
+    private UserCoupon issueCouponTransaction(User user, Long couponId) {
+        // 1. 쿠폰 조회 (일반 SELECT - Redis 락이 동시성 보장)
+        Coupon coupon = couponRepository.findById(couponId)
                 .orElseThrow(() -> new IllegalArgumentException("쿠폰을 찾을 수 없습니다: " + couponId));
 
         // 2. 재검증: 발급 가능 여부 (동시성 문제 대비)
@@ -221,7 +250,6 @@ public class CouponService {
         userCouponRepository.save(userCoupon);
 
         return userCoupon;
-        // 락 해제!
     }
 
     // ===== 쿠폰 만료 =====
@@ -374,63 +402,84 @@ public class CouponService {
     }
 
     /**
-     * 개별 대기열 항목 처리
+     * 개별 대기열 항목 처리 (Redis Pub/Sub Lock 사용)
      *
-     * 배치 처리 메서드로, 트랜잭션 범위가 길지만 순차 처리되므로 동시성 문제는 없습니다.
-     * - 상태 변경 → 쿠폰 발급 → 결과 업데이트를 하나의 트랜잭션으로 처리
+     * Redis Pub/Sub Lock을 사용하여 분산 환경에서도 동시성을 제어합니다.
+     * - Redis 락 획득 → DB 트랜잭션 (상태 변경 + 쿠폰 발급) → Redis 락 해제
      * - 실패 시 자동 롤백되어 데이터 정합성 보장
      *
      * @param queue 처리할 대기열 항목
      */
-    @Transactional
     public void processQueueItem(CouponQueue queue) {
+        String lockKey = "coupon:queue:" + queue.getCoupon().getId();
+
+        // Redis Pub/Sub Lock 획득 (최대 5초 대기)
+        if (!pubSubLock.tryLock(lockKey, 5, TimeUnit.SECONDS)) {
+            log.warn("대기열 처리 락 획득 실패: queueId={}", queue.getId());
+            updateQueueFailed(queue, "쿠폰 발급 처리 중입니다. 잠시 후 다시 시도됩니다.");
+            return;
+        }
+
         try {
-            // 1. 상태 변경: WAITING -> PROCESSING
-            queue.updateStatus(CouponQueueStatus.PROCESSING);
-            couponQueueRepository.save(queue);
-
-            // 2. 최신 쿠폰 정보 조회 (비관적 락 - SELECT ... FOR UPDATE)
-            Coupon coupon = couponRepository.findByIdWithLock(queue.getCoupon().getId())
-                    .orElseThrow(() -> new IllegalArgumentException("쿠폰을 찾을 수 없습니다: " + queue.getCoupon().getId()));
-
-            // 3. 중복 발급 검증
-            Optional<UserCoupon> existing = userCouponRepository.findByUserIdAndCouponId(
-                    queue.getUser().getId(), coupon.getId());
-            if (existing.isPresent()) {
-                updateQueueFailed(queue, "이미 발급받은 쿠폰입니다.");
-                log.warn("이미 발급: userId={}, couponId={}", queue.getUser().getId(), coupon.getId());
-                return;
-            }
-
-            // 4. 발급 가능 여부 확인
-            if (!coupon.isIssuable()) {
-                updateQueueFailed(queue, "쿠폰의 모든 수량이 소진되었습니다.");
-                log.warn("수량 소진: couponId={}", coupon.getId());
-                return;
-            }
-
-            // 5. 쿠폰 발급 처리
-            coupon.increaseIssuedQuantity();
-            couponRepository.save(coupon);
-
-            UserCoupon userCoupon = new UserCoupon(
-                    queue.getUser(),
-                    coupon,
-                    CouponStatus.UNUSED,
-                    coupon.getEndDate()
-            );
-            userCouponRepository.save(userCoupon);
-
-            // 6. 상태 변경: PROCESSING -> COMPLETED
-            queue.updateStatus(CouponQueueStatus.COMPLETED);
-            couponQueueRepository.save(queue);
-
-            log.info("쿠폰 발급 완료: userId={}, couponId={}", queue.getUser().getId(), coupon.getId());
-
+            // DB 트랜잭션 실행 (락 보호 영역)
+            processQueueItemTransaction(queue);
         } catch (Exception e) {
             updateQueueFailed(queue, "발급 처리 중 오류: " + e.getMessage());
             log.error("대기열 처리 실패: queueId={}", queue.getId(), e);
+        } finally {
+            // Redis 락 해제 (반드시 실행)
+            pubSubLock.unlock(lockKey);
         }
+    }
+
+    /**
+     * 대기열 처리 트랜잭션 (Redis 락으로 보호됨)
+     *
+     * @param queue 처리할 대기열 항목
+     */
+    @Transactional
+    private void processQueueItemTransaction(CouponQueue queue) {
+        // 1. 상태 변경: WAITING -> PROCESSING
+        queue.updateStatus(CouponQueueStatus.PROCESSING);
+        couponQueueRepository.save(queue);
+
+        // 2. 최신 쿠폰 정보 조회 (일반 SELECT - Redis 락이 동시성 보장)
+        Coupon coupon = couponRepository.findById(queue.getCoupon().getId())
+                .orElseThrow(() -> new IllegalArgumentException("쿠폰을 찾을 수 없습니다: " + queue.getCoupon().getId()));
+
+        // 3. 중복 발급 검증
+        Optional<UserCoupon> existing = userCouponRepository.findByUserIdAndCouponId(
+                queue.getUser().getId(), coupon.getId());
+        if (existing.isPresent()) {
+            updateQueueFailed(queue, "이미 발급받은 쿠폰입니다.");
+            log.warn("이미 발급: userId={}, couponId={}", queue.getUser().getId(), coupon.getId());
+            return;
+        }
+
+        // 4. 발급 가능 여부 확인
+        if (!coupon.isIssuable()) {
+            updateQueueFailed(queue, "쿠폰의 모든 수량이 소진되었습니다.");
+            log.warn("수량 소진: couponId={}", coupon.getId());
+            return;
+        }
+
+        // 5. 쿠폰 발급 처리
+        coupon.increaseIssuedQuantity();
+        couponRepository.save(coupon);
+
+        UserCoupon userCoupon = new UserCoupon(
+                queue.getUser(),
+                coupon,
+                CouponStatus.UNUSED,
+                coupon.getEndDate()
+        );
+        userCouponRepository.save(userCoupon);
+
+        // 6. 상태 변경: PROCESSING -> COMPLETED
+        queue.updateStatus(CouponQueueStatus.COMPLETED);
+        couponQueueRepository.save(queue);
+
+        log.info("쿠폰 발급 완료: userId={}, couponId={}", queue.getUser().getId(), coupon.getId());
     }
 
     /**

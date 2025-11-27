@@ -197,9 +197,14 @@ public class ProductService {
      *
      * Repository에서 DTO를 직접 반환하므로 중복 연산이 제거되었습니다.
      *
+     * 캐시 적용: TTL 60분
+     * - 통계성 데이터로 장시간 캐싱 가능
+     * - 스케줄러가 자주 실행되어도 DB 부하 최소화
+     *
      * @param limit 조회할 상품 개수
      * @return 상품 판매 통계 DTO 목록
      */
+    @Cacheable(value = "topProducts", key = "#limit")
     @Transactional(readOnly = true)
     public List<ProductSalesDto> getTopSellingProducts(int limit) {
         LocalDateTime threeDaysAgo = LocalDateTime.now().minusDays(3);

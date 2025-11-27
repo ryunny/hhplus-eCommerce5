@@ -255,12 +255,38 @@ public class CouponService {
     // ===== 쿠폰 만료 =====
 
     /**
-     * 만료된 쿠폰 처리
+     * 만료된 쿠폰 처리 (Redis Pub/Sub Lock 사용 - 분산 환경 대응)
+     *
+     * Redis Pub/Sub Lock을 사용하여 여러 서버에서 동시에 배치를 실행하지 않도록 제어합니다.
+     * - Redis 락 획득 → 만료 쿠폰 처리 → Redis 락 해제
+     *
+     * @return 만료 처리된 쿠폰 개수
+     */
+    public int expireOldCoupons() {
+        String lockKey = "coupon:batch:expire";
+
+        // Redis Pub/Sub Lock 획득 (최대 10초 대기)
+        if (!pubSubLock.tryLock(lockKey, 10, TimeUnit.SECONDS)) {
+            log.warn("쿠폰 만료 배치 락 획득 실패: 다른 서버에서 실행 중");
+            return 0;
+        }
+
+        try {
+            // 만료 처리 실행 (락 보호 영역)
+            return expireOldCouponsTransaction();
+        } finally {
+            // Redis 락 해제 (반드시 실행)
+            pubSubLock.unlock(lockKey);
+        }
+    }
+
+    /**
+     * 만료된 쿠폰 처리 트랜잭션 (Redis 락으로 보호됨)
      *
      * @return 만료 처리된 쿠폰 개수
      */
     @Transactional
-    public int expireOldCoupons() {
+    private int expireOldCouponsTransaction() {
         LocalDateTime now = LocalDateTime.now();
         int expiredCount = 0;
 
@@ -316,8 +342,8 @@ public class CouponService {
         // 3. 기존 대기열 검증 (트랜잭션 밖)
         validateExistingQueue(userId, couponId);
 
-        // 4. 대기열 생성 (트랜잭션 안 - 쓰기만)
-        return createQueue(user, coupon);
+        // 4. 대기열 생성 (락 + 트랜잭션)
+        return createQueueWithLock(user, coupon);
     }
 
     /**
@@ -340,7 +366,34 @@ public class CouponService {
     }
 
     /**
-     * 대기열 생성 (트랜잭션 - 쓰기만)
+     * 대기열 생성 (Redis Pub/Sub Lock 사용 - 분산 환경 대응)
+     *
+     * Redis Pub/Sub Lock을 사용하여 분산 환경에서도 동시성을 제어합니다.
+     * - Redis 락 획득 → DB 트랜잭션 (대기 인원 계산 + 대기열 생성) → Redis 락 해제
+     *
+     * @param user 사용자
+     * @param coupon 쿠폰
+     * @return 생성된 CouponQueue
+     */
+    private CouponQueue createQueueWithLock(User user, Coupon coupon) {
+        String lockKey = "coupon:queue:join:" + coupon.getId();
+
+        // Redis Pub/Sub Lock 획득 (최대 5초 대기)
+        if (!pubSubLock.tryLock(lockKey, 5, TimeUnit.SECONDS)) {
+            throw new IllegalStateException("대기열 진입 처리 중입니다. 잠시 후 다시 시도해주세요.");
+        }
+
+        try {
+            // DB 트랜잭션 실행 (락 보호 영역)
+            return createQueue(user, coupon);
+        } finally {
+            // Redis 락 해제 (반드시 실행)
+            pubSubLock.unlock(lockKey);
+        }
+    }
+
+    /**
+     * 대기열 생성 트랜잭션 (Redis 락으로 보호됨)
      *
      * @param user 사용자
      * @param coupon 쿠폰
@@ -375,15 +428,39 @@ public class CouponService {
     }
 
     /**
-     * 특정 쿠폰의 대기열 처리
+     * 특정 쿠폰의 대기열 처리 (Redis Pub/Sub Lock 사용 - 분산 환경 대응)
      *
+     * Redis Pub/Sub Lock을 사용하여 여러 서버에서 동시에 같은 쿠폰의 대기열을 처리하지 않도록 제어합니다.
      * 대기 중인 사용자들을 순서대로 처리하여 쿠폰을 발급합니다.
      * 한 번에 최대 10명까지 처리하며, 발급 실패 시 FAILED 상태로 변경합니다.
      *
      * @param coupon 처리할 쿠폰
      */
-    @Transactional
     public void processQueueForCoupon(Coupon coupon) {
+        String lockKey = "coupon:queue:batch:" + coupon.getId();
+
+        // Redis Pub/Sub Lock 획득 (최대 10초 대기)
+        if (!pubSubLock.tryLock(lockKey, 10, TimeUnit.SECONDS)) {
+            log.warn("대기열 배치 처리 락 획득 실패: couponId={}, 다른 서버에서 실행 중", coupon.getId());
+            return;
+        }
+
+        try {
+            // 대기열 처리 실행 (락 보호 영역)
+            processQueueForCouponTransaction(coupon);
+        } finally {
+            // Redis 락 해제 (반드시 실행)
+            pubSubLock.unlock(lockKey);
+        }
+    }
+
+    /**
+     * 특정 쿠폰의 대기열 처리 트랜잭션 (Redis 락으로 보호됨)
+     *
+     * @param coupon 처리할 쿠폰
+     */
+    @Transactional
+    private void processQueueForCouponTransaction(Coupon coupon) {
         // 대기 중인 사람들 조회 (선착순)
         List<CouponQueue> waitingQueues = couponQueueRepository.findByCouponIdAndStatus(
                 coupon.getId(), CouponQueueStatus.WAITING);
@@ -495,10 +572,34 @@ public class CouponService {
     }
 
     /**
-     * 대기 순번 업데이트
+     * 대기 순번 업데이트 (Redis Pub/Sub Lock 사용 - 분산 환경 대응)
+     *
+     * Redis Pub/Sub Lock을 사용하여 여러 서버에서 동시에 순번 업데이트를 실행하지 않도록 제어합니다.
+     * - Redis 락 획득 → 순번 업데이트 → Redis 락 해제
+     */
+    public void updateQueuePositions() {
+        String lockKey = "coupon:queue:update-positions";
+
+        // Redis Pub/Sub Lock 획득 (최대 10초 대기)
+        if (!pubSubLock.tryLock(lockKey, 10, TimeUnit.SECONDS)) {
+            log.warn("대기열 순번 업데이트 락 획득 실패: 다른 서버에서 실행 중");
+            return;
+        }
+
+        try {
+            // 순번 업데이트 실행 (락 보호 영역)
+            updateQueuePositionsTransaction();
+        } finally {
+            // Redis 락 해제 (반드시 실행)
+            pubSubLock.unlock(lockKey);
+        }
+    }
+
+    /**
+     * 대기 순번 업데이트 트랜잭션 (Redis 락으로 보호됨)
      */
     @Transactional
-    public void updateQueuePositions() {
+    private void updateQueuePositionsTransaction() {
         List<Coupon> allCoupons = couponRepository.findAll();
 
         for (Coupon coupon : allCoupons) {

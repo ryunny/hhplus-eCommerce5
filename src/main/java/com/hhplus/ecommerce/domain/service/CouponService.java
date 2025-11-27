@@ -12,6 +12,8 @@ import com.hhplus.ecommerce.domain.repository.UserCouponRepository;
 import com.hhplus.ecommerce.domain.vo.Money;
 import com.hhplus.ecommerce.infrastructure.lock.RedisPubSubLock;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,6 +55,7 @@ public class CouponService {
      * @param couponId 쿠폰 ID
      * @return 쿠폰
      */
+    @Cacheable(value = "coupons", key = "#couponId")
     @Transactional(readOnly = true)
     public Coupon getCoupon(Long couponId) {
         return couponRepository.findById(couponId)
@@ -64,6 +67,7 @@ public class CouponService {
      *
      * @return 발급 가능한 쿠폰 목록
      */
+    @Cacheable(value = "issuableCoupons", key = "'all'")
     @Transactional(readOnly = true)
     public List<Coupon> getIssuableCoupons() {
         return couponRepository.findIssuableCoupons(LocalDateTime.now());
@@ -224,6 +228,7 @@ public class CouponService {
      * @param couponId 쿠폰 ID
      * @return 발급된 UserCoupon
      */
+    @CacheEvict(value = {"coupons", "issuableCoupons"}, allEntries = true)
     @Transactional
     private UserCoupon issueCouponTransaction(User user, Long couponId) {
         // 1. 쿠폰 조회 (일반 SELECT - Redis 락이 동시성 보장)

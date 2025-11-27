@@ -3,6 +3,8 @@ package com.hhplus.ecommerce.domain.service;
 import com.hhplus.ecommerce.domain.entity.User;
 import com.hhplus.ecommerce.domain.repository.UserRepository;
 import com.hhplus.ecommerce.domain.vo.Money;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +26,7 @@ public class UserService {
      * @param userId 사용자 ID
      * @return 사용자 엔티티
      */
+    @Cacheable(value = "users", key = "#userId")
     @Transactional(readOnly = true)
     public User getUser(Long userId) {
         return userRepository.findById(userId)
@@ -36,6 +39,7 @@ public class UserService {
      * @param publicId 사용자 Public ID (UUID)
      * @return 사용자 엔티티
      */
+    @Cacheable(value = "users", key = "'publicId:' + #publicId")
     @Transactional(readOnly = true)
     public User getUserByPublicId(String publicId) {
         return userRepository.findByPublicId(publicId)
@@ -82,6 +86,7 @@ public class UserService {
      * @param userId 사용자 ID
      * @param amount 차감할 금액
      */
+    @CacheEvict(value = "users", key = "#userId")
     @Transactional
     private void deductBalanceWithLock(Long userId, Money amount) {
         // 락 시작!
@@ -144,6 +149,7 @@ public class UserService {
      * @param amount 충전할 금액
      * @return 충전 후 사용자 정보
      */
+    @CacheEvict(value = "users", key = "#userId")
     @Transactional
     public User chargeBalance(Long userId, Money amount) {
         User user = userRepository.findByIdWithLock(userId)
@@ -160,6 +166,7 @@ public class UserService {
      * @param amount 충전할 금액
      * @return 충전 후 사용자 정보
      */
+    @CacheEvict(value = "users", allEntries = true)
     @Transactional
     public User chargeBalanceByPublicId(String publicId, Money amount) {
         User user = userRepository.findByPublicIdWithLock(publicId)

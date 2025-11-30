@@ -6,6 +6,7 @@ import com.hhplus.ecommerce.domain.repository.OrderItemRepository;
 import com.hhplus.ecommerce.domain.repository.ProductRepository;
 import com.hhplus.ecommerce.domain.vo.Quantity;
 import com.hhplus.ecommerce.infrastructure.lock.RedisPubSubLock;
+import com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -103,7 +104,7 @@ public class ProductService {
      * @param quantity 차감할 수량
      */
     private void decreaseStockWithLock(Long productId, Quantity quantity) {
-        String lockKey = "product:stock:" + productId;
+        String lockKey = RedisKeyGenerator.productStockDecreaseLock(productId);
 
         // Redis Pub/Sub Lock 획득 (최대 5초 대기)
         if (!pubSubLock.tryLock(lockKey, 5, TimeUnit.SECONDS)) {
@@ -148,7 +149,7 @@ public class ProductService {
      * @param quantity 복구할 수량
      */
     public void increaseStock(Long productId, Quantity quantity) {
-        String lockKey = "product:stock:" + productId;
+        String lockKey = RedisKeyGenerator.productStockIncreaseLock(productId);
 
         // Redis Pub/Sub Lock 획득 (최대 5초 대기)
         if (!pubSubLock.tryLock(lockKey, 5, TimeUnit.SECONDS)) {

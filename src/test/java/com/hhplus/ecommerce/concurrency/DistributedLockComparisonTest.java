@@ -6,6 +6,7 @@ import com.hhplus.ecommerce.infrastructure.lock.RedisPubSubLock;
 import com.hhplus.ecommerce.infrastructure.lock.RedisSimpleLock;
 import com.hhplus.ecommerce.infrastructure.lock.RedisSpinLock;
 import com.hhplus.ecommerce.infrastructure.persistence.CouponJpaRepository;
+import com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -78,7 +79,7 @@ class DistributedLockComparisonTest {
         for (int i = 0; i < threadCount; i++) {
             executorService.submit(() -> {
                 try {
-                    String lockKey = "coupon:" + testCoupon.getId();
+                    String lockKey = RedisKeyGenerator.lockKey("test", "lockComparison", "simpleLock", String.valueOf(testCoupon.getId()));
 
                     if (simpleLock.tryLock(lockKey)) {
                         try {
@@ -150,7 +151,7 @@ class DistributedLockComparisonTest {
         for (int i = 0; i < threadCount; i++) {
             executorService.submit(() -> {
                 try {
-                    String lockKey = "coupon:" + testCoupon.getId();
+                    String lockKey = RedisKeyGenerator.lockKey("test", "lockComparison", "spinLock", String.valueOf(testCoupon.getId()));
 
                     if (spinLock.lock(lockKey)) {
                         try {
@@ -221,7 +222,7 @@ class DistributedLockComparisonTest {
         for (int i = 0; i < threadCount; i++) {
             executorService.submit(() -> {
                 try {
-                    String lockKey = "coupon:" + testCoupon.getId();
+                    String lockKey = RedisKeyGenerator.lockKey("test", "lockComparison", "pubSubLock", String.valueOf(testCoupon.getId()));
 
                     if (pubSubLock.tryLock(lockKey, 5, TimeUnit.SECONDS)) {
                         try {

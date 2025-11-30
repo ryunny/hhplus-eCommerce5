@@ -11,6 +11,7 @@ import com.hhplus.ecommerce.domain.repository.CouponRepository;
 import com.hhplus.ecommerce.domain.repository.UserCouponRepository;
 import com.hhplus.ecommerce.domain.vo.Money;
 import com.hhplus.ecommerce.infrastructure.lock.RedisPubSubLock;
+import com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -205,7 +206,7 @@ public class CouponService {
      * @return 발급된 UserCoupon
      */
     private UserCoupon issueCouponWithLock(User user, Long couponId) {
-        String lockKey = "coupon:issue:" + couponId;
+        String lockKey = RedisKeyGenerator.couponIssueLock(couponId);
 
         // Redis Pub/Sub Lock 획득 (최대 5초 대기)
         if (!pubSubLock.tryLock(lockKey, 5, TimeUnit.SECONDS)) {
@@ -268,7 +269,7 @@ public class CouponService {
      * @return 만료 처리된 쿠폰 개수
      */
     public int expireOldCoupons() {
-        String lockKey = "coupon:batch:expire";
+        String lockKey = RedisKeyGenerator.couponExpireBatchLock();
 
         // Redis Pub/Sub Lock 획득 (최대 10초 대기)
         if (!pubSubLock.tryLock(lockKey, 10, TimeUnit.SECONDS)) {
@@ -381,7 +382,7 @@ public class CouponService {
      * @return 생성된 CouponQueue
      */
     private CouponQueue createQueueWithLock(User user, Coupon coupon) {
-        String lockKey = "coupon:queue:join:" + coupon.getId();
+        String lockKey = RedisKeyGenerator.couponQueueJoinLock(coupon.getId());
 
         // Redis Pub/Sub Lock 획득 (최대 5초 대기)
         if (!pubSubLock.tryLock(lockKey, 5, TimeUnit.SECONDS)) {
@@ -442,7 +443,7 @@ public class CouponService {
      * @param coupon 처리할 쿠폰
      */
     public void processQueueForCoupon(Coupon coupon) {
-        String lockKey = "coupon:queue:batch:" + coupon.getId();
+        String lockKey = RedisKeyGenerator.couponQueueBatchLock(coupon.getId());
 
         // Redis Pub/Sub Lock 획득 (최대 10초 대기)
         if (!pubSubLock.tryLock(lockKey, 10, TimeUnit.SECONDS)) {
@@ -493,7 +494,7 @@ public class CouponService {
      * @param queue 처리할 대기열 항목
      */
     public void processQueueItem(CouponQueue queue) {
-        String lockKey = "coupon:queue:" + queue.getCoupon().getId();
+        String lockKey = RedisKeyGenerator.couponQueueItemLock(queue.getCoupon().getId());
 
         // Redis Pub/Sub Lock 획득 (최대 5초 대기)
         if (!pubSubLock.tryLock(lockKey, 5, TimeUnit.SECONDS)) {
@@ -583,7 +584,7 @@ public class CouponService {
      * - Redis 락 획득 → 순번 업데이트 → Redis 락 해제
      */
     public void updateQueuePositions() {
-        String lockKey = "coupon:queue:update-positions";
+        String lockKey = RedisKeyGenerator.couponQueueUpdatePositionsLock();
 
         // Redis Pub/Sub Lock 획득 (최대 10초 대기)
         if (!pubSubLock.tryLock(lockKey, 10, TimeUnit.SECONDS)) {

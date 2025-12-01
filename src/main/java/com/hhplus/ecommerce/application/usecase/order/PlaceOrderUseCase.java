@@ -1,15 +1,18 @@
 package com.hhplus.ecommerce.application.usecase.order;
 
 import com.hhplus.ecommerce.domain.entity.*;
+import com.hhplus.ecommerce.domain.event.OrderCompletedEvent;
 import com.hhplus.ecommerce.domain.service.*;
 import com.hhplus.ecommerce.domain.vo.Money;
 import com.hhplus.ecommerce.domain.vo.Phone;
 import com.hhplus.ecommerce.domain.vo.Quantity;
 import com.hhplus.ecommerce.presentation.dto.CreateOrderRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -24,6 +27,7 @@ import java.util.List;
  * - CouponService: 쿠폰 사용, 할인 계산
  * - PaymentService: 결제 생성
  * - OutboxService: 데이터 플랫폼 전송 이벤트 저장 (Outbox Pattern)
+ * - EventPublisher: 트랜잭션 커밋 후 이벤트 발행 (랭킹 업데이트 등)
  */
 @Slf4j
 @Service
@@ -35,19 +39,22 @@ public class PlaceOrderUseCase {
     private final CouponService couponService;
     private final PaymentService paymentService;
     private final com.hhplus.ecommerce.domain.service.OutboxService outboxService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public PlaceOrderUseCase(OrderService orderService,
                             ProductService productService,
                             UserService userService,
                             CouponService couponService,
                             PaymentService paymentService,
-                            com.hhplus.ecommerce.domain.service.OutboxService outboxService) {
+                            com.hhplus.ecommerce.domain.service.OutboxService outboxService,
+                            ApplicationEventPublisher eventPublisher) {
         this.orderService = orderService;
         this.productService = productService;
         this.userService = userService;
         this.couponService = couponService;
         this.paymentService = paymentService;
         this.outboxService = outboxService;
+        this.eventPublisher = eventPublisher;
     }
 
     /**
@@ -106,6 +113,7 @@ public class PlaceOrderUseCase {
         );
 
         // 8. 주문 아이템 생성 및 재고 차감
+        List<OrderItem> orderItems = new ArrayList<>();
         for (int i = 0; i < products.size(); i++) {
             Product product = products.get(i);
             Quantity quantity = quantities.get(i);
@@ -114,7 +122,8 @@ public class PlaceOrderUseCase {
             productService.decreaseStock(product.getId(), quantity);
 
             // 주문 아이템 생성
-            orderService.createOrderItem(order, product, quantity);
+            OrderItem orderItem = orderService.createOrderItem(order, product, quantity);
+            orderItems.add(orderItem);
         }
 
         // 9. 잔액 차감
@@ -129,6 +138,10 @@ public class PlaceOrderUseCase {
         // 12. 데이터 플랫폼 전송 이벤트 저장 (Outbox Pattern)
         // 트랜잭션 커밋 후 스케줄러가 비동기로 처리합니다.
         outboxService.savePaymentCompletedEvent(payment);
+
+        // 13. 주문 완료 이벤트 발행 (트랜잭션 커밋 후 비동기로 랭킹 업데이트)
+        // Redis 장애가 발생해도 주문 트랜잭션은 성공 처리됩니다.
+        eventPublisher.publishEvent(new OrderCompletedEvent(order.getId(), orderItems));
 
         log.info("주문 생성 완료: 주문 ID={}, 사용자 Public ID={}, 최종 금액={}",
                 order.getId(), publicId, finalAmount.getAmount());

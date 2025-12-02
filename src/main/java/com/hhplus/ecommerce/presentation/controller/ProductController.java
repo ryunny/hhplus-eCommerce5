@@ -38,9 +38,21 @@ public class ProductController {
         return ResponseEntity.ok(ProductResponse.from(product));
     }
 
+    /**
+     * 인기 상품 조회 API
+     *
+     * @param days 기간 (1 또는 7일, 기본값: 1일)
+     * @return 인기 상품 목록 (상위 5개)
+     *
+     * 예시:
+     * - GET /api/products/popular          → 1일 기준
+     * - GET /api/products/popular?days=1   → 1일 기준
+     * - GET /api/products/popular?days=7   → 7일 기준
+     */
     @GetMapping("/popular")
-    public ResponseEntity<List<PopularProductResponse>> getPopularProducts() {
-        List<PopularProductResponse> popularProducts = getPopularProductsUseCase.execute();
+    public ResponseEntity<List<PopularProductResponse>> getPopularProducts(
+            @RequestParam(required = false, defaultValue = "1") Integer days) {
+        List<PopularProductResponse> popularProducts = getPopularProductsUseCase.execute(days);
         return ResponseEntity.ok(popularProducts);
     }
 }

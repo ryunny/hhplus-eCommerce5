@@ -31,6 +31,10 @@ public class CouponController {
     private final JoinCouponQueueUseCase joinCouponQueueUseCase;
     private final GetQueueStatusUseCase getQueueStatusUseCase;
 
+    // Redis 기반 대기열
+    private final JoinRedisQueueUseCase joinRedisQueueUseCase;
+    private final GetRedisQueueStatusUseCase getRedisQueueStatusUseCase;
+
     @GetMapping("/issuable")
     public ResponseEntity<List<CouponResponse>> getIssuableCoupons() {
         List<Coupon> coupons = getIssuableCouponsUseCase.execute();
@@ -77,10 +81,10 @@ public class CouponController {
         return ResponseEntity.ok(response);
     }
 
-    // ===== 대기열 API =====
+    // ===== 대기열 API (DB 기반) =====
 
     /**
-     * 대기열 진입 (선착순 쿠폰)
+     * 대기열 진입 (선착순 쿠폰 - DB 기반)
      */
     @PostMapping("/{couponId}/queue/join/{publicId}")
     public ResponseEntity<CouponQueueResponse> joinQueue(
@@ -92,7 +96,7 @@ public class CouponController {
     }
 
     /**
-     * 대기 상태 조회
+     * 대기 상태 조회 (DB 기반)
      */
     @GetMapping("/{couponId}/queue/status/{publicId}")
     public ResponseEntity<CouponQueueResponse> getQueueStatus(
@@ -101,5 +105,42 @@ public class CouponController {
         GetQueueStatusQuery query = new GetQueueStatusQuery(publicId, couponId);
         CouponQueue queue = getQueueStatusUseCase.execute(query);
         return ResponseEntity.ok(CouponQueueResponse.from(queue));
+    }
+
+    // ===== 대기열 API (Redis Sorted Set 기반) =====
+
+    /**
+     * 대기열 진입 (선착순 쿠폰 - Redis Sorted Set)
+     *
+     * 특징:
+     * - O(log N) 성능
+     * - 원자적 연산 (락 불필요)
+     * - 자동 선착순 정렬
+     *
+     * @param couponId 쿠폰 ID
+     * @param publicId 사용자 Public ID
+     * @return 대기열 정보 (순번 포함)
+     */
+    @PostMapping("/{couponId}/redis-queue/join/{publicId}")
+    public ResponseEntity<CouponQueueResponse> joinRedisQueue(
+            @PathVariable Long couponId,
+            @PathVariable String publicId) {
+        CouponQueueResponse response = joinRedisQueueUseCase.execute(publicId, couponId);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 대기 상태 조회 (Redis Sorted Set)
+     *
+     * @param couponId 쿠폰 ID
+     * @param publicId 사용자 Public ID
+     * @return 실시간 대기 순번
+     */
+    @GetMapping("/{couponId}/redis-queue/status/{publicId}")
+    public ResponseEntity<CouponQueueResponse> getRedisQueueStatus(
+            @PathVariable Long couponId,
+            @PathVariable String publicId) {
+        CouponQueueResponse response = getRedisQueueStatusUseCase.execute(publicId, couponId);
+        return ResponseEntity.ok(response);
     }
 }

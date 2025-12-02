@@ -172,6 +172,31 @@ public class RedisKeyGenerator {
         return "ranking:products:1day";
     }
 
+    // ===== Sorted Set 키 생성 (선착순 대기열) =====
+
+    /**
+     * 쿠폰 선착순 대기열 (Sorted Set)
+     * Member: user:{userId}
+     * Score: timestamp (밀리초)
+     *
+     * @param couponId 쿠폰 ID
+     * @return queue:coupon:{couponId}
+     */
+    public static String couponQueue(Long couponId) {
+        return String.format("queue:coupon:%d", couponId);
+    }
+
+    /**
+     * 쿠폰 대기열 처리 중 상태 (Set)
+     * 발급 처리 중인 사용자를 기록하여 중복 처리 방지
+     *
+     * @param couponId 쿠폰 ID
+     * @return queue:coupon:{couponId}:processing
+     */
+    public static String couponQueueProcessing(Long couponId) {
+        return String.format("queue:coupon:%d:processing", couponId);
+    }
+
     /**
      * 7일 기준 인기 상품 랭킹 (Sorted Set)
      *

@@ -225,11 +225,16 @@ public class CouponService {
     /**
      * 쿠폰 발급 트랜잭션 (Redis 락으로 보호됨)
      *
+     * 캐시 일관성: 발급된 쿠폰의 캐시만 무효화 (전체 삭제 대신)
+     *
      * @param user 사용자
      * @param couponId 쿠폰 ID
      * @return 발급된 UserCoupon
      */
-    @CacheEvict(value = {"coupons", "issuableCoupons"}, allEntries = true)
+    @org.springframework.cache.annotation.Caching(evict = {
+        @CacheEvict(value = "coupons", key = "#couponId"),
+        @CacheEvict(value = "issuableCoupons", allEntries = true)  // 발급 가능 쿠폰 목록은 변경되므로 전체 삭제
+    })
     @Transactional
     public UserCoupon issueCouponTransaction(User user, Long couponId) {
         // 1. 쿠폰 조회 (일반 SELECT - Redis 락이 동시성 보장)

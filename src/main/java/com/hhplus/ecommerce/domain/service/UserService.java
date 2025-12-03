@@ -83,12 +83,17 @@ public class UserService {
     /**
      * 잔액 차감 (DB 락 사용 - 트랜잭션 범위 최소화)
      *
+     * 캐시 일관성: ID와 publicId 두 캐시 키 모두 무효화
+     *
      * @param userId 사용자 ID
      * @param amount 차감할 금액
      */
-    @CacheEvict(value = "users", key = "#userId")
+    @org.springframework.cache.annotation.Caching(evict = {
+        @CacheEvict(value = "users", key = "#userId"),
+        @CacheEvict(value = "users", key = "'publicId:' + #result.publicId")
+    })
     @Transactional
-    private void deductBalanceWithLock(Long userId, Money amount) {
+    private User deductBalanceWithLock(Long userId, Money amount) {
         // 락 시작!
         User user = userRepository.findByIdWithLock(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
@@ -101,6 +106,7 @@ public class UserService {
         user.deductBalance(amount);
         // 더티 체킹으로 자동 저장
         // 락 해제!
+        return user;
     }
 
     /**
@@ -125,11 +131,17 @@ public class UserService {
     /**
      * 잔액 차감 (Public ID 기반, DB 락 사용)
      *
+     * 캐시 일관성: ID와 publicId 두 캐시 키 모두 무효화
+     *
      * @param publicId 사용자 Public ID
      * @param amount 차감할 금액
      */
+    @org.springframework.cache.annotation.Caching(evict = {
+        @CacheEvict(value = "users", key = "#result.id"),
+        @CacheEvict(value = "users", key = "'publicId:' + #publicId")
+    })
     @Transactional
-    private void deductBalanceByPublicIdWithLock(String publicId, Money amount) {
+    private User deductBalanceByPublicIdWithLock(String publicId, Money amount) {
         User user = userRepository.findByPublicIdWithLock(publicId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + publicId));
 
@@ -140,6 +152,7 @@ public class UserService {
 
         user.deductBalance(amount);
         // 더티 체킹으로 자동 저장
+        return user;
     }
 
     /**
@@ -162,11 +175,16 @@ public class UserService {
     /**
      * 잔액 충전 (Public ID 기반)
      *
+     * 캐시 일관성: 전체 삭제 대신 ID와 publicId 두 캐시 키만 무효화
+     *
      * @param publicId 사용자 Public ID (UUID)
      * @param amount 충전할 금액
      * @return 충전 후 사용자 정보
      */
-    @CacheEvict(value = "users", allEntries = true)
+    @org.springframework.cache.annotation.Caching(evict = {
+        @CacheEvict(value = "users", key = "#result.id"),
+        @CacheEvict(value = "users", key = "'publicId:' + #publicId")
+    })
     @Transactional
     public User chargeBalanceByPublicId(String publicId, Money amount) {
         User user = userRepository.findByPublicIdWithLock(publicId)

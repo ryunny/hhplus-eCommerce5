@@ -587,9 +587,21 @@ public class CouponService {
     /**
      * 대기 순번 업데이트 (Redis Pub/Sub Lock 사용 - 분산 환경 대응)
      *
+     * @deprecated 성능 문제로 인해 사용 권장하지 않음. {@link RedisCouponQueueService}를 사용하세요.
+     *
+     * 문제점:
+     * - 모든 쿠폰의 모든 대기열을 조회하여 순번 업데이트 (O(N*M), N=쿠폰수, M=대기인원)
+     * - 쿠폰 100개 × 대기 1000명 = 100,000번의 UPDATE 쿼리 발생
+     * - 스케줄러가 1분마다 실행되면 DB 부하 극심
+     *
+     * 대안:
+     * - {@link RedisCouponQueueService}: Redis Sorted Set 기반, O(log N)
+     * - {@link RedisQueueProcessor}: 배치 프로세서로 자동 처리
+     *
      * Redis Pub/Sub Lock을 사용하여 여러 서버에서 동시에 순번 업데이트를 실행하지 않도록 제어합니다.
      * - Redis 락 획득 → 순번 업데이트 → Redis 락 해제
      */
+    @Deprecated
     public void updateQueuePositions() {
         String lockKey = RedisKeyGenerator.couponQueueUpdatePositionsLock();
 
@@ -610,7 +622,10 @@ public class CouponService {
 
     /**
      * 대기 순번 업데이트 트랜잭션 (Redis 락으로 보호됨)
+     *
+     * @deprecated {@link #updateQueuePositions()} 참고
      */
+    @Deprecated
     @Transactional
     public void updateQueuePositionsTransaction() {
         List<Coupon> allCoupons = couponRepository.findAll();

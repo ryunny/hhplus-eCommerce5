@@ -296,9 +296,8 @@ public class CouponService {
         LocalDateTime now = LocalDateTime.now();
         int expiredCount = 0;
 
-        List<UserCoupon> allUnusedCoupons = userCouponRepository.findAll().stream()
-                .filter(uc -> uc.getStatus() == CouponStatus.UNUSED)
-                .toList();
+        // DB에서 직접 필터링하여 조회 (findAll() + stream().filter() 개선)
+        List<UserCoupon> allUnusedCoupons = userCouponRepository.findByStatus(CouponStatus.UNUSED);
 
         for (UserCoupon userCoupon : allUnusedCoupons) {
             if (userCoupon.getExpiresAt().isBefore(now)) {

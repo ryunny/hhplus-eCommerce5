@@ -61,17 +61,22 @@ public class PlaceOrderUseCase {
     /**
      * 주문 생성 및 결제 실행
      *
-     * 주의: 여러 Service를 조합하여 원자적으로 실행해야 하는 복잡한 비즈니스 로직입니다.
-     * 각 Service 메서드들이 개별 트랜잭션(REQUIRED 전파)을 가지므로,
-     * UseCase에서 트랜잭션을 시작하여 전체를 하나의 트랜잭션으로 묶습니다.
+     * UseCase는 여러 Service를 조합하는 계층이므로 트랜잭션을 가지지 않습니다.
+     * 각 Service 메서드가 개별 트랜잭션으로 실행됩니다.
      *
-     * 향후 개선: OrderService에 전체 주문 생성 로직을 이동하고 UseCase는 조합만 담당하도록 리팩토링 필요
+     * 장점:
+     * - 트랜잭션 범위 최소화 → Deadlock 위험 감소
+     * - 각 Service가 Redis Lock + 짧은 DB Transaction 사용
+     * - 동시성 제어는 각 Service에서 처리
+     *
+     * 원자성 보장:
+     * - 중간에 실패하면 예외 발생 → 호출자가 처리
+     * - 재고 차감 후 실패하면 보상 트랜잭션으로 재고 복구
      *
      * @param publicId 사용자 Public ID (UUID)
      * @param request 주문 요청 DTO
      * @return 생성된 주문
      */
-    @Transactional
     public Order execute(String publicId, CreateOrderRequest request) {
         // 1. 사용자 조회
         User user = userService.getUserByPublicId(publicId);
@@ -124,26 +129,48 @@ public class PlaceOrderUseCase {
 
         // 8. 주문 아이템 생성 및 재고 차감
         List<OrderItem> orderItems = new ArrayList<>();
-        for (int i = 0; i < products.size(); i++) {
-            Product product = products.get(i);
-            Quantity quantity = quantities.get(i);
+        List<Product> decreasedProducts = new ArrayList<>();  // 보상 트랜잭션용
+        List<Quantity> decreasedQuantities = new ArrayList<>();
+        Payment payment;
 
-            // 재고 차감 (Service에서 처리)
-            productService.decreaseStock(product.getId(), quantity);
+        try {
+            for (int i = 0; i < products.size(); i++) {
+                Product product = products.get(i);
+                Quantity quantity = quantities.get(i);
 
-            // 주문 아이템 생성
-            OrderItem orderItem = orderService.createOrderItem(order, product, quantity);
-            orderItems.add(orderItem);
+                // 재고 차감 (Service에서 처리)
+                productService.decreaseStock(product.getId(), quantity);
+                decreasedProducts.add(product);
+                decreasedQuantities.add(quantity);
+
+                // 주문 아이템 생성
+                OrderItem orderItem = orderService.createOrderItem(order, product, quantity);
+                orderItems.add(orderItem);
+            }
+
+            // 9. 잔액 차감
+            userService.deductBalanceByPublicId(publicId, finalAmount);
+
+            // 10. 결제 생성
+            payment = paymentService.createPayment(order, finalAmount);
+
+            // 11. 주문 상태 변경
+            orderService.updateOrderStatus(order.getId(), OrderStatus.PAID);
+
+        } catch (Exception e) {
+            // 보상 트랜잭션: 재고 복구
+            log.error("주문 처리 중 실패. 재고 복구 시작: 주문 ID={}, 사용자={}", order.getId(), publicId, e);
+            for (int i = 0; i < decreasedProducts.size(); i++) {
+                try {
+                    productService.increaseStock(decreasedProducts.get(i).getId(), decreasedQuantities.get(i));
+                    log.info("재고 복구 완료: 상품 ID={}, 수량={}", decreasedProducts.get(i).getId(), decreasedQuantities.get(i).getValue());
+                } catch (Exception rollbackError) {
+                    log.error("재고 복구 실패: 상품 ID={}", decreasedProducts.get(i).getId(), rollbackError);
+                    // 재고 복구 실패는 관리자가 수동으로 처리해야 함
+                }
+            }
+            throw new IllegalStateException("주문 처리 중 오류가 발생했습니다: " + e.getMessage(), e);
         }
-
-        // 9. 잔액 차감
-        userService.deductBalanceByPublicId(publicId, finalAmount);
-
-        // 10. 결제 생성
-        Payment payment = paymentService.createPayment(order, finalAmount);
-
-        // 11. 주문 상태 변경
-        orderService.updateOrderStatus(order.getId(), OrderStatus.PAID);
 
         // 12. 데이터 플랫폼 전송 이벤트 저장 (Outbox Pattern)
         // 트랜잭션 커밋 후 스케줄러가 비동기로 처리합니다.

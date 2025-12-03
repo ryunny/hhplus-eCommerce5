@@ -75,13 +75,17 @@ public class PlaceOrderUseCase {
         // 1. 사용자 조회
         User user = userService.getUserByPublicId(publicId);
 
-        // 2. 상품 조회 및 수량 변환
-        List<Long> productIds = request.items().stream()
+        // 2. 상품 조회 및 수량 변환 (productId로 정렬하여 데드락 방지)
+        List<CreateOrderRequest.OrderItemRequest> sortedItems = request.items().stream()
+                .sorted(java.util.Comparator.comparing(CreateOrderRequest.OrderItemRequest::productId))
+                .toList();
+
+        List<Long> productIds = sortedItems.stream()
                 .map(CreateOrderRequest.OrderItemRequest::productId)
                 .toList();
         List<Product> products = productService.getProducts(productIds);
 
-        List<Quantity> quantities = request.items().stream()
+        List<Quantity> quantities = sortedItems.stream()
                 .map(item -> new Quantity(item.quantity()))
                 .toList();
 

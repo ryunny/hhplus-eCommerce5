@@ -59,7 +59,12 @@ public class PlaceOrderUseCase {
 
     /**
      * 주문 생성 및 결제 실행
-     * 트랜잭션 내에서 실행되어 예외 발생 시 자동 롤백됩니다.
+     *
+     * 주의: 여러 Service를 조합하여 원자적으로 실행해야 하는 복잡한 비즈니스 로직입니다.
+     * 각 Service 메서드들이 개별 트랜잭션(REQUIRED 전파)을 가지므로,
+     * UseCase에서 트랜잭션을 시작하여 전체를 하나의 트랜잭션으로 묶습니다.
+     *
+     * 향후 개선: OrderService에 전체 주문 생성 로직을 이동하고 UseCase는 조합만 담당하도록 리팩토링 필요
      *
      * @param publicId 사용자 Public ID (UUID)
      * @param request 주문 요청 DTO

@@ -231,7 +231,7 @@ public class CouponService {
      */
     @CacheEvict(value = {"coupons", "issuableCoupons"}, allEntries = true)
     @Transactional
-    private UserCoupon issueCouponTransaction(User user, Long couponId) {
+    public UserCoupon issueCouponTransaction(User user, Long couponId) {
         // 1. 쿠폰 조회 (일반 SELECT - Redis 락이 동시성 보장)
         Coupon coupon = couponRepository.findById(couponId)
                 .orElseThrow(() -> new IllegalArgumentException("쿠폰을 찾을 수 없습니다: " + couponId));
@@ -292,7 +292,7 @@ public class CouponService {
      * @return 만료 처리된 쿠폰 개수
      */
     @Transactional
-    private int expireOldCouponsTransaction() {
+    public int expireOldCouponsTransaction() {
         LocalDateTime now = LocalDateTime.now();
         int expiredCount = 0;
 
@@ -466,7 +466,7 @@ public class CouponService {
      * @param coupon 처리할 쿠폰
      */
     @Transactional
-    private void processQueueForCouponTransaction(Coupon coupon) {
+    public void processQueueForCouponTransaction(Coupon coupon) {
         // 대기 중인 사람들 조회 (선착순)
         List<CouponQueue> waitingQueues = couponQueueRepository.findByCouponIdAndStatus(
                 coupon.getId(), CouponQueueStatus.WAITING);
@@ -521,7 +521,7 @@ public class CouponService {
      * @param queue 처리할 대기열 항목
      */
     @Transactional
-    private void processQueueItemTransaction(CouponQueue queue) {
+    public void processQueueItemTransaction(CouponQueue queue) {
         // 1. 상태 변경: WAITING -> PROCESSING
         queue.updateStatus(CouponQueueStatus.PROCESSING);
         couponQueueRepository.save(queue);
@@ -605,7 +605,7 @@ public class CouponService {
      * 대기 순번 업데이트 트랜잭션 (Redis 락으로 보호됨)
      */
     @Transactional
-    private void updateQueuePositionsTransaction() {
+    public void updateQueuePositionsTransaction() {
         List<Coupon> allCoupons = couponRepository.findAll();
 
         for (Coupon coupon : allCoupons) {

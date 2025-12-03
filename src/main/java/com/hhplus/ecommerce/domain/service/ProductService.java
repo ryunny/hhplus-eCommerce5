@@ -128,7 +128,7 @@ public class ProductService {
      */
     @CacheEvict(value = "products", key = "#productId")
     @Transactional
-    private void decreaseStockTransaction(Long productId, Quantity quantity) {
+    public void decreaseStockTransaction(Long productId, Quantity quantity) {
         // 상품 조회 (일반 SELECT - Redis 락이 동시성 보장)
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다: " + productId));
@@ -172,7 +172,7 @@ public class ProductService {
      * @param quantity 복구할 수량
      */
     @Transactional
-    private void increaseStockTransaction(Long productId, Quantity quantity) {
+    public void increaseStockTransaction(Long productId, Quantity quantity) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다: " + productId));
         product.increaseStock(quantity);

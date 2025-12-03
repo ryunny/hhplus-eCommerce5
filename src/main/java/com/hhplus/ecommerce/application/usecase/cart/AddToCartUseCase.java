@@ -5,12 +5,13 @@ import com.hhplus.ecommerce.domain.entity.CartItem;
 import com.hhplus.ecommerce.domain.service.CartService;
 import com.hhplus.ecommerce.domain.vo.Quantity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 장바구니에 상품 추가 UseCase
  *
  * User Story: "사용자가 상품을 장바구니에 담는다"
+ *
+ * UseCase는 여러 Service를 조합하는 계층이므로 트랜잭션은 Service에서 관리합니다.
  */
 @Service
 public class AddToCartUseCase {
@@ -21,7 +22,6 @@ public class AddToCartUseCase {
         this.cartService = cartService;
     }
 
-    @Transactional
     public CartItem execute(AddToCartCommand command) {
         Quantity quantity = new Quantity(command.quantity());
         return cartService.addToCartByPublicId(command.publicId(), command.productId(), quantity);

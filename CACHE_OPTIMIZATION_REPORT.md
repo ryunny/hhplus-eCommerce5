@@ -441,6 +441,3 @@ maxmemory-policy: allkeys-lru
 
 ---
 
-**작성일**: 2025-11-27
-**작성자**: Claude Code
-**버전**: 1.0

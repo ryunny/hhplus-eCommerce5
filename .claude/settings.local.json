@@ -28,7 +28,10 @@
       "Bash(timeout 60 bash:*)",
       "Bash(./gradlew --stop)",
       "Bash(./gradlew cleanTest test:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(Select-String -Pattern \"(테스트|성공|실패|소요|Lock 결과)\" -Context 0,1)",
+      "Bash(tee:*)",
+      "Bash(xargs cat:*)"
     ],
     "deny": [],
     "ask": []

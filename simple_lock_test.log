@@ -1,0 +1,1442 @@
+Initialized native services in: C:\Users\Admin\.gradle\native
+Initialized jansi services in: C:\Users\Admin\.gradle\native
+The client will now receive all logging from the daemon (pid: 115880). The daemon log file: C:\Users\Admin\.gradle\daemon\8.14.3\daemon-115880.out.log
+Starting 10th build in daemon [uptime: 2 hrs 3 mins 15.147 secs, performance: 100%, GC rate: 0.00/s, heap usage: 0% of 512 MiB, non-heap usage: 20% of 384 MiB]
+Using 8 worker leases.
+Now considering [C:\sparta-coding\3Week\ecommerce\ecommerce] as hierarchies to watch
+Watching the file system is configured to be enabled if available
+File system watching is active
+Starting Build
+Settings evaluated using settings file 'C:\sparta-coding\3Week\ecommerce\ecommerce\settings.gradle'.
+Projects loaded. Root project using build file 'C:\sparta-coding\3Week\ecommerce\ecommerce\build.gradle'.
+Included projects: [root project 'ecommerce']
+
+> Configure project :
+Evaluating root project 'ecommerce' using build file 'C:\sparta-coding\3Week\ecommerce\ecommerce\build.gradle'.
+Resolved plugin [id: 'java']
+Resolved plugin [id: 'org.springframework.boot', version: '3.5.7']
+Resolved plugin [id: 'io.spring.dependency-management', version: '1.1.7']
+Resolved plugin [id: 'jacoco']
+Applying dependency management to configuration 'annotationProcessor' in project 'ecommerce'
+Applying dependency management to configuration 'apiElements' in project 'ecommerce'
+Applying dependency management to configuration 'archives' in project 'ecommerce'
+Applying dependency management to configuration 'bootArchives' in project 'ecommerce'
+Applying dependency management to configuration 'compileClasspath' in project 'ecommerce'
+Applying dependency management to configuration 'compileOnly' in project 'ecommerce'
+Applying dependency management to configuration 'default' in project 'ecommerce'
+Applying dependency management to configuration 'developmentOnly' in project 'ecommerce'
+Applying dependency management to configuration 'implementation' in project 'ecommerce'
+Applying dependency management to configuration 'mainSourceElements' in project 'ecommerce'
+Applying dependency management to configuration 'productionRuntimeClasspath' in project 'ecommerce'
+Applying dependency management to configuration 'runtimeClasspath' in project 'ecommerce'
+Applying dependency management to configuration 'runtimeElements' in project 'ecommerce'
+Applying dependency management to configuration 'runtimeOnly' in project 'ecommerce'
+Applying dependency management to configuration 'testAndDevelopmentOnly' in project 'ecommerce'
+Applying dependency management to configuration 'testAnnotationProcessor' in project 'ecommerce'
+Applying dependency management to configuration 'testCompileClasspath' in project 'ecommerce'
+Applying dependency management to configuration 'testCompileOnly' in project 'ecommerce'
+Applying dependency management to configuration 'testImplementation' in project 'ecommerce'
+Applying dependency management to configuration 'testResultsElementsForTest' in project 'ecommerce'
+Applying dependency management to configuration 'testRuntimeClasspath' in project 'ecommerce'
+Applying dependency management to configuration 'testRuntimeOnly' in project 'ecommerce'
+Applying dependency management to configuration 'jacocoAgent' in project 'ecommerce'
+Applying dependency management to configuration 'jacocoAnt' in project 'ecommerce'
+Applying dependency management to configuration 'coverageDataElementsForTest' in project 'ecommerce'
+All projects evaluated.
+Task name matched 'cleanTest'
+Task name matched 'test'
+Selected primary task 'cleanTest' from project :
+Selected primary task 'test' from project :
+Resolving global dependency management for project 'ecommerce'
+Excluding [com.google.protobuf:protobuf-java]
+Excluding []
+Excluding []
+Excluding []
+Excluding []
+Excluding []
+Excluding []
+Excluding []
+Tasks to be executed: [task ':cleanTest', task ':compileJava', task ':processResources', task ':classes', task ':compileTestJava', task ':processTestResources', task ':testClasses', task ':test', task ':jacocoTestReport']
+Tasks that were excluded: []
+Resolve mutations for :cleanTest (Thread[Execution worker,5,main]) started.
+:cleanTest (Thread[included builds,5,main]) started.
+destroyer locations for task group 0 (Thread[Execution worker Thread 7,5,main]) started.
+
+> Task :cleanTest
+Caching disabled for task ':cleanTest' because:
+  Build cache is disabled
+Task ':cleanTest' is not up-to-date because:
+  Task has not declared any outputs despite executing actions.
+Resolve mutations for :compileJava (Thread[included builds,5,main]) started.
+:compileJava (Thread[included builds,5,main]) started.
+
+> Task :compileJava UP-TO-DATE
+Custom actions are attached to task ':compileJava'.
+Caching disabled for task ':compileJava' because:
+  Build cache is disabled
+Skipping task ':compileJava' as it is up-to-date.
+Resolve mutations for :processResources (Thread[included builds,5,main]) started.
+:processResources (Thread[included builds,5,main]) started.
+
+> Task :processResources UP-TO-DATE
+Caching disabled for task ':processResources' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':processResources' as it is up-to-date.
+Resolve mutations for :classes (Thread[included builds,5,main]) started.
+:classes (Thread[included builds,5,main]) started.
+
+> Task :classes UP-TO-DATE
+Skipping task ':classes' as it has no actions.
+Resolve mutations for :compileTestJava (Thread[included builds,5,main]) started.
+:compileTestJava (Thread[included builds,5,main]) started.
+
+> Task :compileTestJava UP-TO-DATE
+Custom actions are attached to task ':compileTestJava'.
+Caching disabled for task ':compileTestJava' because:
+  Build cache is disabled
+Skipping task ':compileTestJava' as it is up-to-date.
+Resolve mutations for :processTestResources (Thread[included builds,5,main]) started.
+:processTestResources (Thread[Execution worker Thread 2,5,main]) started.
+
+> Task :processTestResources UP-TO-DATE
+Caching disabled for task ':processTestResources' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':processTestResources' as it is up-to-date.
+Resolve mutations for :testClasses (Thread[Execution worker Thread 2,5,main]) started.
+:testClasses (Thread[Execution worker Thread 2,5,main]) started.
+
+> Task :testClasses UP-TO-DATE
+Skipping task ':testClasses' as it has no actions.
+Resolve mutations for :test (Thread[Execution worker Thread 2,5,main]) started.
+:test (Thread[Execution worker Thread 7,5,main]) started.
+Gradle Test Executor 8 started executing tests.
+
+> Task :test
+Custom actions are attached to task ':test'.
+Caching disabled for task ':test' because:
+  Build cache is disabled
+Task ':test' is not up-to-date because:
+  Task has failed previously.
+Starting process 'Gradle Test Executor 8'. Working directory: C:\sparta-coding\3Week\ecommerce\ecommerce Command: C:\Program Files\Java\jdk-17\bin\java.exe -Dorg.gradle.internal.worker.tmpdir=C:\sparta-coding\3Week\ecommerce\ecommerce\build\tmp\test\work -javaagent:C:\sparta-coding\3Week\ecommerce\ecommerce\build\tmp\.cache\expanded\zip_ff7bf8f04f99dc306508d1c81e47a68b\jacocoagent.jar=destfile=build/jacoco/test.exec,append=true,inclnolocationclasses=false,dumponexit=true,output=file,jmx=false @C:\Users\Admin\.gradle\.tmp\gradle-worker-classpath16831669242642714918txt -Xmx512m -Dfile.encoding=x-windows-949 -Duser.country=KR -Duser.language=ko -Duser.variant -ea worker.org.gradle.process.internal.worker.GradleWorkerMain 'Gradle Test Executor 8'
+Successfully started process 'Gradle Test Executor 8'
+
+DistributedLockComparisonTest STANDARD_OUT
+    01:07:35.397 [Test worker] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.hhplus.ecommerce.concurrency.DistributedLockComparisonTest]: DistributedLockComparisonTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+    01:07:35.849 [Test worker] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.hhplus.ecommerce.EcommerceApplication for test class com.hhplus.ecommerce.concurrency.DistributedLockComparisonTest
+
+      .   ____          _            __ _ _
+     /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+    ( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+     \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+      '  |____| .__|_| |_|_| |_\__, | / / / /
+     =========|_|==============|___/=/_/_/_/
+
+     :: Spring Boot ::                (v3.5.7)
+
+    2025-11-24T01:07:37.579+09:00  INFO 29004 --- [ecommerce] [    Test worker] c.h.e.c.DistributedLockComparisonTest    : Starting DistributedLockComparisonTest using Java 17.0.8 with PID 29004 (started by Admin in C:\sparta-coding\3Week\ecommerce\ecommerce)
+    2025-11-24T01:07:37.582+09:00 DEBUG 29004 --- [ecommerce] [    Test worker] c.h.e.c.DistributedLockComparisonTest    : Running with Spring Boot v3.5.7, Spring v6.2.12
+    2025-11-24T01:07:37.583+09:00  INFO 29004 --- [ecommerce] [    Test worker] c.h.e.c.DistributedLockComparisonTest    : The following 1 profile is active: "test"
+    2025-11-24T01:07:40.918+09:00  INFO 29004 --- [ecommerce] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+    2025-11-24T01:07:40.923+09:00  INFO 29004 --- [ecommerce] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+    2025-11-24T01:07:42.211+09:00  INFO 29004 --- [ecommerce] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 1257 ms. Found 14 JPA repository interfaces.
+    2025-11-24T01:07:42.251+09:00  INFO 29004 --- [ecommerce] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+    2025-11-24T01:07:42.256+09:00  INFO 29004 --- [ecommerce] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+    2025-11-24T01:07:42.317+09:00  INFO 29004 --- [ecommerce] [    Test worker] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.hhplus.ecommerce.infrastructure.persistence.CartItemJpaRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+    2025-11-24T01:07:42.318+09:00  INFO 29004 --- [ecommerce] [    Test worker] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.hhplus.ecommerce.infrastructure.persistence.CategoryJpaRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+    2025-11-24T01:07:42.321+09:00  INFO 29004 --- [ecommerce] [    Test worker] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.hhplus.ecommerce.infrastructure.persistence.CouponJpaRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+    2025-11-24T01:07:42.322+09:00  INFO 29004 --- [ecommerce] [    Test worker] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.hhplus.ecommerce.infrastructure.persistence.CouponQueueJpaRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+    2025-11-24T01:07:42.322+09:00  INFO 29004 --- [ecommerce] [    Test worker] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.hhplus.ecommerce.infrastructure.persistence.OrderItemJpaRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+    2025-11-24T01:07:42.322+09:00  INFO 29004 --- [ecommerce] [    Test worker] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.hhplus.ecommerce.infrastructure.persistence.OrderJpaRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+    2025-11-24T01:07:42.324+09:00  INFO 29004 --- [ecommerce] [    Test worker] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.hhplus.ecommerce.infrastructure.persistence.OutboxEventJpaRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+    2025-11-24T01:07:42.325+09:00  INFO 29004 --- [ecommerce] [    Test worker] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.hhplus.ecommerce.infrastructure.persistence.PaymentJpaRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+    2025-11-24T01:07:42.325+09:00  INFO 29004 --- [ecommerce] [    Test worker] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.hhplus.ecommerce.infrastructure.persistence.PopularProductJpaRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+    2025-11-24T01:07:42.326+09:00  INFO 29004 --- [ecommerce] [    Test worker] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.hhplus.ecommerce.infrastructure.persistence.ProductJpaRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+    2025-11-24T01:07:42.328+09:00  INFO 29004 --- [ecommerce] [    Test worker] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.hhplus.ecommerce.infrastructure.persistence.RefundJpaRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+    2025-11-24T01:07:42.328+09:00  INFO 29004 --- [ecommerce] [    Test worker] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.hhplus.ecommerce.infrastructure.persistence.ShippingAddressJpaRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+    2025-11-24T01:07:42.329+09:00  INFO 29004 --- [ecommerce] [    Test worker] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.hhplus.ecommerce.infrastructure.persistence.UserCouponJpaRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+    2025-11-24T01:07:42.330+09:00  INFO 29004 --- [ecommerce] [    Test worker] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.hhplus.ecommerce.infrastructure.persistence.UserJpaRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+    2025-11-24T01:07:42.330+09:00  INFO 29004 --- [ecommerce] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 48 ms. Found 0 Redis repository interfaces.
+    2025-11-24T01:07:43.724+09:00  INFO 29004 --- [ecommerce] [    Test worker] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+    2025-11-24T01:07:43.890+09:00  INFO 29004 --- [ecommerce] [    Test worker] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.33.Final
+    2025-11-24T01:07:44.000+09:00  INFO 29004 --- [ecommerce] [    Test worker] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+    2025-11-24T01:07:44.968+09:00  INFO 29004 --- [ecommerce] [    Test worker] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+    2025-11-24T01:07:45.075+09:00  INFO 29004 --- [ecommerce] [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+    2025-11-24T01:07:45.555+09:00  INFO 29004 --- [ecommerce] [    Test worker] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@4b3f178f
+    2025-11-24T01:07:45.559+09:00  INFO 29004 --- [ecommerce] [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+    2025-11-24T01:07:45.678+09:00  WARN 29004 --- [ecommerce] [    Test worker] org.hibernate.orm.deprecation            : HHH90000025: MySQL8Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+    2025-11-24T01:07:45.682+09:00  WARN 29004 --- [ecommerce] [    Test worker] org.hibernate.orm.deprecation            : HHH90000026: MySQL8Dialect has been deprecated; use org.hibernate.dialect.MySQLDialect instead
+    2025-11-24T01:07:45.729+09:00  INFO 29004 --- [ecommerce] [    Test worker] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+    	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+    	Database driver: undefined/unknown
+    	Database version: 8.0
+    	Autocommit mode: undefined/unknown
+    	Isolation level: undefined/unknown
+    	Minimum pool size: undefined/unknown
+    	Maximum pool size: undefined/unknown
+    2025-11-24T01:07:48.569+09:00  INFO 29004 --- [ecommerce] [    Test worker] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+    2025-11-24T01:07:48.614+09:00 DEBUG 29004 --- [ecommerce] [    Test worker] org.hibernate.SQL                        : 
+        drop table if exists cart_items
+    Hibernate: 
+        drop table if exists cart_items
+    2025-11-24T01:07:48.678+09:00 DEBUG 29004 --- [ecommerce] [    Test worker] org.hibernate.SQL                        : 
+        drop table if exists categories
+    Hibernate: 
+        drop table if exists categories
+    2025-11-24T01:07:48.696+09:00 DEBUG 29004 --- [ecommerce] [    Test worker] org.hibernate.SQL                        : 
+        drop table if exists coupon_queues
+    Hibernate: 
+        drop table if exists coupon_queues
+    2025-11-24T01:07:48.708+09:00 DEBUG 29004 --- [ecommerce] [    Test worker] org.hibernate.SQL                        : 
+        drop table if exists coupons
+    Hibernate: 
+        drop table if exists coupons
+    2025-11-24T01:07:48.719+09:00 DEBUG 29004 --- [ecommerce] [    Test worker] org.hibernate.SQL                        : 
+        drop table if exists order_items
+    Hibernate: 
+        drop table if exists order_items
+    2025-11-24T01:07:48.730+09:00 DEBUG 29004 --- [ecommerce] [    Test worker] org.hibernate.SQL                        : 
+        drop table if exists orders
+    Hibernate: 
+        drop table if exists orders
+    2025-11-24T01:07:48.741+09:00 DEBUG 29004 --- [ecommerce] [    Test worker] org.hibernate.SQL                        : 
+        drop table if exists outbox_events
+    Hibernate: 
+        drop table if exists outbox_events
+    2025-11-24T01:07:48.748+09:00 DEBUG 29004 --- [ecommerce] [    Test worker] org.hibernate.SQL                        : 
+        drop table if exists payments
+    Hibernate: 
+        drop table if exists payments
+    2025-11-24T01:07:48.758+09:00 DEBUG 29004 --- [ecommerce] [    Test worker] org.hibernate.SQL                        : 
+        drop table if exists popular_products
+    Hibernate: 
+        drop table if exists popular_products
+    2025-11-24T01:07:48.766+09:00 DEBUG 29004 --- [ecommerce] [    Test worker] org.hibernate.SQL                        : 
+        drop table if exists products
+    Hibernate: 
+        drop table if exists products
+    2025-11-24T01:07:48.774+09:00 DEBUG 29004 --- [ecommerce] [    Test worker] org.hibernate.SQL                        : 
+        drop table if exists refunds
+    Hibernate: 
+        drop table if exists refunds
+    2025-11-24T01:07:48.783+09:00 DEBUG 29004 --- [ecommerce] [    Test worker] org.hibernate.SQL                        : 
+        drop table if exists shipping_addresses
+    Hibernate: 
+        drop table if exists shipping_addresses
+    2025-11-24T01:07:48.791+09:00 DEBUG 29004 --- [ecommerce] [    Test worker] org.hibernate.SQL                        : 
+        drop table if exists user_coupons
+    Hibernate: 
+        drop table if exists user_coupons
+    2025-11-24T01:07:48.801+09:00 DEBUG 29004 --- [ecommerce] [    Test worker] org.hibernate.SQL                        : 
+        drop table if exists users
+    Hibernate: 
+        drop table if exists users
+    2025-11-24T01:07:48.825+09:00 DEBUG 29004 --- [ecommerce] [    Test worker] org.hibernate.SQL                        : 
+        create table cart_items (
+            quantity integer not null,
+            created_at datetime(6) not null,
+            id bigint not null auto_increment,
+            product_id bigint not null,
+            user_id bigint not null,
+            primary key (id)
+        ) engine=InnoDB
+    Hibernate: 
+        create table cart_items (
+            quantity integer not null,
+            created_at datetime(6) not null,
+            id bigint not null auto_increment,
+            product_id bigint not null,
+            user_id bigint not null,
+            primary key (id)
+        ) engine=InnoDB
+    2025-11-24T01:07:48.879+09:00 DEBUG 29004 --- [ecommerce] [    Test worker] org.hibernate.SQL                        : 
+        create table categories (
+            created_at datetime(6) not null,
+            id bigint not null auto_increment,
+            name varchar(100) not null,
+            primary key (id)
+        ) engine=InnoDB
+    Hibernate: 
+        create table categories (
+            created_at datetime(6) not null,
+            id bigint not null auto_increment,
+            name varchar(100) not null,
+            primary key (id)
+        ) engine=InnoDB
+    2025-11-24T01:07:48.909+09:00 DEBUG 29004 --- [ecommerce] [    Test worker] org.hibernate.SQL                        : 
+        create table coupon_queues (
+            queue_position integer not null,
+            coupon_id bigint not null,
+            created_at datetime(6) not null,
+            id bigint not null auto_increment,
+            processed_at datetime(6),
+            user_id bigint not null,
+            failed_reason varchar(255),
+            status enum ('COMPLETED','FAILED','PROCESSING','WAITING') not null,
+            primary key (id)
+        ) engine=InnoDB
+    Hibernate: 
+        create table coupon_queues (
+            queue_position integer not null,
+            coupon_id bigint not null,
+            created_at datetime(6) not null,
+            id bigint not null auto_increment,
+            processed_at datetime(6),
+            user_id bigint not null,
+            failed_reason varchar(255),
+            status enum ('COMPLETED','FAILED','PROCESSING','WAITING') not null,
+            primary key (id)
+        ) engine=InnoDB
+    2025-11-24T01:07:48.956+09:00 DEBUG 29004 --- [ecommerce] [    Test worker] org.hibernate.SQL                        : 
+        create table coupons (
+            discount_rate integer,
+            issued_quantity integer not null,
+            total_quantity integer not null,
+            use_queue bit not null,
+            discount_amount bigint,
+            end_date datetime(6) not null,
+            id bigint not null auto_increment,
+            min_order_amount bigint,
+            start_date datetime(6) not null,
+            coupon_type varchar(50) not null,
+            name varchar(100) not null,
+            primary key (id)
+        ) engine=InnoDB
+    Hibernate: 
+        create table coupons (
+            discount_rate integer,
+            issued_quantity integer not null,
+            total_quantity integer not null,
+            use_queue bit not null,
+            discount_amount bigint,
+            end_date datetime(6) not null,
+            id bigint not null auto_increment,
+            min_order_amount bigint,
+            start_date datetime(6) not null,
+            coupon_type varchar(50) not null,
+            name varchar(100) not null,
+            primary key (id)
+        ) engine=InnoDB
+    2025-11-24T01:07:48.995+09:00 DEBUG 29004 --- [ecommerce] [    Test worker] org.hibernate.SQL                        : 
+        create table order_items (
+            quantity integer not null,
+            created_at datetime(6) not null,
+            id bigint not null auto_increment,
+            order_id bigint not null,
+            product_id bigint not null,
+            subtotal bigint not null,
+            unit_price bigint not null,
+            primary key (id)
+        ) engine=InnoDB
+    Hibernate: 
+        create table order_items (
+            quantity integer not null,
+            created_at datetime(6) not null,
+            id bigint not null auto_increment,
+            order_id bigint not null,
+            product_id bigint not null,
+            subtotal bigint not null,
+            unit_price bigint not null,
+            primary key (id)
+        ) engine=InnoDB
+    2025-11-24T01:07:49.033+09:00 DEBUG 29004 --- [ecommerce] [    Test worker] org.hibernate.SQL                        : 
+        create table orders (
+            created_at datetime(6) not null,
+            discount_amount bigint not null,
+            final_amount bigint not null,
+            id bigint not null auto_increment,
+            shipping_address_id bigint,
+            total_amount bigint not null,
+            user_coupon_id bigint,
+            user_id bigint not null,
+            shipping_phone varchar(20) not null,
+            order_number varchar(36) not null,
+            recipient_name varchar(100) not null,
+            address varchar(255) not null,
+            status enum ('CANCELLED','CONFIRMED','DELIVERED','PAID','PENDING','SHIPPED') not null,
+            primary key (id)
+        ) engine=InnoDB
+    Hibernate: 
+        create table orders (
+            created_at datetime(6) not null,
+            discount_amount bigint not null,
+            final_amount bigint not null,
+            id bigint not null auto_increment,
+            shipping_address_id bigint,
+            total_amount bigint not null,
+            user_coupon_id bigint,
+            user_id bigint not null,
+            shipping_phone varchar(20) not null,
+            order_number varchar(36) not null,
+            recipient_name varchar(100) not null,
+            address varchar(255) not null,
+            status enum ('CANCELLED','CONFIRMED','DELIVERED','PAID','PENDING','SHIPPED') not null,
+            primary key (id)
+        ) engine=InnoDB
+    2025-11-24T01:07:49.072+09:00 DEBUG 29004 --- [ecommerce] [    Test worker] org.hibernate.SQL                        : 
+        create table outbox_events (
+            retry_count integer not null,
+            aggregate_id bigint not null,
+            created_at datetime(6) not null,
+            id bigint not null auto_increment,
+            processed_at datetime(6),
+            event_type varchar(50) not null,
+            failed_reason varchar(500),
+            payload TEXT not null,
+            status enum ('FAILED','PENDING','PROCESSING','SUCCESS') not null,
+            primary key (id)
+        ) engine=InnoDB
+    Hibernate: 
+        create table outbox_events (
+            retry_count integer not null,
+            aggregate_id bigint not null,
+            created_at datetime(6) not null,
+            id bigint not null auto_increment,
+            processed_at datetime(6),
+            event_type varchar(50) not null,
+            failed_reason varchar(500),
+            payload TEXT not null,
+            status enum ('FAILED','PENDING','PROCESSING','SUCCESS') not null,
+            primary key (id)
+        ) engine=InnoDB
+    2025-11-24T01:07:49.126+09:00 DEBUG 29004 --- [ecommerce] [    Test worker] org.hibernate.SQL                        : 
+        create table payments (
+            created_at datetime(6) not null,
+            id bigint not null auto_increment,
+            order_id bigint not null,
+            paid_amount bigint not null,
+            payment_id varchar(36) not null,
+            data_transmission_status enum ('FAILED','PENDING','SUCCESS') not null,
+            status enum ('COMPLETED','FAILED','PENDING','REFUNDED') not null,
+            primary key (id)
+        ) engine=InnoDB
+    Hibernate: 
+        create table payments (
+            created_at datetime(6) not null,
+            id bigint not null auto_increment,
+            order_id bigint not null,
+            paid_amount bigint not null,
+            payment_id varchar(36) not null,
+            data_transmission_status enum ('FAILED','PENDING','SUCCESS') not null,
+            status enum ('COMPLETED','FAILED','PENDING','REFUNDED') not null,
+            primary key (id)
+        ) engine=InnoDB
+    2025-11-24T01:07:49.164+09:00 DEBUG 29004 --- [ecommerce] [    Test worker] org.hibernate.SQL                        : 
+        create table popular_products (
+            rank integer not null,
+            total_sales_quantity integer not null,
+            id bigint not null auto_increment,
+            price bigint not null,
+            product_id bigint not null,
+            updated_at datetime(6) not null,
+            category_name varchar(100) not null,
+            product_name varchar(200) not null,
+            primary key (id)
+        ) engine=InnoDB
+    Hibernate: 
+        create table popular_products (
+            rank integer not null,
+            total_sales_quantity integer not null,
+            id bigint not null auto_increment,
+            price bigint not null,
+            product_id bigint not null,
+            updated_at datetime(6) not null,
+            category_name varchar(100) not null,
+            product_name varchar(200) not null,
+            primary key (id)
+        ) engine=InnoDB
+    2025-11-24T01:07:49.178+09:00  WARN 29004 --- [ecommerce] [    Test worker] o.h.t.s.i.ExceptionHandlerLoggedImpl     : GenerationTarget encountered exception accepting command : Error executing DDL "
+        create table popular_products (
+            rank integer not null,
+            total_sales_quantity integer not null,
+            id bigint not null auto_increment,
+            price bigint not null,
+            product_id bigint not null,
+            updated_at datetime(6) not null,
+            category_name varchar(100) not null,
+            product_name varchar(200) not null,
+            primary key (id)
+        ) engine=InnoDB" via JDBC [You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'rank integer not null,
+            total_sales_quantity integer not null,
+            ' at line 2]
+
+    org.hibernate.tool.schema.spi.CommandAcceptanceException: Error executing DDL "
+        create table popular_products (
+            rank integer not null,
+            total_sales_quantity integer not null,
+            id bigint not null auto_increment,
+            price bigint not null,
+            product_id bigint not null,
+            updated_at datetime(6) not null,
+            category_name varchar(100) not null,
+            product_name varchar(200) not null,
+            primary key (id)
+        ) engine=InnoDB" via JDBC [You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'rank integer not null,
+            total_sales_quantity integer not null,
+            ' at line 2]
+    	at org.hibernate.tool.schema.internal.exec.GenerationTargetToDatabase.accept(GenerationTargetToDatabase.java:94) ~[hibernate-core-6.6.33.Final.jar:6.6.33.Final]
+    	at org.hibernate.tool.schema.internal.Helper.applySqlString(Helper.java:233) ~[hibernate-core-6.6.33.Final.jar:6.6.33.Final]
+    	at org.hibernate.tool.schema.internal.Helper.applySqlStrings(Helper.java:217) ~[hibernate-core-6.6.33.Final.jar:6.6.33.Final]
+    	at org.hibernate.tool.schema.internal.SchemaCreatorImpl.createTables(SchemaCreatorImpl.java:430) ~[hibernate-core-6.6.33.Final.jar:6.6.33.Final]
+    	at org.hibernate.tool.schema.internal.SchemaCreatorImpl.createSequencesTablesConstraints(SchemaCreatorImpl.java:346) ~[hibernate-core-6.6.33.Final.jar:6.6.33.Final]
+    	at org.hibernate.tool.schema.internal.SchemaCreatorImpl.createFromMetadata(SchemaCreatorImpl.java:241) ~[hibernate-core-6.6.33.Final.jar:6.6.33.Final]
+    	at org.hibernate.tool.schema.internal.SchemaCreatorImpl.performCreation(SchemaCreatorImpl.java:174) ~[hibernate-core-6.6.33.Final.jar:6.6.33.Final]
+    	at org.hibernate.tool.schema.internal.SchemaCreatorImpl.doCreation(SchemaCreatorImpl.java:144) ~[hibernate-core-6.6.33.Final.jar:6.6.33.Final]
+    	at org.hibernate.tool.schema.internal.SchemaCreatorImpl.doCreation(SchemaCreatorImpl.java:120) ~[hibernate-core-6.6.33.Final.jar:6.6.33.Final]
+    	at org.hibernate.tool.schema.spi.SchemaManagementToolCoordinator.performDatabaseAction(SchemaManagementToolCoordinator.java:250) ~[hibernate-core-6.6.33.Final.jar:6.6.33.Final]
+    	at org.hibernate.tool.schema.spi.SchemaManagementToolCoordinator.lambda$process$5(SchemaManagementToolCoordinator.java:144) ~[hibernate-core-6.6.33.Final.jar:6.6.33.Final]
+    	at java.base/java.util.HashMap.forEach(HashMap.java:1421) ~[na:na]
+    	at org.hibernate.tool.schema.spi.SchemaManagementToolCoordinator.process(SchemaManagementToolCoordinator.java:141) ~[hibernate-core-6.6.33.Final.jar:6.6.33.Final]
+    	at org.hibernate.boot.internal.SessionFactoryObserverForSchemaExport.sessionFactoryCreated(SessionFactoryObserverForSchemaExport.java:37) ~[hibernate-core-6.6.33.Final.jar:6.6.33.Final]
+    	at org.hibernate.internal.SessionFactoryObserverChain.sessionFactoryCreated(SessionFactoryObserverChain.java:35) ~[hibernate-core-6.6.33.Final.jar:6.6.33.Final]
+    	at org.hibernate.internal.SessionFactoryImpl.<init>(SessionFactoryImpl.java:324) ~[hibernate-core-6.6.33.Final.jar:6.6.33.Final]
+    	at org.hibernate.boot.internal.SessionFactoryBuilderImpl.build(SessionFactoryBuilderImpl.java:463) ~[hibernate-core-6.6.33.Final.jar:6.6.33.Final]
+    	at org.hibernate.jpa.boot.internal.EntityManagerFactoryBuilderImpl.build(EntityManagerFactoryBuilderImpl.java:1517) ~[hibernate-core-6.6.33.Final.jar:6.6.33.Final]
+    	at org.springframework.orm.jpa.vendor.SpringHibernateJpaPersistenceProvider.createContainerEntityManagerFactory(SpringHibernateJpaPersistenceProvider.java:66) ~[spring-orm-6.2.12.jar:6.2.12]
+    	at org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean.createNativeEntityManagerFactory(LocalContainerEntityManagerFactoryBean.java:390) ~[spring-orm-6.2.12.jar:6.2.12]
+    	at org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.buildNativeEntityManagerFactory(AbstractEntityManagerFactoryBean.java:419) ~[spring-orm-6.2.12.jar:6.2.12]
+    	at org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.afterPropertiesSet(AbstractEntityManagerFactoryBean.java:400) ~[spring-orm-6.2.12.jar:6.2.12]
+    	at org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean.afterPropertiesSet(LocalContainerEntityManagerFactoryBean.java:366) ~[spring-orm-6.2.12.jar:6.2.12]
+    	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.invokeInitMethods(AbstractAutowireCapableBeanFactory.java:1873) ~[spring-beans-6.2.12.jar:6.2.12]
+    	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1822) ~[spring-beans-6.2.12.jar:6.2.12]
+    	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:607) ~[spring-beans-6.2.12.jar:6.2.12]
+    	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:529) ~[spring-beans-6.2.12.jar:6.2.12]
+    	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:339) ~[spring-beans-6.2.12.jar:6.2.12]
+    	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:373) ~[spring-beans-6.2.12.jar:6.2.12]
+    	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:337) ~[spring-beans-6.2.12.jar:6.2.12]
+    	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:207) ~[spring-beans-6.2.12.jar:6.2.12]
+    	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:973) ~[spring-context-6.2.12.jar:6.2.12]
+    	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:627) ~[spring-context-6.2.12.jar:6.2.12]
+    	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:752) ~[spring-boot-3.5.7.jar:3.5.7]
+    	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:439) ~[spring-boot-3.5.7.jar:3.5.7]
+    	at org.springframework.boot.SpringApplication.run(SpringApplication.java:318) ~[spring-boot-3.5.7.jar:3.5.7]
+    	at org.springframework.boot.test.context.SpringBootContextLoader.lambda$loadContext$3(SpringBootContextLoader.java:144) ~[spring-boot-test-3.5.7.jar:3.5.7]
+    	at org.springframework.util.function.ThrowingSupplier.get(ThrowingSupplier.java:58) ~[spring-core-6.2.12.jar:6.2.12]
+    	at org.springframework.util.function.ThrowingSupplier.get(ThrowingSupplier.java:46) ~[spring-core-6.2.12.jar:6.2.12]
+    	at org.springframework.boot.SpringApplication.withHook(SpringApplication.java:1461) ~[spring-boot-3.5.7.jar:3.5.7]
+    	at org.springframework.boot.test.context.SpringBootContextLoader$ContextLoaderHook.run(SpringBootContextLoader.java:563) ~[spring-boot-test-3.5.7.jar:3.5.7]
+    	at org.springframework.boot.test.context.SpringBootContextLoader.loadContext(SpringBootContextLoader.java:144) ~[spring-boot-test-3.5.7.jar:3.5.7]
+    	at org.springframework.boot.test.context.SpringBootContextLoader.loadContext(SpringBootContextLoader.java:110) ~[spring-boot-test-3.5.7.jar:3.5.7]
+    	at org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate.loadContextInternal(DefaultCacheAwareContextLoaderDelegate.java:225) ~[spring-test-6.2.12.jar:6.2.12]
+    	at org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate.loadContext(DefaultCacheAwareContextLoaderDelegate.java:152) ~[spring-test-6.2.12.jar:6.2.12]
+    	at org.springframework.test.context.support.DefaultTestContext.getApplicationContext(DefaultTestContext.java:130) ~[spring-test-6.2.12.jar:6.2.12]
+    	at org.springframework.test.context.web.ServletTestExecutionListener.setUpRequestContextIfNecessary(ServletTestExecutionListener.java:200) ~[spring-test-6.2.12.jar:6.2.12]
+    	at org.springframework.test.context.web.ServletTestExecutionListener.prepareTestInstance(ServletTestExecutionListener.java:139) ~[spring-test-6.2.12.jar:6.2.12]
+    	at org.springframework.test.context.TestContextManager.prepareTestInstance(TestContextManager.java:260) ~[spring-test-6.2.12.jar:6.2.12]
+    	at org.springframework.test.context.junit.jupiter.SpringExtension.postProcessTestInstance(SpringExtension.java:159) ~[spring-test-6.2.12.jar:6.2.12]
+    	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$invokeTestInstancePostProcessors$10(ClassBasedTestDescriptor.java:383) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+    	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.executeAndMaskThrowable(ClassBasedTestDescriptor.java:388) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+    	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$invokeTestInstancePostProcessors$11(ClassBasedTestDescriptor.java:382) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+    	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:183) ~[na:na]
+    	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197) ~[na:na]
+    	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:179) ~[na:na]
+    	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197) ~[na:na]
+    	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1625) ~[na:na]
+    	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509) ~[na:na]
+    	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499) ~[na:na]
+    	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:150) ~[na:na]
+    	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:173) ~[na:na]
+    	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234) ~[na:na]
+    	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596) ~[na:na]
+    	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.invokeTestInstancePostProcessors(ClassBasedTestDescriptor.java:382) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+    	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$instantiateAndPostProcessTestInstance$6(ClassBasedTestDescriptor.java:293) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+    	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.instantiateAndPostProcessTestInstance(ClassBasedTestDescriptor.java:292) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+    	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$testInstancesProvider$4(ClassBasedTestDescriptor.java:281) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+    	at java.base/java.util.Optional.orElseGet(Optional.java:364) ~[na:na]
+    	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$testInstancesProvider$5(ClassBasedTestDescriptor.java:280) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+    	at org.junit.jupiter.engine.execution.TestInstancesProvider.getTestInstances(TestInstancesProvider.java:27) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+    	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$prepare$0(TestMethodTestDescriptor.java:112) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+    	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.prepare(TestMethodTestDescriptor.java:111) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+    	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.prepare(TestMethodTestDescriptor.java:69) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+    	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$prepare$2(NodeTestTask.java:128) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.NodeTestTask.prepare(NodeTestTask.java:128) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511) ~[na:na]
+    	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511) ~[na:na]
+    	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:54) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:201) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+    	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:170) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+    	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:94) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+    	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:59) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+    	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:142) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+    	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:58) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+    	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:103) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+    	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:85) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+    	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+    	at org.junit.platform.launcher.core.InterceptingLauncher.lambda$execute$1(InterceptingLauncher.java:39) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+    	at org.junit.platform.launcher.core.ClasspathAlignmentCheckingLauncherInterceptor.intercept(ClasspathAlignmentCheckingLauncherInterceptor.java:25) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+    	at org.junit.platform.launcher.core.InterceptingLauncher.execute(InterceptingLauncher.java:38) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+    	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+    	at org.gradle.api.internal.tasks.testing.junitplatform.JUnitPlatformTestClassProcessor$CollectAllTestClassesExecutor.processAllTestClasses(JUnitPlatformTestClassProcessor.java:124) ~[na:na]
+    	at org.gradle.api.internal.tasks.testing.junitplatform.JUnitPlatformTestClassProcessor$CollectAllTestClassesExecutor.access$000(JUnitPlatformTestClassProcessor.java:99) ~[na:na]
+    	at org.gradle.api.internal.tasks.testing.junitplatform.JUnitPlatformTestClassProcessor.stop(JUnitPlatformTestClassProcessor.java:94) ~[na:na]
+    	at org.gradle.api.internal.tasks.testing.SuiteTestClassProcessor.stop(SuiteTestClassProcessor.java:63) ~[na:na]
+    	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:na]
+    	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77) ~[na:na]
+    	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:na]
+    	at java.base/java.lang.reflect.Method.invoke(Method.java:568) ~[na:na]
+    	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:36) ~[na:na]
+    	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24) ~[na:na]
+    	at org.gradle.internal.dispatch.ContextClassLoaderDispatch.dispatch(ContextClassLoaderDispatch.java:33) ~[na:na]
+    	at org.gradle.internal.dispatch.ProxyDispatchAdapter$DispatchingInvocationHandler.invoke(ProxyDispatchAdapter.java:92) ~[na:na]
+    	at jdk.proxy2/jdk.proxy2.$Proxy6.stop(Unknown Source) ~[na:na]
+    	at org.gradle.api.internal.tasks.testing.worker.TestWorker$3.run(TestWorker.java:200) ~[na:na]
+    	at org.gradle.api.internal.tasks.testing.worker.TestWorker.executeAndMaintainThreadName(TestWorker.java:132) ~[na:na]
+    	at org.gradle.api.internal.tasks.testing.worker.TestWorker.execute(TestWorker.java:103) ~[na:na]
+    	at org.gradle.api.internal.tasks.testing.worker.TestWorker.execute(TestWorker.java:63) ~[na:na]
+    	at org.gradle.process.internal.worker.child.ActionExecutionWorker.execute(ActionExecutionWorker.java:56) ~[na:na]
+    	at org.gradle.process.internal.worker.child.SystemApplicationClassLoaderWorker.call(SystemApplicationClassLoaderWorker.java:122) ~[na:na]
+    	at org.gradle.process.internal.worker.child.SystemApplicationClassLoaderWorker.call(SystemApplicationClassLoaderWorker.java:72) ~[na:na]
+    	at worker.org.gradle.process.internal.worker.GradleWorkerMain.run(GradleWorkerMain.java:69) ~[gradle-worker.jar:na]
+    	at worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74) ~[gradle-worker.jar:na]
+    Caused by: java.sql.SQLSyntaxErrorException: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'rank integer not null,
+            total_sales_quantity integer not null,
+            ' at line 2
+    	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:112) ~[mysql-connector-j-9.4.0.jar:9.4.0]
+    	at com.mysql.cj.jdbc.exceptions.SQLExceptionsMapping.translateException(SQLExceptionsMapping.java:114) ~[mysql-connector-j-9.4.0.jar:9.4.0]
+    	at com.mysql.cj.jdbc.StatementImpl.executeInternal(StatementImpl.java:837) ~[mysql-connector-j-9.4.0.jar:9.4.0]
+    	at com.mysql.cj.jdbc.StatementImpl.execute(StatementImpl.java:685) ~[mysql-connector-j-9.4.0.jar:9.4.0]
+    	at com.zaxxer.hikari.pool.ProxyStatement.execute(ProxyStatement.java:95) ~[HikariCP-6.3.3.jar:na]
+    	at com.zaxxer.hikari.pool.HikariProxyStatement.execute(HikariProxyStatement.java) ~[HikariCP-6.3.3.jar:na]
+    	at org.hibernate.tool.schema.internal.exec.GenerationTargetToDatabase.accept(GenerationTargetToDatabase.java:80) ~[hibernate-core-6.6.33.Final.jar:6.6.33.Final]
+    	... 137 common frames omitted
+
+    2025-11-24T01:07:49.195+09:00 DEBUG 29004 --- [ecommerce] [    Test worker] org.hibernate.SQL                        : 
+        create table products (
+            stock integer not null,
+            category_id bigint not null,
+            created_at datetime(6) not null,
+            id bigint not null auto_increment,
+            price bigint not null,
+            description TEXT,
+            name varchar(255) not null,
+            primary key (id)
+        ) engine=InnoDB
+    Hibernate: 
+        create table products (
+            stock integer not null,
+            category_id bigint not null,
+            created_at datetime(6) not null,
+            id bigint not null auto_increment,
+            price bigint not null,
+            description TEXT,
+            name varchar(255) not null,
+            primary key (id)
+        ) engine=InnoDB
+    2025-11-24T01:07:49.235+09:00 DEBUG 29004 --- [ecommerce] [    Test worker] org.hibernate.SQL                        : 
+        create table refunds (
+            created_at datetime(6) not null,
+            id bigint not null auto_increment,
+            order_id bigint not null,
+            refund_amount bigint not null,
+            status varchar(20) not null,
+            reason varchar(255),
+            primary key (id)
+        ) engine=InnoDB
+    Hibernate: 
+        create table refunds (
+            created_at datetime(6) not null,
+            id bigint not null auto_increment,
+            order_id bigint not null,
+            refund_amount bigint not null,
+            status varchar(20) not null,
+            reason varchar(255),
+            primary key (id)
+        ) engine=InnoDB
+    2025-11-24T01:07:49.270+09:00 DEBUG 29004 --- [ecommerce] [    Test worker] org.hibernate.SQL                        : 
+        create table shipping_addresses (
+            is_default bit not null,
+            created_at datetime(6) not null,
+            id bigint not null auto_increment,
+            user_id bigint not null,
+            phone varchar(20) not null,
+            address_name varchar(50) not null,
+            recipient_name varchar(100) not null,
+            address varchar(255) not null,
+            primary key (id)
+        ) engine=InnoDB
+    Hibernate: 
+        create table shipping_addresses (
+            is_default bit not null,
+            created_at datetime(6) not null,
+            id bigint not null auto_increment,
+            user_id bigint not null,
+            phone varchar(20) not null,
+            address_name varchar(50) not null,
+            recipient_name varchar(100) not null,
+            address varchar(255) not null,
+            primary key (id)
+        ) engine=InnoDB
+    2025-11-24T01:07:49.311+09:00 DEBUG 29004 --- [ecommerce] [    Test worker] org.hibernate.SQL                        : 
+        create table user_coupons (
+            coupon_id bigint not null,
+            expires_at datetime(6) not null,
+            id bigint not null auto_increment,
+            issued_at datetime(6) not null,
+            user_id bigint not null,
+            status enum ('EXPIRED','UNUSED','USED') not null,
+            primary key (id)
+        ) engine=InnoDB
+    Hibernate: 
+        create table user_coupons (
+            coupon_id bigint not null,
+            expires_at datetime(6) not null,
+            id bigint not null auto_increment,
+            issued_at datetime(6) not null,
+            user_id bigint not null,
+            status enum ('EXPIRED','UNUSED','USED') not null,
+            primary key (id)
+        ) engine=InnoDB
+    2025-11-24T01:07:49.345+09:00 DEBUG 29004 --- [ecommerce] [    Test worker] org.hibernate.SQL                        : 
+        create table users (
+            balance bigint not null,
+            created_at datetime(6) not null,
+            id bigint not null auto_increment,
+            phone varchar(20) not null,
+            public_id varchar(36) not null,
+            name varchar(100) not null,
+            email varchar(255) not null,
+            primary key (id)
+        ) engine=InnoDB
+    Hibernate: 
+        create table users (
+            balance bigint not null,
+            created_at datetime(6) not null,
+            id bigint not null auto_increment,
+            phone varchar(20) not null,
+            public_id varchar(36) not null,
+            name varchar(100) not null,
+            email varchar(255) not null,
+            primary key (id)
+        ) engine=InnoDB
+    2025-11-24T01:07:49.382+09:00 DEBUG 29004 --- [ecommerce] [    Test worker] org.hibernate.SQL                        : 
+        alter table orders 
+           add constraint UKnthkiu7pgmnqnu86i2jyoe2v7 unique (order_number)
+    Hibernate: 
+        alter table orders 
+           add constraint UKnthkiu7pgmnqnu86i2jyoe2v7 unique (order_number)
+    2025-11-24T01:07:49.416+09:00 DEBUG 29004 --- [ecommerce] [    Test worker] org.hibernate.SQL                        : 
+        create index idx_status_retry 
+           on outbox_events (status, retry_count)
+    Hibernate: 
+        create index idx_status_retry 
+           on outbox_events (status, retry_count)
+    2025-11-24T01:07:49.454+09:00 DEBUG 29004 --- [ecommerce] [    Test worker] org.hibernate.SQL                        : 
+        create index idx_created_at 
+           on outbox_events (created_at)
+    Hibernate: 
+        create index idx_created_at 
+           on outbox_events (created_at)
+    2025-11-24T01:07:49.479+09:00 DEBUG 29004 --- [ecommerce] [    Test worker] org.hibernate.SQL                        : 
+        alter table payments 
+           add constraint UKt4ffsaqe8d6i83gs100u2y3l1 unique (payment_id)
+    Hibernate: 
+        alter table payments 
+           add constraint UKt4ffsaqe8d6i83gs100u2y3l1 unique (payment_id)
+    2025-11-24T01:07:49.501+09:00 DEBUG 29004 --- [ecommerce] [    Test worker] org.hibernate.SQL                        : 
+        alter table popular_products 
+           add constraint UKqte7kib7tfkxebn8btc6otvgb unique (rank)
+    Hibernate: 
+        alter table popular_products 
+           add constraint UKqte7kib7tfkxebn8btc6otvgb unique (rank)
+    2025-11-24T01:07:49.506+09:00  WARN 29004 --- [ecommerce] [    Test worker] o.h.t.s.i.ExceptionHandlerLoggedImpl     : GenerationTarget encountered exception accepting command : Error executing DDL "
+        alter table popular_products 
+           add constraint UKqte7kib7tfkxebn8btc6otvgb unique (rank)" via JDBC [You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'rank)' at line 2]
+
+    org.hibernate.tool.schema.spi.CommandAcceptanceException: Error executing DDL "
+        alter table popular_products 
+           add constraint UKqte7kib7tfkxebn8btc6otvgb unique (rank)" via JDBC [You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'rank)' at line 2]
+    	at org.hibernate.tool.schema.internal.exec.GenerationTargetToDatabase.accept(GenerationTargetToDatabase.java:94) ~[hibernate-core-6.6.33.Final.jar:6.6.33.Final]
+    	at org.hibernate.tool.schema.internal.Helper.applySqlString(Helper.java:233) ~[hibernate-core-6.6.33.Final.jar:6.6.33.Final]
+    	at org.hibernate.tool.schema.internal.Helper.applySqlStrings(Helper.java:217) ~[hibernate-core-6.6.33.Final.jar:6.6.33.Final]
+    	at org.hibernate.tool.schema.internal.SchemaCreatorImpl.createTableConstraints(SchemaCreatorImpl.java:402) ~[hibernate-core-6.6.33.Final.jar:6.6.33.Final]
+    	at org.hibernate.tool.schema.internal.SchemaCreatorImpl.createSequencesTablesConstraints(SchemaCreatorImpl.java:358) ~[hibernate-core-6.6.33.Final.jar:6.6.33.Final]
+    	at org.hibernate.tool.schema.internal.SchemaCreatorImpl.createFromMetadata(SchemaCreatorImpl.java:241) ~[hibernate-core-6.6.33.Final.jar:6.6.33.Final]
+    	at org.hibernate.tool.schema.internal.SchemaCreatorImpl.performCreation(SchemaCreatorImpl.java:174) ~[hibernate-core-6.6.33.Final.jar:6.6.33.Final]
+    	at org.hibernate.tool.schema.internal.SchemaCreatorImpl.doCreation(SchemaCreatorImpl.java:144) ~[hibernate-core-6.6.33.Final.jar:6.6.33.Final]
+    	at org.hibernate.tool.schema.internal.SchemaCreatorImpl.doCreation(SchemaCreatorImpl.java:120) ~[hibernate-core-6.6.33.Final.jar:6.6.33.Final]
+    	at org.hibernate.tool.schema.spi.SchemaManagementToolCoordinator.performDatabaseAction(SchemaManagementToolCoordinator.java:250) ~[hibernate-core-6.6.33.Final.jar:6.6.33.Final]
+    	at org.hibernate.tool.schema.spi.SchemaManagementToolCoordinator.lambda$process$5(SchemaManagementToolCoordinator.java:144) ~[hibernate-core-6.6.33.Final.jar:6.6.33.Final]
+    	at java.base/java.util.HashMap.forEach(HashMap.java:1421) ~[na:na]
+    	at org.hibernate.tool.schema.spi.SchemaManagementToolCoordinator.process(SchemaManagementToolCoordinator.java:141) ~[hibernate-core-6.6.33.Final.jar:6.6.33.Final]
+    	at org.hibernate.boot.internal.SessionFactoryObserverForSchemaExport.sessionFactoryCreated(SessionFactoryObserverForSchemaExport.java:37) ~[hibernate-core-6.6.33.Final.jar:6.6.33.Final]
+    	at org.hibernate.internal.SessionFactoryObserverChain.sessionFactoryCreated(SessionFactoryObserverChain.java:35) ~[hibernate-core-6.6.33.Final.jar:6.6.33.Final]
+    	at org.hibernate.internal.SessionFactoryImpl.<init>(SessionFactoryImpl.java:324) ~[hibernate-core-6.6.33.Final.jar:6.6.33.Final]
+    	at org.hibernate.boot.internal.SessionFactoryBuilderImpl.build(SessionFactoryBuilderImpl.java:463) ~[hibernate-core-6.6.33.Final.jar:6.6.33.Final]
+    	at org.hibernate.jpa.boot.internal.EntityManagerFactoryBuilderImpl.build(EntityManagerFactoryBuilderImpl.java:1517) ~[hibernate-core-6.6.33.Final.jar:6.6.33.Final]
+    	at org.springframework.orm.jpa.vendor.SpringHibernateJpaPersistenceProvider.createContainerEntityManagerFactory(SpringHibernateJpaPersistenceProvider.java:66) ~[spring-orm-6.2.12.jar:6.2.12]
+    	at org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean.createNativeEntityManagerFactory(LocalContainerEntityManagerFactoryBean.java:390) ~[spring-orm-6.2.12.jar:6.2.12]
+    	at org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.buildNativeEntityManagerFactory(AbstractEntityManagerFactoryBean.java:419) ~[spring-orm-6.2.12.jar:6.2.12]
+    	at org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.afterPropertiesSet(AbstractEntityManagerFactoryBean.java:400) ~[spring-orm-6.2.12.jar:6.2.12]
+    	at org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean.afterPropertiesSet(LocalContainerEntityManagerFactoryBean.java:366) ~[spring-orm-6.2.12.jar:6.2.12]
+    	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.invokeInitMethods(AbstractAutowireCapableBeanFactory.java:1873) ~[spring-beans-6.2.12.jar:6.2.12]
+    	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1822) ~[spring-beans-6.2.12.jar:6.2.12]
+    	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:607) ~[spring-beans-6.2.12.jar:6.2.12]
+    	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:529) ~[spring-beans-6.2.12.jar:6.2.12]
+    	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:339) ~[spring-beans-6.2.12.jar:6.2.12]
+    	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:373) ~[spring-beans-6.2.12.jar:6.2.12]
+    	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:337) ~[spring-beans-6.2.12.jar:6.2.12]
+    	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:207) ~[spring-beans-6.2.12.jar:6.2.12]
+    	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:973) ~[spring-context-6.2.12.jar:6.2.12]
+    	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:627) ~[spring-context-6.2.12.jar:6.2.12]
+    	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:752) ~[spring-boot-3.5.7.jar:3.5.7]
+    	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:439) ~[spring-boot-3.5.7.jar:3.5.7]
+    	at org.springframework.boot.SpringApplication.run(SpringApplication.java:318) ~[spring-boot-3.5.7.jar:3.5.7]
+    	at org.springframework.boot.test.context.SpringBootContextLoader.lambda$loadContext$3(SpringBootContextLoader.java:144) ~[spring-boot-test-3.5.7.jar:3.5.7]
+    	at org.springframework.util.function.ThrowingSupplier.get(ThrowingSupplier.java:58) ~[spring-core-6.2.12.jar:6.2.12]
+    	at org.springframework.util.function.ThrowingSupplier.get(ThrowingSupplier.java:46) ~[spring-core-6.2.12.jar:6.2.12]
+    	at org.springframework.boot.SpringApplication.withHook(SpringApplication.java:1461) ~[spring-boot-3.5.7.jar:3.5.7]
+    	at org.springframework.boot.test.context.SpringBootContextLoader$ContextLoaderHook.run(SpringBootContextLoader.java:563) ~[spring-boot-test-3.5.7.jar:3.5.7]
+    	at org.springframework.boot.test.context.SpringBootContextLoader.loadContext(SpringBootContextLoader.java:144) ~[spring-boot-test-3.5.7.jar:3.5.7]
+    	at org.springframework.boot.test.context.SpringBootContextLoader.loadContext(SpringBootContextLoader.java:110) ~[spring-boot-test-3.5.7.jar:3.5.7]
+    	at org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate.loadContextInternal(DefaultCacheAwareContextLoaderDelegate.java:225) ~[spring-test-6.2.12.jar:6.2.12]
+    	at org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate.loadContext(DefaultCacheAwareContextLoaderDelegate.java:152) ~[spring-test-6.2.12.jar:6.2.12]
+    	at org.springframework.test.context.support.DefaultTestContext.getApplicationContext(DefaultTestContext.java:130) ~[spring-test-6.2.12.jar:6.2.12]
+    	at org.springframework.test.context.web.ServletTestExecutionListener.setUpRequestContextIfNecessary(ServletTestExecutionListener.java:200) ~[spring-test-6.2.12.jar:6.2.12]
+    	at org.springframework.test.context.web.ServletTestExecutionListener.prepareTestInstance(ServletTestExecutionListener.java:139) ~[spring-test-6.2.12.jar:6.2.12]
+    	at org.springframework.test.context.TestContextManager.prepareTestInstance(TestContextManager.java:260) ~[spring-test-6.2.12.jar:6.2.12]
+    	at org.springframework.test.context.junit.jupiter.SpringExtension.postProcessTestInstance(SpringExtension.java:159) ~[spring-test-6.2.12.jar:6.2.12]
+    	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$invokeTestInstancePostProcessors$10(ClassBasedTestDescriptor.java:383) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+    	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.executeAndMaskThrowable(ClassBasedTestDescriptor.java:388) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+    	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$invokeTestInstancePostProcessors$11(ClassBasedTestDescriptor.java:382) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+    	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:183) ~[na:na]
+    	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197) ~[na:na]
+    	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:179) ~[na:na]
+    	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197) ~[na:na]
+    	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1625) ~[na:na]
+    	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509) ~[na:na]
+    	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499) ~[na:na]
+    	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:150) ~[na:na]
+    	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:173) ~[na:na]
+    	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234) ~[na:na]
+    	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596) ~[na:na]
+    	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.invokeTestInstancePostProcessors(ClassBasedTestDescriptor.java:382) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+    	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$instantiateAndPostProcessTestInstance$6(ClassBasedTestDescriptor.java:293) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+    	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.instantiateAndPostProcessTestInstance(ClassBasedTestDescriptor.java:292) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+    	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$testInstancesProvider$4(ClassBasedTestDescriptor.java:281) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+    	at java.base/java.util.Optional.orElseGet(Optional.java:364) ~[na:na]
+    	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$testInstancesProvider$5(ClassBasedTestDescriptor.java:280) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+    	at org.junit.jupiter.engine.execution.TestInstancesProvider.getTestInstances(TestInstancesProvider.java:27) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+    	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$prepare$0(TestMethodTestDescriptor.java:112) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+    	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.prepare(TestMethodTestDescriptor.java:111) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+    	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.prepare(TestMethodTestDescriptor.java:69) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+    	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$prepare$2(NodeTestTask.java:128) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.NodeTestTask.prepare(NodeTestTask.java:128) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511) ~[na:na]
+    	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511) ~[na:na]
+    	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:54) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+    	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:201) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+    	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:170) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+    	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:94) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+    	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:59) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+    	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:142) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+    	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:58) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+    	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:103) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+    	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:85) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+    	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+    	at org.junit.platform.launcher.core.InterceptingLauncher.lambda$execute$1(InterceptingLauncher.java:39) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+    	at org.junit.platform.launcher.core.ClasspathAlignmentCheckingLauncherInterceptor.intercept(ClasspathAlignmentCheckingLauncherInterceptor.java:25) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+    	at org.junit.platform.launcher.core.InterceptingLauncher.execute(InterceptingLauncher.java:38) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+    	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+    	at org.gradle.api.internal.tasks.testing.junitplatform.JUnitPlatformTestClassProcessor$CollectAllTestClassesExecutor.processAllTestClasses(JUnitPlatformTestClassProcessor.java:124) ~[na:na]
+    	at org.gradle.api.internal.tasks.testing.junitplatform.JUnitPlatformTestClassProcessor$CollectAllTestClassesExecutor.access$000(JUnitPlatformTestClassProcessor.java:99) ~[na:na]
+    	at org.gradle.api.internal.tasks.testing.junitplatform.JUnitPlatformTestClassProcessor.stop(JUnitPlatformTestClassProcessor.java:94) ~[na:na]
+    	at org.gradle.api.internal.tasks.testing.SuiteTestClassProcessor.stop(SuiteTestClassProcessor.java:63) ~[na:na]
+    	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:na]
+    	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77) ~[na:na]
+    	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:na]
+    	at java.base/java.lang.reflect.Method.invoke(Method.java:568) ~[na:na]
+    	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:36) ~[na:na]
+    	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24) ~[na:na]
+    	at org.gradle.internal.dispatch.ContextClassLoaderDispatch.dispatch(ContextClassLoaderDispatch.java:33) ~[na:na]
+    	at org.gradle.internal.dispatch.ProxyDispatchAdapter$DispatchingInvocationHandler.invoke(ProxyDispatchAdapter.java:92) ~[na:na]
+    	at jdk.proxy2/jdk.proxy2.$Proxy6.stop(Unknown Source) ~[na:na]
+    	at org.gradle.api.internal.tasks.testing.worker.TestWorker$3.run(TestWorker.java:200) ~[na:na]
+    	at org.gradle.api.internal.tasks.testing.worker.TestWorker.executeAndMaintainThreadName(TestWorker.java:132) ~[na:na]
+    	at org.gradle.api.internal.tasks.testing.worker.TestWorker.execute(TestWorker.java:103) ~[na:na]
+    	at org.gradle.api.internal.tasks.testing.worker.TestWorker.execute(TestWorker.java:63) ~[na:na]
+    	at org.gradle.process.internal.worker.child.ActionExecutionWorker.execute(ActionExecutionWorker.java:56) ~[na:na]
+    	at org.gradle.process.internal.worker.child.SystemApplicationClassLoaderWorker.call(SystemApplicationClassLoaderWorker.java:122) ~[na:na]
+    	at org.gradle.process.internal.worker.child.SystemApplicationClassLoaderWorker.call(SystemApplicationClassLoaderWorker.java:72) ~[na:na]
+    	at worker.org.gradle.process.internal.worker.GradleWorkerMain.run(GradleWorkerMain.java:69) ~[gradle-worker.jar:na]
+    	at worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74) ~[gradle-worker.jar:na]
+    Caused by: java.sql.SQLSyntaxErrorException: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'rank)' at line 2
+    	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:112) ~[mysql-connector-j-9.4.0.jar:9.4.0]
+    	at com.mysql.cj.jdbc.exceptions.SQLExceptionsMapping.translateException(SQLExceptionsMapping.java:114) ~[mysql-connector-j-9.4.0.jar:9.4.0]
+    	at com.mysql.cj.jdbc.StatementImpl.executeInternal(StatementImpl.java:837) ~[mysql-connector-j-9.4.0.jar:9.4.0]
+    	at com.mysql.cj.jdbc.StatementImpl.execute(StatementImpl.java:685) ~[mysql-connector-j-9.4.0.jar:9.4.0]
+    	at com.zaxxer.hikari.pool.ProxyStatement.execute(ProxyStatement.java:95) ~[HikariCP-6.3.3.jar:na]
+    	at com.zaxxer.hikari.pool.HikariProxyStatement.execute(HikariProxyStatement.java) ~[HikariCP-6.3.3.jar:na]
+    	at org.hibernate.tool.schema.internal.exec.GenerationTargetToDatabase.accept(GenerationTargetToDatabase.java:80) ~[hibernate-core-6.6.33.Final.jar:6.6.33.Final]
+    	... 137 common frames omitted
+
+    2025-11-24T01:07:49.517+09:00 DEBUG 29004 --- [ecommerce] [    Test worker] org.hibernate.SQL                        : 
+        alter table users 
+           add constraint UKs24bux761rbgowsl7a4b386ba unique (public_id)
+    Hibernate: 
+        alter table users 
+           add constraint UKs24bux761rbgowsl7a4b386ba unique (public_id)
+    2025-11-24T01:07:49.547+09:00 DEBUG 29004 --- [ecommerce] [    Test worker] org.hibernate.SQL                        : 
+        alter table users 
+           add constraint UK6dotkott2kjsp8vw4d0m25fb7 unique (email)
+    Hibernate: 
+        alter table users 
+           add constraint UK6dotkott2kjsp8vw4d0m25fb7 unique (email)
+    2025-11-24T01:07:49.587+09:00  INFO 29004 --- [ecommerce] [    Test worker] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+    2025-11-24T01:07:50.288+09:00  INFO 29004 --- [ecommerce] [    Test worker] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+    2025-11-24T01:07:52.637+09:00  INFO 29004 --- [ecommerce] [    Test worker] org.redisson.Version                     : Redisson 3.27.2
+    2025-11-24T01:07:53.524+09:00  INFO 29004 --- [ecommerce] [isson-netty-1-5] o.redisson.connection.ConnectionsHolder  : 1 connections initialized for localhost/127.0.0.1:6379
+    2025-11-24T01:07:53.780+09:00  INFO 29004 --- [ecommerce] [sson-netty-1-20] o.redisson.connection.ConnectionsHolder  : 24 connections initialized for localhost/127.0.0.1:6379
+    2025-11-24T01:07:54.313+09:00  WARN 29004 --- [ecommerce] [    Test worker] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+    2025-11-24T01:07:56.506+09:00  INFO 29004 --- [ecommerce] [    Test worker] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+    2025-11-24T01:07:56.684+09:00  INFO 29004 --- [ecommerce] [    Test worker] c.h.e.c.DistributedLockComparisonTest    : Started DistributedLockComparisonTest in 20.211 seconds (process running for 24.326)
+
+DistributedLockComparisonTest > Simple Lock: 100 스레드 중 1개만 즉시 성공, 나머지는 즉시 실패 STANDARD_OUT
+    2025-11-24T01:07:56.928+09:00 DEBUG 29004 --- [ecommerce] [   scheduling-1] org.hibernate.SQL                        : 
+        /* SELECT
+            c 
+        FROM
+            Coupon c 
+        WHERE
+            c.startDate <= :now 
+            AND c.endDate >= :now 
+            AND c.issuedQuantity < c.totalQuantity */ select
+                c1_0.id,
+                c1_0.coupon_type,
+                c1_0.discount_amount,
+                c1_0.discount_rate,
+                c1_0.end_date,
+                c1_0.issued_quantity,
+                c1_0.min_order_amount,
+                c1_0.name,
+                c1_0.start_date,
+                c1_0.total_quantity,
+                c1_0.use_queue 
+            from
+                coupons c1_0 
+            where
+                c1_0.start_date<=? 
+                and c1_0.end_date>=? 
+                and c1_0.issued_quantity<c1_0.total_quantity
+    Hibernate: 
+        /* SELECT
+            c 
+        FROM
+            Coupon c 
+        WHERE
+            c.startDate <= :now 
+            AND c.endDate >= :now 
+            AND c.issuedQuantity < c.totalQuantity */ select
+                c1_0.id,
+                c1_0.coupon_type,
+                c1_0.discount_amount,
+                c1_0.discount_rate,
+                c1_0.end_date,
+                c1_0.issued_quantity,
+                c1_0.min_order_amount,
+                c1_0.name,
+                c1_0.start_date,
+                c1_0.total_quantity,
+                c1_0.use_queue 
+            from
+                coupons c1_0 
+            where
+                c1_0.start_date<=? 
+                and c1_0.end_date>=? 
+                and c1_0.issued_quantity<c1_0.total_quantity
+    2025-11-24T01:07:57.096+09:00 DEBUG 29004 --- [ecommerce] [   scheduling-1] org.hibernate.SQL                        : 
+        /* <criteria> */ select
+            c1_0.id,
+            c1_0.coupon_type,
+            c1_0.discount_amount,
+            c1_0.discount_rate,
+            c1_0.end_date,
+            c1_0.issued_quantity,
+            c1_0.min_order_amount,
+            c1_0.name,
+            c1_0.start_date,
+            c1_0.total_quantity,
+            c1_0.use_queue 
+        from
+            coupons c1_0
+    Hibernate: 
+        /* <criteria> */ select
+            c1_0.id,
+            c1_0.coupon_type,
+            c1_0.discount_amount,
+            c1_0.discount_rate,
+            c1_0.end_date,
+            c1_0.issued_quantity,
+            c1_0.min_order_amount,
+            c1_0.name,
+            c1_0.start_date,
+            c1_0.total_quantity,
+            c1_0.use_queue 
+        from
+            coupons c1_0
+    2025-11-24T01:07:57.164+09:00 DEBUG 29004 --- [ecommerce] [   scheduling-1] org.hibernate.SQL                        : 
+        /* <criteria> */ select
+            oe1_0.id,
+            oe1_0.aggregate_id,
+            oe1_0.created_at,
+            oe1_0.event_type,
+            oe1_0.failed_reason,
+            oe1_0.payload,
+            oe1_0.processed_at,
+            oe1_0.retry_count,
+            oe1_0.status 
+        from
+            outbox_events oe1_0 
+        where
+            oe1_0.status=? 
+            and oe1_0.retry_count<?
+    Hibernate: 
+        /* <criteria> */ select
+            oe1_0.id,
+            oe1_0.aggregate_id,
+            oe1_0.created_at,
+            oe1_0.event_type,
+            oe1_0.failed_reason,
+            oe1_0.payload,
+            oe1_0.processed_at,
+            oe1_0.retry_count,
+            oe1_0.status 
+        from
+            outbox_events oe1_0 
+        where
+            oe1_0.status=? 
+            and oe1_0.retry_count<?
+    2025-11-24T01:07:57.177+09:00  INFO 29004 --- [ecommerce] [   scheduling-1] c.h.e.i.s.PopularProductScheduler        : 인기 상품 갱신 시작
+
+Java HotSpot(TM) 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+Gradle Test Executor 8 finished executing tests.
+2025-11-24T01:07:58.802+09:00  INFO 29004 --- [ecommerce] [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-11-24T01:07:58.804+09:00 DEBUG 29004 --- [ecommerce] [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists cart_items
+Hibernate: 
+    drop table if exists cart_items
+2025-11-24T01:07:58.832+09:00 DEBUG 29004 --- [ecommerce] [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists categories
+Hibernate: 
+    drop table if exists categories
+2025-11-24T01:07:58.850+09:00 DEBUG 29004 --- [ecommerce] [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists coupon_queues
+Hibernate: 
+    drop table if exists coupon_queues
+2025-11-24T01:07:58.879+09:00 DEBUG 29004 --- [ecommerce] [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists coupons
+Hibernate: 
+    drop table if exists coupons
+2025-11-24T01:07:58.904+09:00 DEBUG 29004 --- [ecommerce] [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists order_items
+Hibernate: 
+    drop table if exists order_items
+2025-11-24T01:07:58.932+09:00 DEBUG 29004 --- [ecommerce] [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists orders
+Hibernate: 
+    drop table if exists orders
+2025-11-24T01:07:58.952+09:00 DEBUG 29004 --- [ecommerce] [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists outbox_events
+Hibernate: 
+    drop table if exists outbox_events
+2025-11-24T01:07:58.974+09:00 DEBUG 29004 --- [ecommerce] [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists payments
+Hibernate: 
+    drop table if exists payments
+2025-11-24T01:07:59.000+09:00 DEBUG 29004 --- [ecommerce] [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists popular_products
+Hibernate: 
+    drop table if exists popular_products
+2025-11-24T01:07:59.012+09:00 DEBUG 29004 --- [ecommerce] [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists products
+Hibernate: 
+    drop table if exists products
+2025-11-24T01:07:59.040+09:00 DEBUG 29004 --- [ecommerce] [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists refunds
+Hibernate: 
+    drop table if exists refunds
+2025-11-24T01:07:59.065+09:00 DEBUG 29004 --- [ecommerce] [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists shipping_addresses
+Hibernate: 
+    drop table if exists shipping_addresses
+2025-11-24T01:07:59.084+09:00 DEBUG 29004 --- [ecommerce] [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists user_coupons
+Hibernate: 
+    drop table if exists user_coupons
+2025-11-24T01:07:59.104+09:00 DEBUG 29004 --- [ecommerce] [ionShutdownHook] org.hibernate.SQL                        : 
+    drop table if exists users
+Hibernate: 
+    drop table if exists users
+2025-11-24T01:07:59.129+09:00  INFO 29004 --- [ecommerce] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2025-11-24T01:07:59.139+09:00  INFO 29004 --- [ecommerce] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+
+> Task :test
+    2025-11-24T01:07:57.231+09:00 DEBUG 29004 --- [ecommerce] [   scheduling-1] org.hibernate.SQL                        : 
+        /* dynamic native SQL query */ SELECT
+            oi.product_id AS productId,
+            p.name AS productName,
+            p.price AS price,
+            SUM(oi.quantity) AS totalSalesQuantity,
+            c.name AS categoryName 
+        FROM
+            order_items oi 
+        JOIN
+            products p 
+                ON oi.product_id = p.id 
+        JOIN
+            categories c 
+                ON p.category_id = c.id 
+        JOIN
+            orders o 
+                ON oi.order_id = o.id 
+        WHERE
+            o.created_at >= ? 
+        GROUP BY
+            oi.product_id,
+            p.name,
+            p.price,
+            c.name 
+        ORDER BY
+            SUM(oi.quantity) DESC 
+        LIMIT
+            ?
+    Hibernate: 
+        /* dynamic native SQL query */ SELECT
+            oi.product_id AS productId,
+            p.name AS productName,
+            p.price AS price,
+            SUM(oi.quantity) AS totalSalesQuantity,
+            c.name AS categoryName 
+        FROM
+            order_items oi 
+        JOIN
+            products p 
+                ON oi.product_id = p.id 
+        JOIN
+            categories c 
+                ON p.category_id = c.id 
+        JOIN
+            orders o 
+                ON oi.order_id = o.id 
+        WHERE
+            o.created_at >= ? 
+        GROUP BY
+            oi.product_id,
+            p.name,
+            p.price,
+            c.name 
+        ORDER BY
+            SUM(oi.quantity) DESC 
+        LIMIT
+            ?
+    2025-11-24T01:07:57.257+09:00  WARN 29004 --- [ecommerce] [   scheduling-1] c.h.e.i.s.PopularProductScheduler        : 인기 상품이 없습니다. (최근 3일간 주문 없음)
+    2025-11-24T01:07:57.479+09:00 DEBUG 29004 --- [ecommerce] [    Test worker] org.hibernate.SQL                        : 
+        /* <criteria> */ select
+            c1_0.id,
+            c1_0.coupon_type,
+            c1_0.discount_amount,
+            c1_0.discount_rate,
+            c1_0.end_date,
+            c1_0.issued_quantity,
+            c1_0.min_order_amount,
+            c1_0.name,
+            c1_0.start_date,
+            c1_0.total_quantity,
+            c1_0.use_queue 
+        from
+            coupons c1_0
+    Hibernate: 
+        /* <criteria> */ select
+            c1_0.id,
+            c1_0.coupon_type,
+            c1_0.discount_amount,
+            c1_0.discount_rate,
+            c1_0.end_date,
+            c1_0.issued_quantity,
+            c1_0.min_order_amount,
+            c1_0.name,
+            c1_0.start_date,
+            c1_0.total_quantity,
+            c1_0.use_queue 
+        from
+            coupons c1_0
+    2025-11-24T01:07:57.563+09:00 DEBUG 29004 --- [ecommerce] [    Test worker] org.hibernate.SQL                        : 
+        /* insert for
+            com.hhplus.ecommerce.domain.entity.Coupon */insert 
+        into
+            coupons (coupon_type, discount_amount, discount_rate, end_date, issued_quantity, min_order_amount, name, start_date, total_quantity, use_queue) 
+        values
+            (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    Hibernate: 
+        /* insert for
+            com.hhplus.ecommerce.domain.entity.Coupon */insert 
+        into
+            coupons (coupon_type, discount_amount, discount_rate, end_date, issued_quantity, min_order_amount, name, start_date, total_quantity, use_queue) 
+        values
+            (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    2025-11-24T01:07:57.875+09:00 DEBUG 29004 --- [ecommerce] [ool-3-thread-62] org.hibernate.SQL                        : 
+        select
+            c1_0.id,
+            c1_0.coupon_type,
+            c1_0.discount_amount,
+            c1_0.discount_rate,
+            c1_0.end_date,
+            c1_0.issued_quantity,
+            c1_0.min_order_amount,
+            c1_0.name,
+            c1_0.start_date,
+            c1_0.total_quantity,
+            c1_0.use_queue 
+        from
+            coupons c1_0 
+        where
+            c1_0.id=?
+    Hibernate: 
+        select
+            c1_0.id,
+            c1_0.coupon_type,
+            c1_0.discount_amount,
+            c1_0.discount_rate,
+            c1_0.end_date,
+            c1_0.issued_quantity,
+            c1_0.min_order_amount,
+            c1_0.name,
+            c1_0.start_date,
+            c1_0.total_quantity,
+            c1_0.use_queue 
+        from
+            coupons c1_0 
+        where
+            c1_0.id=?
+    2025-11-24T01:07:57.976+09:00 DEBUG 29004 --- [ecommerce] [ool-3-thread-62] org.hibernate.SQL                        : 
+        /* update
+            for com.hhplus.ecommerce.domain.entity.Coupon */update coupons 
+        set
+            coupon_type=?,
+            discount_amount=?,
+            discount_rate=?,
+            end_date=?,
+            issued_quantity=?,
+            min_order_amount=?,
+            name=?,
+            start_date=?,
+            total_quantity=?,
+            use_queue=? 
+        where
+            id=?
+    Hibernate: 
+        /* update
+            for com.hhplus.ecommerce.domain.entity.Coupon */update coupons 
+        set
+            coupon_type=?,
+            discount_amount=?,
+            discount_rate=?,
+            end_date=?,
+            issued_quantity=?,
+            min_order_amount=?,
+            name=?,
+            start_date=?,
+            total_quantity=?,
+            use_queue=? 
+        where
+            id=?
+    2025-11-24T01:07:58.023+09:00 DEBUG 29004 --- [ecommerce] [    Test worker] org.hibernate.SQL                        : 
+        select
+            c1_0.id,
+            c1_0.coupon_type,
+            c1_0.discount_amount,
+            c1_0.discount_rate,
+            c1_0.end_date,
+            c1_0.issued_quantity,
+            c1_0.min_order_amount,
+            c1_0.name,
+            c1_0.start_date,
+            c1_0.total_quantity,
+            c1_0.use_queue 
+        from
+            coupons c1_0 
+        where
+            c1_0.id=?
+    Hibernate: 
+        select
+            c1_0.id,
+            c1_0.coupon_type,
+            c1_0.discount_amount,
+            c1_0.discount_rate,
+            c1_0.end_date,
+            c1_0.issued_quantity,
+            c1_0.min_order_amount,
+            c1_0.name,
+            c1_0.start_date,
+            c1_0.total_quantity,
+            c1_0.use_queue 
+        from
+            coupons c1_0 
+        where
+            c1_0.id=?
+    2025-11-24T01:07:58.033+09:00  INFO 29004 --- [ecommerce] [    Test worker] c.h.e.c.DistributedLockComparisonTest    : === Simple Lock 결과 ===
+    2025-11-24T01:07:58.033+09:00  INFO 29004 --- [ecommerce] [    Test worker] c.h.e.c.DistributedLockComparisonTest    : 성공: 1, 실패: 99
+    2025-11-24T01:07:58.034+09:00  INFO 29004 --- [ecommerce] [    Test worker] c.h.e.c.DistributedLockComparisonTest    : 최종 발급 수량: 1/10
+    2025-11-24T01:07:58.034+09:00  INFO 29004 --- [ecommerce] [    Test worker] c.h.e.c.DistributedLockComparisonTest    : 소요 시간: 372ms
+    2025-11-24T01:07:58.065+09:00 DEBUG 29004 --- [ecommerce] [   scheduling-1] org.hibernate.SQL                        : 
+        /* SELECT
+            c 
+        FROM
+            Coupon c 
+        WHERE
+            c.startDate <= :now 
+            AND c.endDate >= :now 
+            AND c.issuedQuantity < c.totalQuantity */ select
+                c1_0.id,
+                c1_0.coupon_type,
+                c1_0.discount_amount,
+                c1_0.discount_rate,
+                c1_0.end_date,
+                c1_0.issued_quantity,
+                c1_0.min_order_amount,
+                c1_0.name,
+                c1_0.start_date,
+                c1_0.total_quantity,
+                c1_0.use_queue 
+            from
+                coupons c1_0 
+            where
+                c1_0.start_date<=? 
+                and c1_0.end_date>=? 
+                and c1_0.issued_quantity<c1_0.total_quantity
+    Hibernate: 
+        /* SELECT
+            c 
+        FROM
+            Coupon c 
+        WHERE
+            c.startDate <= :now 
+            AND c.endDate >= :now 
+            AND c.issuedQuantity < c.totalQuantity */ select
+                c1_0.id,
+                c1_0.coupon_type,
+                c1_0.discount_amount,
+                c1_0.discount_rate,
+                c1_0.end_date,
+                c1_0.issued_quantity,
+                c1_0.min_order_amount,
+                c1_0.name,
+                c1_0.start_date,
+                c1_0.total_quantity,
+                c1_0.use_queue 
+            from
+                coupons c1_0 
+            where
+                c1_0.start_date<=? 
+                and c1_0.end_date>=? 
+                and c1_0.issued_quantity<c1_0.total_quantity
+    2025-11-24T01:07:58.098+09:00 DEBUG 29004 --- [ecommerce] [   scheduling-1] org.hibernate.SQL                        : 
+        /* <criteria> */ select
+            cq1_0.id,
+            cq1_0.coupon_id,
+            cq1_0.created_at,
+            cq1_0.failed_reason,
+            cq1_0.processed_at,
+            cq1_0.queue_position,
+            cq1_0.status,
+            cq1_0.user_id 
+        from
+            coupon_queues cq1_0 
+        left join
+            coupons c1_0 
+                on c1_0.id=cq1_0.coupon_id 
+        where
+            c1_0.id=? 
+            and cq1_0.status=?
+    Hibernate: 
+        /* <criteria> */ select
+            cq1_0.id,
+            cq1_0.coupon_id,
+            cq1_0.created_at,
+            cq1_0.failed_reason,
+            cq1_0.processed_at,
+            cq1_0.queue_position,
+            cq1_0.status,
+            cq1_0.user_id 
+        from
+            coupon_queues cq1_0 
+        left join
+            coupons c1_0 
+                on c1_0.id=cq1_0.coupon_id 
+        where
+            c1_0.id=? 
+            and cq1_0.status=?
+
+DistributedLockComparisonTest > Simple Lock: 100 스레드 중 1개만 즉시 성공, 나머지는 즉시 실패 FAILED
+    org.opentest4j.AssertionFailedError: 
+    expected: 10
+     but was: 1
+        at app//com.hhplus.ecommerce.concurrency.DistributedLockComparisonTest.simpleLock_100threads_10stock(DistributedLockComparisonTest.java:129)
+
+1 test completed, 1 failed
+Finished generating test XML results (0.007 secs) into: C:\sparta-coding\3Week\ecommerce\ecommerce\build\test-results\test
+Generating HTML test report...
+Finished generating test html results (0.026 secs) into: C:\sparta-coding\3Week\ecommerce\ecommerce\build\reports\tests\test
+
+> Task :test FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':test'.
+> There were failing tests. See the report at: file:///C:/sparta-coding/3Week/ecommerce/ecommerce/build/reports/tests/test/index.html
+
+* Try:
+> Run with --scan to get full insights.
+
+BUILD FAILED in 30s
+6 actionable tasks: 2 executed, 4 up-to-date
+Watched directory hierarchies: [C:\sparta-coding\3Week\ecommerce\ecommerce]

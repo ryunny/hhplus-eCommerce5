@@ -67,7 +67,7 @@ public class GetPopularProductsUseCase {
      * DB에서 인기 상품 조회 (Fallback)
      */
     @Transactional(readOnly = true)
-    private List<PopularProductResponse> getFallbackFromDB() {
+    protected List<PopularProductResponse> getFallbackFromDB() {
         List<PopularProduct> popularProducts = popularProductRepository.findAllOrderByRank();
 
         if (popularProducts.isEmpty()) {

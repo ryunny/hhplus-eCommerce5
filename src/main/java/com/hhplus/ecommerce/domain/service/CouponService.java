@@ -56,10 +56,13 @@ public class CouponService {
     /**
      * 쿠폰 조회
      *
+     * CacheKeyGenerator를 통해 RedisKeyGenerator.couponCacheKey() 호출
+     * 실제 Redis 키: cache:coupons:{couponId}
+     *
      * @param couponId 쿠폰 ID
      * @return 쿠폰
      */
-    @Cacheable(value = "coupons", key = "#couponId")
+    @Cacheable(value = "ecommerce", keyGenerator = "cacheKeyGenerator")
     @Transactional(readOnly = true)
     public Coupon getCoupon(Long couponId) {
         return couponRepository.findById(couponId)
@@ -69,9 +72,12 @@ public class CouponService {
     /**
      * 발급 가능한 쿠폰 목록 조회
      *
+     * CacheKeyGenerator를 통해 RedisKeyGenerator.issuableCouponsCacheKey() 호출
+     * 실제 Redis 키: cache:issuableCoupons:all
+     *
      * @return 발급 가능한 쿠폰 목록
      */
-    @Cacheable(value = "issuableCoupons", key = "'all'")
+    @Cacheable(value = "ecommerce", keyGenerator = "cacheKeyGenerator")
     @Transactional(readOnly = true)
     public List<Coupon> getIssuableCoupons() {
         return couponRepository.findIssuableCoupons(LocalDateTime.now());
@@ -228,15 +234,17 @@ public class CouponService {
     /**
      * 쿠폰 발급 트랜잭션 (Redis 락으로 보호됨)
      *
-     * 캐시 일관성: 발급된 쿠폰의 캐시만 무효화 (전체 삭제 대신)
+     * 캐시 일관성: RedisKeyGenerator를 통해 통일된 키 형식으로 무효화
+     * - 발급된 쿠폰의 캐시만 무효화 (전체 삭제 대신)
+     * - 발급 가능 쿠폰 목록은 변경되므로 전체 삭제
      *
      * @param user 사용자
      * @param couponId 쿠폰 ID
      * @return 발급된 UserCoupon
      */
     @org.springframework.cache.annotation.Caching(evict = {
-        @CacheEvict(value = "coupons", key = "#couponId"),
-        @CacheEvict(value = "issuableCoupons", allEntries = true)  // 발급 가능 쿠폰 목록은 변경되므로 전체 삭제
+        @CacheEvict(value = "ecommerce", key = "T(com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator).couponCacheKey(#couponId)"),
+        @CacheEvict(value = "ecommerce", key = "T(com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator).issuableCouponsCacheKey()")
     })
     @Transactional
     public UserCoupon issueCouponTransaction(User user, Long couponId) {

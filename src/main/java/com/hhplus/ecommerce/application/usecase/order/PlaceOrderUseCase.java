@@ -1,6 +1,7 @@
 package com.hhplus.ecommerce.application.usecase.order;
 
 import com.hhplus.ecommerce.domain.entity.*;
+import com.hhplus.ecommerce.domain.enums.OrderStatus;
 import com.hhplus.ecommerce.domain.event.OrderCompletedEvent;
 import com.hhplus.ecommerce.domain.service.*;
 import com.hhplus.ecommerce.domain.vo.Money;
@@ -142,7 +143,7 @@ public class PlaceOrderUseCase {
         Payment payment = paymentService.createPayment(order, finalAmount);
 
         // 11. 주문 상태 변경
-        orderService.updateOrderStatus(order.getId(), com.hhplus.ecommerce.domain.enums.OrderStatus.PAID);
+        orderService.updateOrderStatus(order.getId(), OrderStatus.PAID);
 
         // 12. 데이터 플랫폼 전송 이벤트 저장 (Outbox Pattern)
         // 트랜잭션 커밋 후 스케줄러가 비동기로 처리합니다.

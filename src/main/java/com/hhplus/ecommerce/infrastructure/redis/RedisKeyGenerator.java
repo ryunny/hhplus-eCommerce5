@@ -152,13 +152,42 @@ public class RedisKeyGenerator {
     }
 
     /**
-     * 사용자 캐시 키
+     * 사용자 캐시 키 (ID 기반)
      *
      * @param userId 사용자 ID
      * @return cache:users:{userId}
      */
     public static String userCacheKey(Long userId) {
         return cacheKey("users", String.valueOf(userId));
+    }
+
+    /**
+     * 사용자 캐시 키 (PublicId 기반)
+     *
+     * @param publicId 사용자 공개 ID
+     * @return cache:users:publicId:{publicId}
+     */
+    public static String userCacheKeyByPublicId(String publicId) {
+        return cacheKey("users", "publicId:" + publicId);
+    }
+
+    /**
+     * 인기 상품 목록 캐시 키
+     *
+     * @param limit 조회 개수
+     * @return cache:topProducts:{limit}
+     */
+    public static String topProductsCacheKey(Integer limit) {
+        return cacheKey("topProducts", String.valueOf(limit));
+    }
+
+    /**
+     * 발급 가능한 쿠폰 목록 캐시 키
+     *
+     * @return cache:issuableCoupons:all
+     */
+    public static String issuableCouponsCacheKey() {
+        return cacheKey("issuableCoupons", "all");
     }
 
     // ===== Sorted Set 키 생성 (실시간 랭킹) =====

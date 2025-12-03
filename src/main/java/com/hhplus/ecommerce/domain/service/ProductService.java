@@ -39,10 +39,13 @@ public class ProductService {
     /**
      * 상품 조회
      *
+     * CacheKeyGenerator를 통해 RedisKeyGenerator.productCacheKey() 호출
+     * 실제 Redis 키: cache:products:{productId}
+     *
      * @param productId 상품 ID
      * @return 상품 엔티티
      */
-    @Cacheable(value = "products", key = "#productId")
+    @Cacheable(value = "ecommerce", keyGenerator = "cacheKeyGenerator")
     @Transactional(readOnly = true)
     public Product getProduct(Long productId) {
         return productRepository.findById(productId)
@@ -133,10 +136,12 @@ public class ProductService {
     /**
      * 재고 차감 트랜잭션 (Redis 락으로 보호됨)
      *
+     * RedisKeyGenerator를 통해 통일된 캐시 키 형식으로 무효화
+     *
      * @param productId 상품 ID
      * @param quantity 차감할 수량
      */
-    @CacheEvict(value = "products", key = "#productId")
+    @CacheEvict(value = "ecommerce", key = "T(com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator).productCacheKey(#productId)")
     @Transactional
     public void decreaseStockTransaction(Long productId, Quantity quantity) {
         // 상품 조회 (일반 SELECT - Redis 락이 동시성 보장)
@@ -211,11 +216,13 @@ public class ProductService {
      * 캐시 적용: TTL 60분
      * - 통계성 데이터로 장시간 캐싱 가능
      * - 스케줄러가 자주 실행되어도 DB 부하 최소화
+     * - CacheKeyGenerator를 통해 RedisKeyGenerator.topProductsCacheKey() 호출
+     * - 실제 Redis 키: cache:topProducts:{limit}
      *
      * @param limit 조회할 상품 개수
      * @return 상품 판매 통계 DTO 목록
      */
-    @Cacheable(value = "topProducts", key = "#limit")
+    @Cacheable(value = "ecommerce", keyGenerator = "cacheKeyGenerator")
     @Transactional(readOnly = true)
     public List<ProductSalesDto> getTopSellingProducts(int limit) {
         LocalDateTime threeDaysAgo = LocalDateTime.now().minusDays(3);

@@ -31,7 +31,8 @@
       "Bash(git push:*)",
       "Bash(Select-String -Pattern \"(테스트|성공|실패|소요|Lock 결과)\" -Context 0,1)",
       "Bash(tee:*)",
-      "Bash(xargs cat:*)"
+      "Bash(xargs cat:*)",
+      "Bash(Select-String -Pattern \"(테스트|성공|실패|소요|BUILD)\" -Context 0,1)"
     ],
     "deny": [],
     "ask": []

@@ -89,8 +89,8 @@ public class ProductRankingService {
                 .map(tuple -> extractProductId(tuple.getValue()))
                 .toList();
 
-        // 3. DB에서 상품 상세 정보 조회 (IN 쿼리로 한 번에)
-        List<Product> products = productRepository.findAllById(productIds);
+        // 3. DB에서 상품 상세 정보 조회 (JOIN FETCH로 Category도 함께 조회하여 N+1 문제 해결)
+        List<Product> products = productRepository.findAllByIdWithCategory(productIds);
         Map<Long, Product> productMap = products.stream()
                 .collect(Collectors.toMap(Product::getId, p -> p));
 

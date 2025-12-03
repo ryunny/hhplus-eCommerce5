@@ -14,6 +14,11 @@ public interface ProductRepository {
 
     List<Product> findAllById(Iterable<Long> ids);
 
+    /**
+     * 여러 상품 조회 시 Category도 함께 조회 (N+1 문제 해결)
+     */
+    List<Product> findAllByIdWithCategory(List<Long> ids);
+
     List<Product> findByCategoryId(Long categoryId);
 
     Optional<Product> findByIdWithLock(Long id);

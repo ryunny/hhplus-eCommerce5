@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -47,19 +48,26 @@ public class ProductService {
     }
 
     /**
-     * 여러 상품 조회
+     * 여러 상품 조회 (IN 쿼리로 한 번에 조회하여 N+1 문제 해결)
      *
      * @param productIds 상품 ID 목록
      * @return 상품 엔티티 목록
      */
     @Transactional(readOnly = true)
     public List<Product> getProducts(List<Long> productIds) {
-        List<Product> products = new ArrayList<>();
-        for (Long productId : productIds) {
-            Product product = productRepository.findById(productId)
-                    .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다: " + productId));
-            products.add(product);
+        List<Product> products = productRepository.findAllById(productIds);
+
+        // 모든 ID가 존재하는지 검증
+        if (products.size() != productIds.size()) {
+            Set<Long> foundIds = products.stream()
+                    .map(Product::getId)
+                    .collect(java.util.stream.Collectors.toSet());
+            List<Long> missingIds = productIds.stream()
+                    .filter(id -> !foundIds.contains(id))
+                    .toList();
+            throw new IllegalArgumentException("상품을 찾을 수 없습니다: " + missingIds);
         }
+
         return products;
     }
 

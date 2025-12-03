@@ -35,17 +35,20 @@ public class CouponService {
     private final CouponQueueRepository couponQueueRepository;
     private final UserService userService;
     private final RedisPubSubLock pubSubLock;
+    private final com.hhplus.ecommerce.config.LockTimeoutConfig lockTimeoutConfig;
 
     public CouponService(UserCouponRepository userCouponRepository,
                         CouponRepository couponRepository,
                         CouponQueueRepository couponQueueRepository,
                         UserService userService,
-                        RedisPubSubLock pubSubLock) {
+                        RedisPubSubLock pubSubLock,
+                        com.hhplus.ecommerce.config.LockTimeoutConfig lockTimeoutConfig) {
         this.userCouponRepository = userCouponRepository;
         this.couponRepository = couponRepository;
         this.couponQueueRepository = couponQueueRepository;
         this.userService = userService;
         this.pubSubLock = pubSubLock;
+        this.lockTimeoutConfig = lockTimeoutConfig;
     }
 
     // ===== 쿠폰 조회 =====
@@ -209,7 +212,7 @@ public class CouponService {
         String lockKey = RedisKeyGenerator.couponIssueLock(couponId);
 
         // Redis Pub/Sub Lock 획득 (최대 5초 대기)
-        if (!pubSubLock.tryLock(lockKey, 5, TimeUnit.SECONDS)) {
+        if (!pubSubLock.tryLock(lockKey, lockTimeoutConfig.getCoupon(), TimeUnit.MILLISECONDS)) {
             throw new IllegalStateException("쿠폰 발급 처리 중입니다. 잠시 후 다시 시도해주세요.");
         }
 
@@ -277,7 +280,7 @@ public class CouponService {
         String lockKey = RedisKeyGenerator.couponExpireBatchLock();
 
         // Redis Pub/Sub Lock 획득 (최대 10초 대기)
-        if (!pubSubLock.tryLock(lockKey, 10, TimeUnit.SECONDS)) {
+        if (!pubSubLock.tryLock(lockKey, lockTimeoutConfig.getBatch(), TimeUnit.MILLISECONDS)) {
             log.warn("쿠폰 만료 배치 락 획득 실패: 다른 서버에서 실행 중");
             return 0;
         }
@@ -389,7 +392,7 @@ public class CouponService {
         String lockKey = RedisKeyGenerator.couponQueueJoinLock(coupon.getId());
 
         // Redis Pub/Sub Lock 획득 (최대 5초 대기)
-        if (!pubSubLock.tryLock(lockKey, 5, TimeUnit.SECONDS)) {
+        if (!pubSubLock.tryLock(lockKey, lockTimeoutConfig.getCoupon(), TimeUnit.MILLISECONDS)) {
             throw new IllegalStateException("대기열 진입 처리 중입니다. 잠시 후 다시 시도해주세요.");
         }
 
@@ -450,7 +453,7 @@ public class CouponService {
         String lockKey = RedisKeyGenerator.couponQueueBatchLock(coupon.getId());
 
         // Redis Pub/Sub Lock 획득 (최대 10초 대기)
-        if (!pubSubLock.tryLock(lockKey, 10, TimeUnit.SECONDS)) {
+        if (!pubSubLock.tryLock(lockKey, lockTimeoutConfig.getBatch(), TimeUnit.MILLISECONDS)) {
             log.warn("대기열 배치 처리 락 획득 실패: couponId={}, 다른 서버에서 실행 중", coupon.getId());
             return;
         }
@@ -501,7 +504,7 @@ public class CouponService {
         String lockKey = RedisKeyGenerator.couponQueueItemLock(queue.getCoupon().getId());
 
         // Redis Pub/Sub Lock 획득 (최대 5초 대기)
-        if (!pubSubLock.tryLock(lockKey, 5, TimeUnit.SECONDS)) {
+        if (!pubSubLock.tryLock(lockKey, lockTimeoutConfig.getCoupon(), TimeUnit.MILLISECONDS)) {
             log.warn("대기열 처리 락 획득 실패: queueId={}", queue.getId());
             updateQueueFailed(queue, "쿠폰 발급 처리 중입니다. 잠시 후 다시 시도됩니다.");
             return;
@@ -591,7 +594,7 @@ public class CouponService {
         String lockKey = RedisKeyGenerator.couponQueueUpdatePositionsLock();
 
         // Redis Pub/Sub Lock 획득 (최대 10초 대기)
-        if (!pubSubLock.tryLock(lockKey, 10, TimeUnit.SECONDS)) {
+        if (!pubSubLock.tryLock(lockKey, lockTimeoutConfig.getBatch(), TimeUnit.MILLISECONDS)) {
             log.warn("대기열 순번 업데이트 락 획득 실패: 다른 서버에서 실행 중");
             return;
         }

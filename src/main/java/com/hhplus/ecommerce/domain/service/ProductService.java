@@ -27,11 +27,13 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final OrderItemRepository orderItemRepository;
     private final RedisPubSubLock pubSubLock;
+    private final com.hhplus.ecommerce.config.LockTimeoutConfig lockTimeoutConfig;
 
-    public ProductService(ProductRepository productRepository, OrderItemRepository orderItemRepository, RedisPubSubLock pubSubLock) {
+    public ProductService(ProductRepository productRepository, OrderItemRepository orderItemRepository, RedisPubSubLock pubSubLock, com.hhplus.ecommerce.config.LockTimeoutConfig lockTimeoutConfig) {
         this.productRepository = productRepository;
         this.orderItemRepository = orderItemRepository;
         this.pubSubLock = pubSubLock;
+        this.lockTimeoutConfig = lockTimeoutConfig;
     }
 
     /**
@@ -114,8 +116,8 @@ public class ProductService {
     private void decreaseStockWithLock(Long productId, Quantity quantity) {
         String lockKey = RedisKeyGenerator.productStockDecreaseLock(productId);
 
-        // Redis Pub/Sub Lock 획득 (최대 5초 대기)
-        if (!pubSubLock.tryLock(lockKey, 5, TimeUnit.SECONDS)) {
+        // Redis Pub/Sub Lock 획득
+        if (!pubSubLock.tryLock(lockKey, lockTimeoutConfig.getProduct(), TimeUnit.MILLISECONDS)) {
             throw new IllegalStateException("재고 처리 중입니다. 잠시 후 다시 시도해주세요.");
         }
 
@@ -159,8 +161,8 @@ public class ProductService {
     public void increaseStock(Long productId, Quantity quantity) {
         String lockKey = RedisKeyGenerator.productStockIncreaseLock(productId);
 
-        // Redis Pub/Sub Lock 획득 (최대 5초 대기)
-        if (!pubSubLock.tryLock(lockKey, 5, TimeUnit.SECONDS)) {
+        // Redis Pub/Sub Lock 획득
+        if (!pubSubLock.tryLock(lockKey, lockTimeoutConfig.getProduct(), TimeUnit.MILLISECONDS)) {
             throw new IllegalStateException("재고 처리 중입니다. 잠시 후 다시 시도해주세요.");
         }
 

@@ -19,6 +19,13 @@ spring:
       host: localhost
       port: 6379
 
+# 분산 락 타임아웃 설정 (밀리초)
+lock:
+  timeout:
+    product: 5000      # 상품 재고 락: 5초
+    coupon: 5000       # 쿠폰 발급 락: 5초
+    batch: 10000       # 배치 작업 락: 10초
+
 logging:
   level:
     org.hibernate.SQL: debug

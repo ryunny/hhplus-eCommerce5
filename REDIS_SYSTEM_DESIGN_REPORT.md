@@ -253,7 +253,7 @@ try {
            │ ZPOPMIN (스케줄러)
 ┌─────────────────────────────┐
 │  RedisQueueProcessor        │
-│  @Scheduled(fixedDelay=1s)  │
+│  @Scheduled(fixedDelay=10s) │
 │  (배치 처리: 최대 10명)      │
 └──────────┬──────────────────┘
            │
@@ -281,13 +281,13 @@ try {
 
 | 방식 | 설명 | 장점 | 단점 | 선택 |
 |------|------|------|------|------|
-| **Pull (스케줄러)** | 서버가 주기적으로 처리 | 부하 제어 가능 | 최대 1초 지연 | ✅ 채택 |
+| **Pull (스케줄러)** | 서버가 주기적으로 처리 | 부하 제어 가능 | 최대 10초 지연 | ✅ 채택 |
 | Push (실시간) | 신청 즉시 처리 | 즉시 처리 | 트래픽 급증 위험 | ❌ |
 
 선택 이유:
 - 시스템 안정성 우선 (부하 제어)
-- 1초 지연은 허용 가능한 범위
-- 배치 크기로 처리량 조절 (현재 10명/초)
+- 10초 지연은 허용 가능한 범위
+- 배치 크기로 처리량 조절 (현재 10명/10초)
 
 **3. Redis 단일 장애점 대응**
 
@@ -457,9 +457,9 @@ public class RedisCouponQueueService {
 public class RedisQueueProcessor {
 
     /**
-     * 1초마다 대기열 처리 (최대 10명)
+     * 10초마다 대기열 처리 (최대 10명)
      */
-    @Scheduled(fixedDelay = 1000)
+    @Scheduled(fixedDelay = 10000)
     public void processQueues() {
         List<Coupon> issuableCoupons = couponRepository.findIssuableCoupons();
 
@@ -688,11 +688,11 @@ void 먼저_신청한_사람이_먼저_발급받는다() {
 
 | 배치 크기 | 처리 시간 (10명) | 시간당 처리량 |
 |----------|-----------------|-------------|
-| 10명/초 | 평균 80ms | 36,000명/시간 |
-| 50명/초 | 평균 200ms | 180,000명/시간 |
-| 100명/초 | 평균 450ms | 360,000명/시간 |
+| 10명/10초 | 평균 80ms | 3,600명/시간 |
+| 50명/10초 | 평균 200ms | 18,000명/시간 |
+| 100명/10초 | 평균 450ms | 36,000명/시간 |
 
-**현재 설정**: 10명/초 (안정성 우선)
+**현재 설정**: 10명/10초 (안정성 우선)
 
 ---
 
@@ -815,23 +815,9 @@ User B: timestamp 1638316800000
 밀리초 단위에서 동시 요청 가능
 
 #### 해결 방안
-
-**1) 나노초 사용 (미적용)**
-```java
-double score = System.nanoTime();
-```
-문제: 서버 재시작 시 score 초기화
-
-**2) Timestamp + User ID (채택)**
-```java
-// Score: timestamp.userId (예: 1638316800000.123)
-double score = timestamp + (userId / 1_000_000_000.0);
-```
-
-**3) Redis Sorted Set의 동일 Score 처리 (현재 방식)**
-- 동일 Score일 경우 Lexicographical(사전식) 정렬
-- `user:100` < `user:200` (자동 정렬)
-- 실제로는 밀리초 충돌 확률이 극히 낮음
+Redis Sorted Set의 동일 Score 처리 (Lexicographical 사전식 정렬)로 해결
+- 밀리초 충돌 확률 극히 낮음
+- 충돌 시에도 자동 정렬 보장
 
 ---
 
@@ -851,7 +837,7 @@ Server 2: @Scheduled 동시 실행
 
 **Redis Pub/Sub Lock 적용** (현재 구현)
 ```java
-@Scheduled(fixedDelay = 1000)
+@Scheduled(fixedDelay = 10000)
 public void processQueues() {
     String lockKey = RedisKeyGenerator.couponQueueBatchLock(couponId);
 
@@ -903,14 +889,6 @@ try {
 }
 ```
 
-**대안**: 2-Phase 처리 (복잡도 증가로 미적용)
-```
-1. 처리 중 상태로 전환 (ZPOPMIN → SADD processing)
-2. 발급 시도
-3. 성공 시: processing 제거
-4. 실패 시: processing → queue 복구
-```
-
 ---
 
 ## 회고 및 개선 방향
@@ -946,16 +924,22 @@ RedisKeyGenerator.couponQueue(123)
 
 **교훈**: 인프라 레이어의 중앙 관리가 유지보수성 향상
 
+#### ✅ Lua 스크립트로 원자성 강화
+- 대기열 제거 + 처리 중 추가를 단일 트랜잭션으로 처리
+- 네트워크 왕복 1회로 감소 (성능 개선)
+- 완벽한 원자성 보장
+
+**교훈**: 복잡한 다단계 작업은 Lua 스크립트로 원자화
+
+#### ✅ API 통합 및 Fallback 패턴 일관화
+- 쿠폰 발급 API 단일화 (`IssueCouponUseCase`)
+- Redis → DB Fallback 패턴 전체 적용
+- Deprecated API 제거로 코드 간소화
+
+**교훈**: 일관된 아키텍처 패턴이 유지보수성 향상
+
 #### ✅ Testcontainers 활용
-```java
-@Container
-private static final GenericContainer<?> redisContainer =
-    new GenericContainer<>(DockerImageName.parse("redis:7-alpine"))
-        .withExposedPorts(6379);
-```
-- 실제 Redis로 테스트
-- 독립적인 테스트 환경
-- CI/CD 통합 용이
+실제 Redis 환경에서 테스트하여 신뢰성 확보
 
 **교훈**: 통합 테스트는 실제 환경과 유사하게
 
@@ -964,233 +948,35 @@ private static final GenericContainer<?> redisContainer =
 ### 2. 개선할 점 (Problem)
 
 #### ❌ Redis 단일 장애점
-**문제**:
-- Redis 서버 1대만 사용
-- 장애 시 Fallback은 있지만 성능 저하
+**문제**: Redis 서버 1대만 사용, 장애 시 성능 저하
 
 **개선 방안**:
-1. **Redis Sentinel** (High Availability)
-   ```yaml
-   spring:
-     redis:
-       sentinel:
-         master: mymaster
-         nodes:
-           - redis-sentinel-1:26379
-           - redis-sentinel-2:26379
-           - redis-sentinel-3:26379
-   ```
-   - 자동 Failover
-   - 마스터 장애 시 슬레이브 승격
-
-2. **Redis Cluster** (Sharding)
-   - 데이터 분산 저장
-   - 수평 확장 가능
-
-**우선순위**: High (프로덕션 필수)
+- Redis Sentinel (HA): 자동 Failover, 슬레이브 승격
+- Redis Cluster (Sharding): 데이터 분산, 수평 확장
 
 ---
 
 #### ❌ 랭킹 데이터 영구 보관 없음
-**문제**:
-- Redis는 휘발성 메모리
-- 서버 재시작 시 랭킹 초기화
+**문제**: Redis 휘발성 메모리, 서버 재시작 시 초기화
 
 **개선 방안**:
-1. **Redis Persistence 설정**
-   ```conf
-   # RDB: 주기적 스냅샷
-   save 900 1
-   save 300 10
-
-   # AOF: 모든 명령어 기록
-   appendonly yes
-   ```
-
-2. **DB 동기화 스케줄러**
-   ```java
-   @Scheduled(cron = "0 0 * * * *") // 매 시간
-   public void syncRankingToDB() {
-       List<ProductRanking> ranking = redisRankingService.getAll();
-       popularProductRepository.saveAll(ranking);
-   }
-   ```
-
-**우선순위**: Medium (데이터 분석에 필요)
+- Redis Persistence (RDB/AOF) 설정
+- DB 동기화 스케줄러 (시간별 백업)
 
 ---
 
 #### ❌ 대기열 처리 속도 조절 불가
-**문제**:
-- 고정된 배치 크기 (10명/초)
-- 트래픽에 따라 동적 조절 필요
+**문제**: 고정된 배치 크기 (10명/10초)
 
-**개선 방안**:
-1. **동적 배치 크기**
-   ```java
-   // 대기자 수에 따라 배치 크기 조절
-   Long queueSize = redisTemplate.opsForZSet().size(queueKey);
-   int batchSize = queueSize > 1000 ? 50 : 10;
-   ```
-
-2. **처리 속도 모니터링**
-   ```java
-   @Scheduled(fixedDelay = 1000)
-   public void processQueues() {
-       long start = System.currentTimeMillis();
-       // 처리 로직
-       long elapsed = System.currentTimeMillis() - start;
-
-       if (elapsed > 900) {
-           log.warn("처리 시간 초과: {}ms", elapsed);
-           // 배치 크기 감소
-       }
-   }
-   ```
-
-**우선순위**: Low (현재 성능 충분)
+**개선 방안**: 대기자 수에 따라 동적 배치 크기 조절
 
 ---
 
 #### ❌ 캐시 Warm-up 전략 없음
-**문제**:
-- 서버 시작 직후 Redis 랭킹 데이터 없음
-- 첫 주문 전까지 DB Fallback 사용
+**문제**: 서버 시작 직후 Redis 랭킹 데이터 없음
 
-**개선 방안**:
-```java
-@EventListener(ApplicationReadyEvent.class)
-public void warmUpCache() {
-    log.info("Redis 랭킹 데이터 Warm-up 시작");
+**개선 방안**: 애플리케이션 시작 시 DB에서 최근 랭킹 데이터를 Redis로 로드
 
-    // DB에서 최근 랭킹 데이터 로드
-    List<PopularProduct> products = popularProductRepository.findAll();
-
-    for (PopularProduct product : products) {
-        redisTemplate.opsForZSet().add(
-            RedisKeyGenerator.productRanking1Day(),
-            "product:" + product.getProductId(),
-            product.getTotalSalesQuantity()
-        );
-    }
-
-    log.info("Redis 랭킹 데이터 Warm-up 완료: {} 건", products.size());
-}
-```
-
-**우선순위**: Medium (사용자 경험 개선)
-
----
-
-### 3. 시도할 점 (Try)
-
-#### 💡 Lua Script로 원자성 보장
-**목적**: 복잡한 Redis 작업을 원자적으로 실행
-
-```lua
--- coupon_issue.lua
--- 대기열 제거 + 처리 중 추가를 원자적으로
-local queue_key = KEYS[1]
-local processing_key = KEYS[2]
-local batch_size = tonumber(ARGV[1])
-
--- 1. 대기열에서 제거
-local members = redis.call('ZPOPMIN', queue_key, batch_size)
-
--- 2. 처리 중 상태로 추가
-for i = 1, #members, 2 do
-    redis.call('SADD', processing_key, members[i])
-end
-
-return members
-```
-
-```java
-// Java에서 호출
-String script = loadLuaScript("coupon_issue.lua");
-List<Object> result = redisTemplate.execute(
-    new DefaultRedisScript<>(script, List.class),
-    Arrays.asList(queueKey, processingKey),
-    "10" // batch_size
-);
-```
-
-**장점**:
-- 네트워크 왕복 1회로 감소
-- 완벽한 원자성 보장
-
----
-
-#### 💡 Redis Streams로 이벤트 처리
-**목적**: 주문 완료 이벤트를 Redis Streams로 관리
-
-```java
-// Producer
-redisTemplate.opsForStream().add(
-    "orders:completed",
-    Collections.singletonMap("orderId", orderId)
-);
-
-// Consumer Group
-StreamMessageListenerContainer container =
-    StreamMessageListenerContainer.create(connectionFactory);
-
-container.receive(
-    Consumer.from("ranking-service", "instance-1"),
-    StreamOffset.create("orders:completed", ReadOffset.lastConsumed()),
-    message -> {
-        String orderId = message.getValue().get("orderId");
-        productRankingService.updateRanking(orderId);
-    }
-);
-```
-
-**장점**:
-- 메시지 유실 방지
-- Consumer Group으로 부하 분산
-- ACK 기반 재처리 지원
-
----
-
-#### 💡 분산 트레이싱 (OpenTelemetry)
-**목적**: 비동기 처리 흐름 추적
-
-```java
-@Async
-@Trace // Span 자동 생성
-public void handleOrderCompleted(OrderCompletedEvent event) {
-    Span span = Span.current();
-    span.setAttribute("order.id", event.getOrderId());
-
-    productRankingService.updateRanking(event.getOrderItems());
-}
-```
-
-**효과**:
-- 주문 → 이벤트 → 랭킹 업데이트 전체 흐름 시각화
-- 병목 구간 식별 용이
-
----
-
-#### 💡 Redis 모니터링 대시보드
-**목적**: Redis 상태 실시간 모니터링
-
-```bash
-# Redis Exporter + Prometheus + Grafana
-docker run -d \
-  -p 9121:9121 \
-  oliver006/redis_exporter \
-  --redis.addr=redis://localhost:6379
-```
-
-**모니터링 지표**:
-- 메모리 사용량
-- 명령어 처리량 (ops/sec)
-- 히트율 (Cache Hit Ratio)
-- 연결 수
-- Slow Log
-
----
 
 ## 성능 개선 효과 요약
 
@@ -1238,25 +1024,3 @@ docker run -d \
    - Testcontainers로 신뢰성 확보
    - 동시성 문제를 사전에 발견
 
-### 향후 계획
-
-**단기 (1개월)**:
-- [ ] Redis Sentinel 적용 (HA)
-- [ ] 캐시 Warm-up 전략 구현
-- [ ] 모니터링 대시보드 구축
-
-**중기 (3개월)**:
-- [ ] Redis Cluster 도입 (Sharding)
-- [ ] Lua Script 활용한 원자성 강화
-- [ ] Redis Streams 이벤트 처리 전환
-
-**장기 (6개월)**:
-- [ ] 다중 리전 지원
-- [ ] Read Replica 분산
-- [ ] 실시간 분석 파이프라인 구축
-
----
-
-**작성일**: 2024년 12월 4일
-**작성자**: E-Commerce 개발팀
-**버전**: 1.0

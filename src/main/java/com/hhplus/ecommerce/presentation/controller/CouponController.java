@@ -1,13 +1,10 @@
 package com.hhplus.ecommerce.presentation.controller;
 
 import com.hhplus.ecommerce.application.command.IssueCouponCommand;
-import com.hhplus.ecommerce.application.command.JoinCouponQueueCommand;
 import com.hhplus.ecommerce.application.query.GetAvailableCouponsQuery;
-import com.hhplus.ecommerce.application.query.GetQueueStatusQuery;
 import com.hhplus.ecommerce.application.query.GetUserCouponsQuery;
 import com.hhplus.ecommerce.application.usecase.coupon.*;
 import com.hhplus.ecommerce.domain.entity.Coupon;
-import com.hhplus.ecommerce.domain.entity.CouponQueue;
 import com.hhplus.ecommerce.domain.entity.UserCoupon;
 import com.hhplus.ecommerce.presentation.dto.CouponQueueResponse;
 import com.hhplus.ecommerce.presentation.dto.CouponResponse;
@@ -28,11 +25,6 @@ public class CouponController {
     private final IssueCouponUseCase issueCouponUseCase;
     private final GetUserCouponsUseCase getUserCouponsUseCase;
     private final GetAvailableCouponsUseCase getAvailableCouponsUseCase;
-    private final JoinCouponQueueUseCase joinCouponQueueUseCase;
-    private final GetQueueStatusUseCase getQueueStatusUseCase;
-
-    // Redis 기반 대기열
-    private final JoinRedisQueueUseCase joinRedisQueueUseCase;
     private final GetRedisQueueStatusUseCase getRedisQueueStatusUseCase;
 
     @GetMapping("/issuable")
@@ -117,42 +109,5 @@ public class CouponController {
             @PathVariable String publicId) {
         CouponQueueResponse response = getRedisQueueStatusUseCase.execute(publicId, couponId);
         return ResponseEntity.ok(response);
-    }
-
-    // ===== Deprecated APIs (하위 호환성 유지) =====
-
-    /**
-     * @deprecated /issue API 사용 권장 (useQueue 설정에 따라 자동으로 대기열 진입)
-     *             Redis → DB Fallback 자동 적용
-     */
-    @Deprecated
-    @PostMapping("/{couponId}/queue/join/{publicId}")
-    public ResponseEntity<CouponQueueResponse> joinQueue(
-            @PathVariable Long couponId,
-            @PathVariable String publicId) {
-        CouponQueueResponse response = joinRedisQueueUseCase.execute(publicId, couponId);
-        return ResponseEntity.ok(response);
-    }
-
-    /**
-     * @deprecated Redis Fallback 패턴이 적용된 /queue/status 사용 권장
-     */
-    @Deprecated
-    @GetMapping("/{couponId}/redis-queue/status/{publicId}")
-    public ResponseEntity<CouponQueueResponse> getRedisQueueStatus(
-            @PathVariable Long couponId,
-            @PathVariable String publicId) {
-        return getQueueStatus(couponId, publicId);
-    }
-
-    /**
-     * @deprecated /issue API 사용 권장
-     */
-    @Deprecated
-    @PostMapping("/{couponId}/redis-queue/join/{publicId}")
-    public ResponseEntity<CouponQueueResponse> joinRedisQueue(
-            @PathVariable Long couponId,
-            @PathVariable String publicId) {
-        return joinQueue(couponId, publicId);
     }
 }

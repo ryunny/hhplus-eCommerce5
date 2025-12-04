@@ -9,11 +9,19 @@ import com.hhplus.ecommerce.domain.repository.UserCouponRepository;
 import com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator;
 import com.hhplus.ecommerce.presentation.dto.CouponQueueResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StreamUtils;
 
+import jakarta.annotation.PostConstruct;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -42,6 +50,10 @@ public class RedisCouponQueueService {
     private final UserCouponRepository userCouponRepository;
     private final UserService userService;
 
+    // Lua 스크립트
+    private DefaultRedisScript<List> moveToProcessingScript;
+    private DefaultRedisScript<Long> removeFromProcessingScript;
+
     public RedisCouponQueueService(RedisTemplate<String, String> redisTemplate,
                                    CouponRepository couponRepository,
                                    UserCouponRepository userCouponRepository,
@@ -50,6 +62,44 @@ public class RedisCouponQueueService {
         this.couponRepository = couponRepository;
         this.userCouponRepository = userCouponRepository;
         this.userService = userService;
+    }
+
+    /**
+     * Lua 스크립트 초기화
+     * 애플리케이션 시작 시 Lua 스크립트를 로드합니다.
+     */
+    @PostConstruct
+    public void init() {
+        try {
+            // 대기열 → 처리 중 이동 스크립트
+            String moveScript = loadScript("scripts/move_to_processing.lua");
+            moveToProcessingScript = new DefaultRedisScript<>();
+            moveToProcessingScript.setScriptText(moveScript);
+            moveToProcessingScript.setResultType(List.class);
+
+            // 처리 중 제거 스크립트
+            String removeScript = loadScript("scripts/remove_from_processing.lua");
+            removeFromProcessingScript = new DefaultRedisScript<>();
+            removeFromProcessingScript.setScriptText(removeScript);
+            removeFromProcessingScript.setResultType(Long.class);
+
+            log.info("Lua 스크립트 로드 완료");
+        } catch (IOException e) {
+            log.error("Lua 스크립트 로드 실패", e);
+            throw new RuntimeException("Lua 스크립트 로드 실패", e);
+        }
+    }
+
+    /**
+     * 클래스패스에서 Lua 스크립트 로드
+     *
+     * @param path 스크립트 경로
+     * @return 스크립트 내용
+     * @throws IOException 파일 읽기 실패
+     */
+    private String loadScript(String path) throws IOException {
+        ClassPathResource resource = new ClassPathResource(path);
+        return StreamUtils.copyToString(resource.getInputStream(), StandardCharsets.UTF_8);
     }
 
     /**
@@ -146,12 +196,14 @@ public class RedisCouponQueueService {
     }
 
     /**
-     * 상위 N명 쿠폰 발급 처리
+     * 상위 N명 쿠폰 발급 처리 (Lua 스크립트 사용)
      *
      * 배치로 호출되는 메서드입니다.
-     * 1. 상위 N명 조회
+     * Lua 스크립트를 사용하여 대기열에서 처리 중 상태로 원자적으로 이동합니다.
+     *
+     * 1. Lua 스크립트로 대기열 → 처리 중 (원자적 이동)
      * 2. 각 사용자에게 쿠폰 발급
-     * 3. 대기열에서 제거
+     * 3. 처리 중에서 제거
      *
      * @param couponId 쿠폰 ID
      * @param batchSize 한 번에 처리할 개수 (기본 10명)
@@ -159,12 +211,17 @@ public class RedisCouponQueueService {
      */
     public int processBatch(Long couponId, int batchSize) {
         String queueKey = RedisKeyGenerator.couponQueue(couponId);
+        String processingKey = RedisKeyGenerator.couponQueueProcessing(couponId);
 
-        // 1. 상위 N명 조회 (선착순): O(log N + batchSize)
-        Set<ZSetOperations.TypedTuple<String>> topUsers =
-                redisTemplate.opsForZSet().rangeWithScores(queueKey, 0, batchSize - 1);
+        // 1. Lua 스크립트로 대기열 → 처리 중 (원자적 이동)
+        // ZPOPMIN + SADD를 한 번에 실행
+        List<String> members = redisTemplate.execute(
+                moveToProcessingScript,
+                Arrays.asList(queueKey, processingKey),
+                String.valueOf(batchSize)
+        );
 
-        if (topUsers == null || topUsers.isEmpty()) {
+        if (members == null || members.isEmpty()) {
             log.debug("대기열이 비어있습니다: couponId={}", couponId);
             return 0;
         }
@@ -172,43 +229,104 @@ public class RedisCouponQueueService {
         int successCount = 0;
 
         // 2. 각 사용자에게 쿠폰 발급
-        for (ZSetOperations.TypedTuple<String> tuple : topUsers) {
-            String member = tuple.getValue();
+        // ZPOPMIN 결과: [member1, score1, member2, score2, ...]
+        for (int i = 0; i < members.size(); i += 2) {
+            String member = members.get(i);
             if (member == null) continue;
 
             Long userId = extractUserId(member);
 
             try {
                 // 쿠폰 발급 (트랜잭션)
-                issueAndRemove(userId, couponId, member);
+                issueAndRemoveFromProcessing(userId, couponId, member);
                 successCount++;
 
                 log.info("쿠폰 발급 성공: userId={}, couponId={}", userId, couponId);
             } catch (IllegalStateException e) {
                 // 이미 발급받았거나 수량 소진
-                log.warn("쿠폰 발급 실패 (대기열에서 제거): userId={}, couponId={}, reason={}",
+                log.warn("쿠폰 발급 실패 (처리 중에서 제거): userId={}, couponId={}, reason={}",
                         userId, couponId, e.getMessage());
 
-                // 대기열에서 제거 (더 이상 처리 불필요)
-                redisTemplate.opsForZSet().remove(queueKey, member);
+                // 처리 중에서 제거 (더 이상 처리 불필요)
+                removeFromProcessing(processingKey, member);
             } catch (Exception e) {
-                // 예상치 못한 에러 - 대기열 유지 (다음 배치에서 재시도)
-                log.error("쿠폰 발급 중 예외 발생 (대기열 유지): userId={}, couponId={}",
+                // 예상치 못한 에러 - 처리 중 유지 (다음 배치에서 재시도)
+                log.error("쿠폰 발급 중 예외 발생 (처리 중 유지): userId={}, couponId={}",
                         userId, couponId, e);
             }
         }
 
-        log.info("배치 처리 완료: couponId={}, 처리={}/{}", couponId, successCount, topUsers.size());
+        log.info("배치 처리 완료: couponId={}, 처리={}/{}", couponId, successCount, members.size() / 2);
         return successCount;
     }
 
     /**
-     * 쿠폰 발급 및 대기열 제거 (트랜잭션)
+     * 처리 중 Set에서 제거 (Lua 스크립트 사용)
+     *
+     * @param processingKey 처리 중 Set 키
+     * @param member 제거할 사용자
+     */
+    private void removeFromProcessing(String processingKey, String member) {
+        redisTemplate.execute(
+                removeFromProcessingScript,
+                Arrays.asList(processingKey),
+                member
+        );
+    }
+
+    /**
+     * 쿠폰 발급 및 처리 중에서 제거 (트랜잭션)
+     * Lua 스크립트 버전용 메서드
      *
      * @param userId 사용자 ID
      * @param couponId 쿠폰 ID
      * @param member Redis member (user:{userId})
      */
+    @Transactional
+    protected void issueAndRemoveFromProcessing(Long userId, Long couponId, String member) {
+        // 1. 중복 발급 검증
+        Optional<UserCoupon> existing = userCouponRepository.findByUserIdAndCouponId(userId, couponId);
+        if (existing.isPresent()) {
+            throw new IllegalStateException("이미 발급받은 쿠폰입니다.");
+        }
+
+        // 2. 쿠폰 조회 및 발급 가능 여부 확인
+        Coupon coupon = couponRepository.findById(couponId)
+                .orElseThrow(() -> new IllegalArgumentException("쿠폰을 찾을 수 없습니다: " + couponId));
+
+        if (!coupon.isIssuable()) {
+            throw new IllegalStateException("쿠폰의 모든 수량이 소진되었습니다.");
+        }
+
+        // 3. 쿠폰 발급
+        User user = userService.getUser(userId);
+
+        coupon.increaseIssuedQuantity();
+        couponRepository.save(coupon);
+
+        UserCoupon userCoupon = new UserCoupon(
+                user,
+                coupon,
+                CouponStatus.UNUSED,
+                coupon.getEndDate()
+        );
+        userCouponRepository.save(userCoupon);
+
+        // 4. 처리 중에서 제거 (발급 성공 시)
+        String processingKey = RedisKeyGenerator.couponQueueProcessing(couponId);
+        removeFromProcessing(processingKey, member);
+    }
+
+    /**
+     * 쿠폰 발급 및 대기열 제거 (트랜잭션)
+     * 기존 방식 (Lua 스크립트 미사용)
+     *
+     * @deprecated Lua 스크립트를 사용하는 issueAndRemoveFromProcessing 사용 권장
+     * @param userId 사용자 ID
+     * @param couponId 쿠폰 ID
+     * @param member Redis member (user:{userId})
+     */
+    @Deprecated
     @Transactional
     protected void issueAndRemove(Long userId, Long couponId, String member) {
         // 1. 중복 발급 검증

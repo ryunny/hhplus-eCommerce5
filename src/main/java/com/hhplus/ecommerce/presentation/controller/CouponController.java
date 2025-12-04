@@ -81,48 +81,22 @@ public class CouponController {
         return ResponseEntity.ok(response);
     }
 
-    // ===== 대기열 API (DB 기반) =====
+    // ===== 대기열 API (Fallback 패턴: Redis → DB) =====
 
     /**
-     * 대기열 진입 (선착순 쿠폰 - DB 기반)
-     */
-    @PostMapping("/{couponId}/queue/join/{publicId}")
-    public ResponseEntity<CouponQueueResponse> joinQueue(
-            @PathVariable Long couponId,
-            @PathVariable String publicId) {
-        JoinCouponQueueCommand command = new JoinCouponQueueCommand(publicId, couponId);
-        CouponQueue queue = joinCouponQueueUseCase.execute(command);
-        return ResponseEntity.ok(CouponQueueResponse.from(queue));
-    }
-
-    /**
-     * 대기 상태 조회 (DB 기반)
-     */
-    @GetMapping("/{couponId}/queue/status/{publicId}")
-    public ResponseEntity<CouponQueueResponse> getQueueStatus(
-            @PathVariable Long couponId,
-            @PathVariable String publicId) {
-        GetQueueStatusQuery query = new GetQueueStatusQuery(publicId, couponId);
-        CouponQueue queue = getQueueStatusUseCase.execute(query);
-        return ResponseEntity.ok(CouponQueueResponse.from(queue));
-    }
-
-    // ===== 대기열 API (Redis Sorted Set 기반) =====
-
-    /**
-     * 대기열 진입 (선착순 쿠폰 - Redis Sorted Set)
+     * 대기열 진입 (선착순 쿠폰)
      *
-     * 특징:
-     * - O(log N) 성능
-     * - 원자적 연산 (락 불필요)
-     * - 자동 선착순 정렬
+     * Fallback 전략:
+     * - Redis 정상: Redis Sorted Set 사용 (O(log N) 성능)
+     * - Redis 장애: DB 기반으로 자동 전환
+     * - 사용자는 내부 구현을 알 수 없음 (투명한 Fallback)
      *
      * @param couponId 쿠폰 ID
      * @param publicId 사용자 Public ID
      * @return 대기열 정보 (순번 포함)
      */
-    @PostMapping("/{couponId}/redis-queue/join/{publicId}")
-    public ResponseEntity<CouponQueueResponse> joinRedisQueue(
+    @PostMapping("/{couponId}/queue/join/{publicId}")
+    public ResponseEntity<CouponQueueResponse> joinQueue(
             @PathVariable Long couponId,
             @PathVariable String publicId) {
         CouponQueueResponse response = joinRedisQueueUseCase.execute(publicId, couponId);
@@ -130,17 +104,45 @@ public class CouponController {
     }
 
     /**
-     * 대기 상태 조회 (Redis Sorted Set)
+     * 대기 상태 조회
+     *
+     * Fallback 전략:
+     * - Redis 정상: Redis 기반 실시간 조회
+     * - Redis 장애: DB 기반으로 자동 전환
      *
      * @param couponId 쿠폰 ID
      * @param publicId 사용자 Public ID
      * @return 실시간 대기 순번
      */
-    @GetMapping("/{couponId}/redis-queue/status/{publicId}")
-    public ResponseEntity<CouponQueueResponse> getRedisQueueStatus(
+    @GetMapping("/{couponId}/queue/status/{publicId}")
+    public ResponseEntity<CouponQueueResponse> getQueueStatus(
             @PathVariable Long couponId,
             @PathVariable String publicId) {
         CouponQueueResponse response = getRedisQueueStatusUseCase.execute(publicId, couponId);
         return ResponseEntity.ok(response);
+    }
+
+    // ===== Deprecated APIs (하위 호환성 유지) =====
+
+    /**
+     * @deprecated Redis Fallback 패턴이 적용된 /queue/join 사용 권장
+     */
+    @Deprecated
+    @PostMapping("/{couponId}/redis-queue/join/{publicId}")
+    public ResponseEntity<CouponQueueResponse> joinRedisQueue(
+            @PathVariable Long couponId,
+            @PathVariable String publicId) {
+        return joinQueue(couponId, publicId);
+    }
+
+    /**
+     * @deprecated Redis Fallback 패턴이 적용된 /queue/status 사용 권장
+     */
+    @Deprecated
+    @GetMapping("/{couponId}/redis-queue/status/{publicId}")
+    public ResponseEntity<CouponQueueResponse> getRedisQueueStatus(
+            @PathVariable Long couponId,
+            @PathVariable String publicId) {
+        return getQueueStatus(couponId, publicId);
     }
 }

@@ -57,6 +57,13 @@ public class MockUserCouponRepository implements UserCouponRepository {
     }
 
     @Override
+    public List<UserCoupon> findByStatus(CouponStatus status) {
+        return userCoupons.values().stream()
+                .filter(uc -> uc.getStatus() == status)
+                .toList();
+    }
+
+    @Override
     public Optional<UserCoupon> findByUserIdAndCouponId(Long userId, Long couponId) {
         return userCoupons.values().stream()
                 .filter(uc -> uc.getUser().getId().equals(userId)

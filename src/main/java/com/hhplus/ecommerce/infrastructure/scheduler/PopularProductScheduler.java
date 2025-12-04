@@ -1,62 +1,67 @@
 package com.hhplus.ecommerce.infrastructure.scheduler;
 
-import com.hhplus.ecommerce.domain.dto.ProductSalesDto;
 import com.hhplus.ecommerce.domain.entity.PopularProduct;
-import com.hhplus.ecommerce.domain.repository.OrderItemRepository;
 import com.hhplus.ecommerce.domain.repository.PopularProductRepository;
+import com.hhplus.ecommerce.domain.service.ProductRankingService;
+import com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator;
+import com.hhplus.ecommerce.presentation.dto.PopularProductResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 
 /**
- * 인기 상품 갱신 스케줄러
+ * 인기 상품 갱신 스케줄러 (하이브리드 방식)
  *
- * 주기적으로 최근 3일간 판매량을 집계하여 인기 상품 테이블을 업데이트합니다.
- * - 실행 주기: 5분마다
- * - 집계 기간: 최근 3일
- * - 저장 개수: 상위 5개
+ * 실시간 Redis 데이터를 주기적으로 DB에 백업합니다.
+ * - 실행 주기: 1시간마다
+ * - 1일/7일 랭킹을 DB에 영속화
+ * - Redis 장애 시 Fallback으로 사용
+ * - 오래된 Redis 데이터 정리 (TTL 설정)
  */
 @Slf4j
 @Component
 public class PopularProductScheduler {
 
-    private final OrderItemRepository orderItemRepository;
+    private final ProductRankingService productRankingService;
     private final PopularProductRepository popularProductRepository;
+    private final RedisTemplate<String, String> redisTemplate;
 
-    public PopularProductScheduler(OrderItemRepository orderItemRepository,
-                                  PopularProductRepository popularProductRepository) {
-        this.orderItemRepository = orderItemRepository;
+    public PopularProductScheduler(ProductRankingService productRankingService,
+                                  PopularProductRepository popularProductRepository,
+                                  RedisTemplate<String, String> redisTemplate) {
+        this.productRankingService = productRankingService;
         this.popularProductRepository = popularProductRepository;
+        this.redisTemplate = redisTemplate;
     }
 
     /**
-     * 인기 상품 테이블 갱신
-     * 5분마다 실행됩니다.
+     * Redis 데이터를 DB에 백업 (1시간마다)
+     * 7일 기준 랭킹을 popular_products 테이블에 저장합니다.
      */
-    @Scheduled(fixedDelay = 300000) // 5분 = 300,000ms
+    @Scheduled(fixedDelay = 3600000) // 1시간 = 3,600,000ms
     @Transactional
-    public void updatePopularProducts() {
-        log.info("인기 상품 갱신 시작");
+    public void backupRedisRankingToDB() {
+        log.info("인기 상품 DB 백업 시작 (Redis → DB)");
 
         try {
-            // 1. 최근 3일간 판매량 상위 5개 조회
-            LocalDateTime threeDaysAgo = LocalDateTime.now().minusDays(3);
-            List<ProductSalesDto> topProducts = orderItemRepository.getTopSellingProducts(threeDaysAgo, 5);
+            // 1. Redis에서 7일 기준 Top 5 조회
+            List<PopularProductResponse> topProducts = productRankingService.getTopProducts(7, 5);
 
             if (topProducts.isEmpty()) {
-                log.warn("인기 상품이 없습니다. (최근 3일간 주문 없음)");
+                log.warn("Redis에 7일 기준 인기 상품 데이터 없음 (백업 스킵)");
                 return;
             }
 
-            // 2. 순위별로 업데이트 또는 신규 생성
+            // 2. DB에 순위별로 저장
             for (int i = 0; i < topProducts.size(); i++) {
                 int rank = i + 1;
-                ProductSalesDto dto = topProducts.get(i);
+                PopularProductResponse product = topProducts.get(i);
 
                 Optional<PopularProduct> existingOpt = popularProductRepository.findByRank(rank);
 
@@ -64,34 +69,79 @@ public class PopularProductScheduler {
                     // 기존 데이터 업데이트
                     PopularProduct existing = existingOpt.get();
                     existing.update(
-                            dto.productId(),
-                            dto.productName(),
-                            dto.price(),
-                            dto.totalSalesQuantity(),
-                            dto.categoryName()
+                            product.productId(),
+                            product.productName(),
+                            product.price(),
+                            product.totalSalesQuantity(),
+                            product.categoryName()
                     );
                     popularProductRepository.save(existing);
-                    log.debug("인기 상품 업데이트: 순위={}, 상품={}, 판매량={}", rank, dto.productName(), dto.totalSalesQuantity());
+                    log.debug("DB 백업 (업데이트): 순위={}, 상품={}, 판매량={}",
+                             rank, product.productName(), product.totalSalesQuantity());
                 } else {
                     // 신규 생성
                     PopularProduct newPopular = new PopularProduct(
                             rank,
-                            dto.productId(),
-                            dto.productName(),
-                            dto.price(),
-                            dto.totalSalesQuantity(),
-                            dto.categoryName()
+                            product.productId(),
+                            product.productName(),
+                            product.price(),
+                            product.totalSalesQuantity(),
+                            product.categoryName()
                     );
                     popularProductRepository.save(newPopular);
-                    log.debug("인기 상품 신규 생성: 순위={}, 상품={}, 판매량={}", rank, dto.productName(), dto.totalSalesQuantity());
+                    log.debug("DB 백업 (신규): 순위={}, 상품={}, 판매량={}",
+                             rank, product.productName(), product.totalSalesQuantity());
                 }
             }
 
-            log.info("인기 상품 갱신 완료: {} 건", topProducts.size());
+            log.info("인기 상품 DB 백업 완료: {} 건", topProducts.size());
 
         } catch (Exception e) {
-            log.error("인기 상품 갱신 실패", e);
-            throw e;
+            log.error("인기 상품 DB 백업 실패", e);
         }
+    }
+
+    /**
+     * 1일 랭킹 초기화 (매일 자정)
+     * 1일 기준 데이터를 초기화하여 새로 집계 시작
+     */
+    @Scheduled(cron = "0 0 0 * * *") // 매일 00:00:00
+    public void reset1DayRanking() {
+        log.info("1일 기준 랭킹 초기화 시작");
+        try {
+            productRankingService.clearRanking(1);
+            log.info("1일 기준 랭킹 초기화 완료");
+        } catch (Exception e) {
+            log.error("1일 기준 랭킹 초기화 실패", e);
+        }
+    }
+
+    /**
+     * 7일 랭킹 초기화 (매주 월요일 자정)
+     * 7일 기준 데이터를 초기화하여 새로 집계 시작
+     */
+    @Scheduled(cron = "0 0 0 * * MON") // 매주 월요일 00:00:00
+    public void reset7DaysRanking() {
+        log.info("7일 기준 랭킹 초기화 시작");
+        try {
+            productRankingService.clearRanking(7);
+            log.info("7일 기준 랭킹 초기화 완료");
+        } catch (Exception e) {
+            log.error("7일 기준 랭킹 초기화 실패", e);
+        }
+    }
+
+    /**
+     * Redis 키 TTL 설정 (초기화 대신 자동 만료)
+     * 대안: 초기화 대신 TTL을 설정하여 자동으로 만료되도록 할 수 있습니다.
+     */
+    public void setRankingTTL() {
+        // 1일 랭킹: 1일 후 만료
+        redisTemplate.expire(RedisKeyGenerator.productRanking1Day(), Duration.ofDays(1));
+
+        // 7일 랭킹: 7일 후 만료
+        redisTemplate.expire(RedisKeyGenerator.productRanking7Days(), Duration.ofDays(7));
+
+        log.info("Redis 랭킹 TTL 설정 완료");
     }
 }

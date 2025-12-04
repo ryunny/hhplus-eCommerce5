@@ -3,6 +3,8 @@ package com.hhplus.ecommerce.domain.service;
 import com.hhplus.ecommerce.domain.entity.User;
 import com.hhplus.ecommerce.domain.repository.UserRepository;
 import com.hhplus.ecommerce.domain.vo.Money;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,9 +23,13 @@ public class UserService {
     /**
      * 사용자 조회
      *
+     * CacheKeyGenerator를 통해 RedisKeyGenerator.userCacheKey() 호출
+     * 실제 Redis 키: cache:users:{userId}
+     *
      * @param userId 사용자 ID
      * @return 사용자 엔티티
      */
+    @Cacheable(value = "ecommerce", keyGenerator = "cacheKeyGenerator")
     @Transactional(readOnly = true)
     public User getUser(Long userId) {
         return userRepository.findById(userId)
@@ -33,9 +39,13 @@ public class UserService {
     /**
      * 사용자 조회 (Public ID 기반)
      *
+     * CacheKeyGenerator를 통해 RedisKeyGenerator.userCacheKeyByPublicId() 호출
+     * 실제 Redis 키: cache:users:publicId:{publicId}
+     *
      * @param publicId 사용자 Public ID (UUID)
      * @return 사용자 엔티티
      */
+    @Cacheable(value = "ecommerce", keyGenerator = "cacheKeyGenerator")
     @Transactional(readOnly = true)
     public User getUserByPublicId(String publicId) {
         return userRepository.findByPublicId(publicId)
@@ -79,11 +89,18 @@ public class UserService {
     /**
      * 잔액 차감 (DB 락 사용 - 트랜잭션 범위 최소화)
      *
+     * 캐시 일관성: ID와 publicId 두 캐시 키 모두 무효화
+     * RedisKeyGenerator를 통해 통일된 키 형식으로 삭제
+     *
      * @param userId 사용자 ID
      * @param amount 차감할 금액
      */
+    @org.springframework.cache.annotation.Caching(evict = {
+        @CacheEvict(value = "ecommerce", key = "T(com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator).userCacheKey(#userId)"),
+        @CacheEvict(value = "ecommerce", key = "T(com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator).userCacheKeyByPublicId(#result.publicId)")
+    })
     @Transactional
-    private void deductBalanceWithLock(Long userId, Money amount) {
+    private User deductBalanceWithLock(Long userId, Money amount) {
         // 락 시작!
         User user = userRepository.findByIdWithLock(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
@@ -96,6 +113,7 @@ public class UserService {
         user.deductBalance(amount);
         // 더티 체킹으로 자동 저장
         // 락 해제!
+        return user;
     }
 
     /**
@@ -120,11 +138,18 @@ public class UserService {
     /**
      * 잔액 차감 (Public ID 기반, DB 락 사용)
      *
+     * 캐시 일관성: ID와 publicId 두 캐시 키 모두 무효화
+     * RedisKeyGenerator를 통해 통일된 키 형식으로 삭제
+     *
      * @param publicId 사용자 Public ID
      * @param amount 차감할 금액
      */
+    @org.springframework.cache.annotation.Caching(evict = {
+        @CacheEvict(value = "ecommerce", key = "T(com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator).userCacheKey(#result.id)"),
+        @CacheEvict(value = "ecommerce", key = "T(com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator).userCacheKeyByPublicId(#publicId)")
+    })
     @Transactional
-    private void deductBalanceByPublicIdWithLock(String publicId, Money amount) {
+    private User deductBalanceByPublicIdWithLock(String publicId, Money amount) {
         User user = userRepository.findByPublicIdWithLock(publicId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + publicId));
 
@@ -135,15 +160,19 @@ public class UserService {
 
         user.deductBalance(amount);
         // 더티 체킹으로 자동 저장
+        return user;
     }
 
     /**
      * 잔액 충전
      *
+     * RedisKeyGenerator를 통해 통일된 캐시 키 형식으로 무효화
+     *
      * @param userId 사용자 ID
      * @param amount 충전할 금액
      * @return 충전 후 사용자 정보
      */
+    @CacheEvict(value = "ecommerce", key = "T(com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator).userCacheKey(#userId)")
     @Transactional
     public User chargeBalance(Long userId, Money amount) {
         User user = userRepository.findByIdWithLock(userId)
@@ -156,10 +185,17 @@ public class UserService {
     /**
      * 잔액 충전 (Public ID 기반)
      *
+     * 캐시 일관성: 전체 삭제 대신 ID와 publicId 두 캐시 키만 무효화
+     * RedisKeyGenerator를 통해 통일된 키 형식으로 삭제
+     *
      * @param publicId 사용자 Public ID (UUID)
      * @param amount 충전할 금액
      * @return 충전 후 사용자 정보
      */
+    @org.springframework.cache.annotation.Caching(evict = {
+        @CacheEvict(value = "ecommerce", key = "T(com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator).userCacheKey(#result.id)"),
+        @CacheEvict(value = "ecommerce", key = "T(com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator).userCacheKeyByPublicId(#publicId)")
+    })
     @Transactional
     public User chargeBalanceByPublicId(String publicId, Money amount) {
         User user = userRepository.findByPublicIdWithLock(publicId)

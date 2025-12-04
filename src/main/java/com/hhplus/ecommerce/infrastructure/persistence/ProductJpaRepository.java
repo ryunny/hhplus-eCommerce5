@@ -19,6 +19,12 @@ public interface ProductJpaRepository extends JpaRepository<Product, Long> {
     Optional<Product> findByIdWithLock(@Param("id") Long id);
 
     /**
+     * 여러 상품 조회 시 Category도 함께 조회 (N+1 문제 해결)
+     */
+    @Query("SELECT p FROM Product p JOIN FETCH p.category WHERE p.id IN :ids")
+    List<Product> findAllByIdWithCategory(@Param("ids") List<Long> ids);
+
+    /**
      * 조건부 업데이트: 재고가 충분할 때만 차감
      * @return 업데이트된 행의 개수 (1: 성공, 0: 실패)
      */

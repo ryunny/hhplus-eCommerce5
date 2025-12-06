@@ -3,7 +3,10 @@ package com.hhplus.ecommerce.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.hhplus.ecommerce.config.properties.CacheProperties;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CachingConfigurer;
@@ -18,7 +21,6 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
-import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -44,18 +46,20 @@ import java.util.Map;
 @Slf4j
 @Configuration
 @EnableCaching
+@RequiredArgsConstructor
+@EnableConfigurationProperties(CacheProperties.class)
 public class RedisCacheConfig implements CachingConfigurer {
+
+    private final CacheProperties cacheProperties;
 
     @Bean
     public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
-        // ObjectMapper 설정 (LocalDateTime 직렬화 지원)
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-        // Redis Cache 기본 설정
         RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofMinutes(10))  // 기본 TTL 10분
+                .entryTtl(cacheProperties.getDefaultTtl())
                 .serializeKeysWith(
                         RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer())
                 )
@@ -65,23 +69,12 @@ public class RedisCacheConfig implements CachingConfigurer {
                         )
                 );
 
-        // 엔티티별 TTL 설정
         Map<String, RedisCacheConfiguration> cacheConfigurations = new HashMap<>();
-
-        // 상품: 30분 (상품 정보는 자주 변경되지 않음)
-        cacheConfigurations.put("products", defaultConfig.entryTtl(Duration.ofMinutes(30)));
-
-        // 쿠폰: 10분 (재고 정보 반영 필요)
-        cacheConfigurations.put("coupons", defaultConfig.entryTtl(Duration.ofMinutes(10)));
-
-        // 발급 가능 쿠폰 목록: 5분 (자주 갱신 필요)
-        cacheConfigurations.put("issuableCoupons", defaultConfig.entryTtl(Duration.ofMinutes(5)));
-
-        // 사용자: 5분 (잔액 등 자주 변경됨)
-        cacheConfigurations.put("users", defaultConfig.entryTtl(Duration.ofMinutes(5)));
-
-        // 인기 상품: 60분 (통계성 데이터, 장시간 캐싱)
-        cacheConfigurations.put("topProducts", defaultConfig.entryTtl(Duration.ofMinutes(60)));
+        cacheConfigurations.put("products", defaultConfig.entryTtl(cacheProperties.getProductsTtl()));
+        cacheConfigurations.put("coupons", defaultConfig.entryTtl(cacheProperties.getCouponsTtl()));
+        cacheConfigurations.put("issuableCoupons", defaultConfig.entryTtl(cacheProperties.getIssuableCouponsTtl()));
+        cacheConfigurations.put("users", defaultConfig.entryTtl(cacheProperties.getUsersTtl()));
+        cacheConfigurations.put("topProducts", defaultConfig.entryTtl(cacheProperties.getTopProductsTtl()));
 
         return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(defaultConfig)

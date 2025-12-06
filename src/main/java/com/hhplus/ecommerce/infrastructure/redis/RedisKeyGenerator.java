@@ -21,8 +21,6 @@ package com.hhplus.ecommerce.infrastructure.redis;
  */
 public class RedisKeyGenerator {
 
-    // ===== Lock 키 생성 =====
-
     /**
      * Lock 키 생성 (범용)
      *
@@ -35,8 +33,6 @@ public class RedisKeyGenerator {
     public static String lockKey(String domain, String usecase, String action, String resource) {
         return String.format("lock:%s:%s:%s:%s", domain, usecase, action, resource);
     }
-
-    // ===== Coupon Domain =====
 
     /**
      * 쿠폰 즉시 발급 락 키
@@ -96,8 +92,6 @@ public class RedisKeyGenerator {
         return lockKey("coupon", "updateQueuePositions", "batch", "global");
     }
 
-    // ===== Product Domain =====
-
     /**
      * 상품 재고 차감 락 키 (주문 시)
      *
@@ -117,8 +111,6 @@ public class RedisKeyGenerator {
     public static String productStockIncreaseLock(Long productId) {
         return lockKey("order", "cancelOrder", "stock", String.valueOf(productId));
     }
-
-    // ===== Cache 키 생성 =====
 
     /**
      * Cache 키 생성 (범용)
@@ -190,8 +182,6 @@ public class RedisKeyGenerator {
         return cacheKey("issuableCoupons", "all");
     }
 
-    // ===== Sorted Set 키 생성 (실시간 랭킹) =====
-
     /**
      * 1일 기준 인기 상품 랭킹 (Sorted Set)
      *
@@ -200,8 +190,6 @@ public class RedisKeyGenerator {
     public static String productRanking1Day() {
         return "ranking:products:1day";
     }
-
-    // ===== Sorted Set 키 생성 (선착순 대기열) =====
 
     /**
      * 쿠폰 선착순 대기열 (Sorted Set)
@@ -249,8 +237,6 @@ public class RedisKeyGenerator {
         }
         throw new IllegalArgumentException("지원하지 않는 기간입니다: " + days + "일 (1일 또는 7일만 지원)");
     }
-
-    // ===== 유틸리티 메서드 =====
 
     /**
      * 특정 도메인의 모든 락 패턴

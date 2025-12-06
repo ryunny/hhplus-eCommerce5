@@ -63,12 +63,10 @@ public class CouponController {
         UserCoupon userCoupon = issueCouponUseCase.execute(command);
 
         if (userCoupon == null) {
-            // 대기열 방식: Redis → DB Fallback 적용
             return ResponseEntity.accepted()
                     .body(new MessageResponse("대기열에 추가되었습니다. /queue/status API로 순번을 확인하세요."));
         }
 
-        // 즉시 발급 방식
         return ResponseEntity.ok(UserCouponResponse.from(userCoupon));
     }
 
@@ -91,8 +89,6 @@ public class CouponController {
                 .toList();
         return ResponseEntity.ok(response);
     }
-
-    // ===== 대기열 상태 조회 API =====
 
     /**
      * 대기 상태 조회 (Redis → DB Fallback)

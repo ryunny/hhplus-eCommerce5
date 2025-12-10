@@ -25,12 +25,12 @@ import org.springframework.transaction.event.TransactionalEventListener;
 public class OrderSagaEventHandler {
 
     private final OrderRepository orderRepository;
-    private final ApplicationEventPublisher eventPublisher;
+    private final com.hhplus.ecommerce.domain.service.OutboxService outboxService;
 
     public OrderSagaEventHandler(OrderRepository orderRepository,
-                                ApplicationEventPublisher eventPublisher) {
+                                com.hhplus.ecommerce.domain.service.OutboxService outboxService) {
         this.orderRepository = orderRepository;
-        this.eventPublisher = eventPublisher;
+        this.outboxService = outboxService;
     }
 
     // ========================================
@@ -198,11 +198,12 @@ public class OrderSagaEventHandler {
 
             log.info("[주문-Saga] 주문 확정: orderId={}", order.getId());
 
-            // 주문 확정 이벤트 발행 → 각 도메인이 예약을 확정
-            eventPublisher.publishEvent(new OrderConfirmedEvent(
+            // 주문 확정 이벤트를 Outbox에 저장 → 각 도메인이 예약을 확정
+            OrderConfirmedEvent event = new OrderConfirmedEvent(
                 order.getId(),
                 order.getStepStatus()
-            ));
+            );
+            outboxService.saveEvent("ORDER_CONFIRMED", order.getId(), event);
         }
     }
 
@@ -227,11 +228,12 @@ public class OrderSagaEventHandler {
 
         log.error("[주문-Saga] 주문 실패 처리: orderId={}, reason={}", orderId, reason);
 
-        // 보상 트랜잭션 이벤트 발행
-        eventPublisher.publishEvent(new OrderFailedEvent(
+        // 보상 트랜잭션 이벤트를 Outbox에 저장
+        OrderFailedEvent event = new OrderFailedEvent(
             orderId,
             reason,
             order.getStepStatus().getCompletedSteps()  // 성공한 단계만 보상
-        ));
+        );
+        outboxService.saveEvent("ORDER_FAILED", orderId, event);
     }
 }

@@ -224,7 +224,7 @@ public class OrchestrationPlaceOrderUseCase {
             // 2. 쿠폰 복구
             if (couponUsed) {
                 try {
-                    couponService.restoreCoupon(request.userCouponId());
+                    couponService.cancelCoupon(request.userCouponId());
                     log.info("✅ 쿠폰 복구 완료: userCouponId={}", request.userCouponId());
                 } catch (Exception rollbackError) {
                     log.error("❌ 쿠폰 복구 실패 - 관리자 확인 필요: userCouponId={}",

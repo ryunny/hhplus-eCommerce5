@@ -33,7 +33,8 @@
       "Bash(tee:*)",
       "Bash(xargs cat:*)",
       "Bash(Select-String -Pattern \"(테스트|성공|실패|소요|BUILD)\" -Context 0,1)",
-      "Bash(timeout 10 bash:*)"
+      "Bash(timeout 10 bash:*)",
+      "Bash(Select-String -Pattern \"(테스트|성공|실패|소요|BUILD|error|FAILED)\" -Context 0,1)"
     ],
     "deny": [],
     "ask": []

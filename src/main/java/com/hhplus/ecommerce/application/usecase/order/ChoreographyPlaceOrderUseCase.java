@@ -59,18 +59,18 @@ public class ChoreographyPlaceOrderUseCase {
     private final ProductService productService;
     private final UserService userService;
     private final CouponService couponService;
-    private final ApplicationEventPublisher eventPublisher;
+    private final OutboxService outboxService;
 
     public ChoreographyPlaceOrderUseCase(OrderService orderService,
                                          ProductService productService,
                                          UserService userService,
                                          CouponService couponService,
-                                         ApplicationEventPublisher eventPublisher) {
+                                         OutboxService outboxService) {
         this.orderService = orderService;
         this.productService = productService;
         this.userService = userService;
         this.couponService = couponService;
-        this.eventPublisher = eventPublisher;
+        this.outboxService = outboxService;
     }
 
     /**
@@ -155,7 +155,7 @@ public class ChoreographyPlaceOrderUseCase {
         // 이벤트 발행 (핵심 로직은 이벤트 핸들러가 처리)
         // ==========================================
 
-        // 8. 주문 생성 이벤트 발행
+        // 8. 주문 생성 이벤트를 Outbox에 저장
         List<OrderCreatedEvent.OrderItem> eventItems = sortedItems.stream()
                 .map(item -> new OrderCreatedEvent.OrderItem(
                         item.productId(),
@@ -164,7 +164,7 @@ public class ChoreographyPlaceOrderUseCase {
                 .toList();
 
         try {
-            eventPublisher.publishEvent(new OrderCreatedEvent(
+            OrderCreatedEvent event = new OrderCreatedEvent(
                     order.getId(),
                     user.getId(),
                     eventItems,
@@ -172,9 +172,13 @@ public class ChoreographyPlaceOrderUseCase {
                     discountAmount,
                     finalAmount,
                     request.userCouponId()
-            ));
+            );
 
-            log.info("===== OrderCreatedEvent 발행 완료 =====");
+            // Outbox에 저장 (트랜잭션과 함께 커밋됨)
+            outboxService.saveEvent("ORDER_CREATED", order.getId(), event);
+
+            log.info("===== OrderCreatedEvent Outbox 저장 완료 =====");
+            log.info("→ 스케줄러가 Outbox를 폴링하여 이벤트 발행합니다");
             log.info("→ 다음 단계는 이벤트 핸들러들이 병렬로 처리합니다:");
             log.info("  ├─ StockEventHandler: 재고 차감");
             log.info("  ├─ PaymentEventHandler: 결제 처리 (잔액 차감)");
@@ -185,11 +189,11 @@ public class ChoreographyPlaceOrderUseCase {
             log.info("  └─ 하나라도 실패 → FAILED + 자동 보상 트랜잭션");
 
         } catch (Exception e) {
-            log.error("❌ OrderCreatedEvent 발행 실패: orderId={}", order.getId(), e);
+            log.error("❌ OrderCreatedEvent Outbox 저장 실패: orderId={}", order.getId(), e);
 
-            // 이벤트 발행 실패 시 주문 실패 처리
+            // Outbox 저장 실패 시 주문 실패 처리
             try {
-                order.markAsFailed("이벤트 발행 실패: " + e.getMessage());
+                order.markAsFailed("이벤트 저장 실패: " + e.getMessage());
                 orderService.save(order);
             } catch (Exception updateError) {
                 log.error("❌ 주문 상태 업데이트 실패: orderId={}", order.getId(), updateError);

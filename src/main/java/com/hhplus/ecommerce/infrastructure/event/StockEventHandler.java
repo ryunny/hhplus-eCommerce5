@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
@@ -25,15 +26,15 @@ import java.util.UUID;
 public class StockEventHandler {
 
     private final ProductService productService;
-    private final ApplicationEventPublisher eventPublisher;
+    private final com.hhplus.ecommerce.domain.service.OutboxService outboxService;
 
     // 주문별 재고 차감 기록 (보상 트랜잭션용)
     private final Map<Long, StockReservation> reservations = new HashMap<>();
 
     public StockEventHandler(ProductService productService,
-                            ApplicationEventPublisher eventPublisher) {
+                            com.hhplus.ecommerce.domain.service.OutboxService outboxService) {
         this.productService = productService;
-        this.eventPublisher = eventPublisher;
+        this.outboxService = outboxService;
     }
 
     /**
@@ -42,8 +43,12 @@ public class StockEventHandler {
      * AFTER_COMMIT: UseCase의 트랜잭션이 커밋된 후 실행
      * - 주문이 확실히 DB에 저장된 후 재고 차감
      * - 트랜잭션 롤백 시 이벤트 미발행
+     *
+     * @Transactional: 재고 차감 + Outbox 저장을 하나의 트랜잭션으로 처리
+     * - 둘 중 하나라도 실패하면 모두 롤백
      */
     @Async
+    @Transactional
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleOrderCreated(OrderCreatedEvent event) {
         try {
@@ -69,22 +74,24 @@ public class StockEventHandler {
             // 예약 정보 저장
             reservations.put(event.orderId(), reservation);
 
-            // 성공 이벤트 발행
-            eventPublisher.publishEvent(new StockReservedEvent(
+            // 성공 이벤트를 Outbox에 저장
+            StockReservedEvent successEvent = new StockReservedEvent(
                 event.orderId(),
                 reservationId
-            ));
+            );
+            outboxService.saveEvent("STOCK_RESERVED", event.orderId(), successEvent);
 
             log.info("[재고] 재고 차감 성공: orderId={}, reservationId={}", event.orderId(), reservationId);
 
         } catch (Exception e) {
             log.error("[재고] 재고 차감 실패: orderId={}, error={}", event.orderId(), e.getMessage(), e);
 
-            // 실패 이벤트 발행
-            eventPublisher.publishEvent(new StockReservationFailedEvent(
+            // 실패 이벤트를 Outbox에 저장
+            StockReservationFailedEvent failEvent = new StockReservationFailedEvent(
                 event.orderId(),
                 e.getMessage()
-            ));
+            );
+            outboxService.saveEvent("STOCK_RESERVATION_FAILED", event.orderId(), failEvent);
         }
     }
 
@@ -94,6 +101,7 @@ public class StockEventHandler {
      * 실제 프로덕션에서는 "예약" → "확정" 2단계로 구현할 수 있습니다.
      */
     @Async
+    @Transactional
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleOrderConfirmed(OrderConfirmedEvent event) {
         log.info("[재고] 재고 확정: orderId={}", event.orderId());
@@ -106,6 +114,7 @@ public class StockEventHandler {
      * 주문 실패 → 보상 트랜잭션 (재고 복구)
      */
     @Async
+    @Transactional
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleOrderFailed(OrderFailedEvent event) {
         // 재고 차감이 성공했었는지 확인

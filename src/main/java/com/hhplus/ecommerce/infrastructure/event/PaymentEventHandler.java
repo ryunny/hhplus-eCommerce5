@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
@@ -28,18 +29,18 @@ public class PaymentEventHandler {
     private final PaymentService paymentService;
     private final OrderRepository orderRepository;
     private final PaymentRepository paymentRepository;
-    private final ApplicationEventPublisher eventPublisher;
+    private final com.hhplus.ecommerce.domain.service.OutboxService outboxService;
 
     public PaymentEventHandler(UserService userService,
                               PaymentService paymentService,
                               OrderRepository orderRepository,
                               PaymentRepository paymentRepository,
-                              ApplicationEventPublisher eventPublisher) {
+                              com.hhplus.ecommerce.domain.service.OutboxService outboxService) {
         this.userService = userService;
         this.paymentService = paymentService;
         this.orderRepository = orderRepository;
         this.paymentRepository = paymentRepository;
-        this.eventPublisher = eventPublisher;
+        this.outboxService = outboxService;
     }
 
     /**
@@ -47,8 +48,12 @@ public class PaymentEventHandler {
      *
      * AFTER_COMMIT: UseCase의 트랜잭션이 커밋된 후 실행
      * - 주문이 확실히 DB에 저장된 후 결제 처리
+     *
+     * @Transactional: 잔액 차감 + 결제 생성 + Outbox 저장을 하나의 트랜잭션으로 처리
+     * - 셋 중 하나라도 실패하면 모두 롤백
      */
     @Async
+    @Transactional
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleOrderCreated(OrderCreatedEvent event) {
         try {
@@ -70,12 +75,13 @@ public class PaymentEventHandler {
             log.info("[결제] 결제 생성 완료: orderId={}, paymentId={}",
                 event.orderId(), payment.getId());
 
-            // 성공 이벤트 발행
-            eventPublisher.publishEvent(new PaymentCompletedEvent(
+            // 성공 이벤트를 Outbox에 저장
+            PaymentCompletedEvent successEvent = new PaymentCompletedEvent(
                 event.orderId(),
                 payment.getId(),
                 event.finalAmount()
-            ));
+            );
+            outboxService.saveEvent("PAYMENT_COMPLETED", event.orderId(), successEvent);
 
             log.info("[결제] 결제 처리 성공: orderId={}, paymentId={}", event.orderId(), payment.getId());
 
@@ -84,18 +90,20 @@ public class PaymentEventHandler {
             log.error("[결제] 결제 실패 (잔액 부족): orderId={}, error={}",
                 event.orderId(), e.getMessage());
 
-            eventPublisher.publishEvent(new PaymentFailedEvent(
+            PaymentFailedEvent failEvent = new PaymentFailedEvent(
                 event.orderId(),
                 "잔액 부족: " + e.getMessage()
-            ));
+            );
+            outboxService.saveEvent("PAYMENT_FAILED", event.orderId(), failEvent);
 
         } catch (Exception e) {
             log.error("[결제] 결제 실패: orderId={}, error={}", event.orderId(), e.getMessage(), e);
 
-            eventPublisher.publishEvent(new PaymentFailedEvent(
+            PaymentFailedEvent failEvent = new PaymentFailedEvent(
                 event.orderId(),
                 e.getMessage()
-            ));
+            );
+            outboxService.saveEvent("PAYMENT_FAILED", event.orderId(), failEvent);
         }
     }
 
@@ -103,6 +111,7 @@ public class PaymentEventHandler {
      * 주문 실패 → 보상 트랜잭션 (환불)
      */
     @Async
+    @Transactional
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleOrderFailed(OrderFailedEvent event) {
         // 결제가 성공했었는지 확인

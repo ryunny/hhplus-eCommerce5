@@ -156,4 +156,15 @@ public class OrderService {
     public List<Order> getUserOrdersByPublicId(String publicId) {
         return orderRepository.findByUserPublicId(publicId);
     }
+
+    /**
+     * 주문 저장
+     *
+     * @param order 주문
+     * @return 저장된 주문
+     */
+    @Transactional
+    public Order save(Order order) {
+        return orderRepository.save(order);
+    }
 }

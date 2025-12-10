@@ -10,9 +10,10 @@ import com.hhplus.ecommerce.domain.service.UserService;
 import com.hhplus.ecommerce.domain.vo.Money;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 /**
  * 결제 이벤트 핸들러
@@ -43,9 +44,12 @@ public class PaymentEventHandler {
 
     /**
      * 주문 생성 → 결제 처리 (잔액 차감 + 결제 엔티티 생성)
+     *
+     * AFTER_COMMIT: UseCase의 트랜잭션이 커밋된 후 실행
+     * - 주문이 확실히 DB에 저장된 후 결제 처리
      */
     @Async
-    @EventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleOrderCreated(OrderCreatedEvent event) {
         try {
             log.info("[결제] 결제 처리 시작: orderId={}, amount={}",
@@ -99,7 +103,7 @@ public class PaymentEventHandler {
      * 주문 실패 → 보상 트랜잭션 (환불)
      */
     @Async
-    @EventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleOrderFailed(OrderFailedEvent event) {
         // 결제가 성공했었는지 확인
         if (!event.completedSteps().contains("PAYMENT")) {

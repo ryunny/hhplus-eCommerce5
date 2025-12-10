@@ -6,10 +6,11 @@ import com.hhplus.ecommerce.domain.event.*;
 import com.hhplus.ecommerce.domain.repository.OrderRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 /**
  * 주문 Saga 이벤트 핸들러
@@ -38,10 +39,13 @@ public class OrderSagaEventHandler {
 
     /**
      * 재고 예약 성공 처리
+     *
+     * fallbackExecution = true: 트랜잭션 컨텍스트가 없어도 실행
+     * - StockEventHandler에서 트랜잭션 없이 이벤트 발행하므로 필요
      */
     @Async
     @Transactional
-    @EventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
     public void handleStockReserved(StockReservedEvent event) {
         log.info("[주문-Saga] 재고 예약 성공 수신: orderId={}, reservationId={}",
             event.orderId(), event.reservationId());
@@ -67,10 +71,12 @@ public class OrderSagaEventHandler {
 
     /**
      * 결제 완료 처리
+     *
+     * fallbackExecution = true: 트랜잭션 컨텍스트가 없어도 실행
      */
     @Async
     @Transactional
-    @EventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
     public void handlePaymentCompleted(PaymentCompletedEvent event) {
         log.info("[주문-Saga] 결제 완료 수신: orderId={}, paymentId={}",
             event.orderId(), event.paymentId());
@@ -95,10 +101,12 @@ public class OrderSagaEventHandler {
 
     /**
      * 쿠폰 사용 완료 처리
+     *
+     * fallbackExecution = true: 트랜잭션 컨텍스트가 없어도 실행
      */
     @Async
     @Transactional
-    @EventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
     public void handleCouponUsed(CouponUsedEvent event) {
         log.info("[주문-Saga] 쿠폰 사용 완료 수신: orderId={}, userCouponId={}",
             event.orderId(), event.userCouponId());
@@ -127,10 +135,12 @@ public class OrderSagaEventHandler {
 
     /**
      * 재고 예약 실패 처리
+     *
+     * fallbackExecution = true: 트랜잭션 컨텍스트가 없어도 실행
      */
     @Async
     @Transactional
-    @EventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
     public void handleStockReservationFailed(StockReservationFailedEvent event) {
         log.error("[주문-Saga] 재고 예약 실패 수신: orderId={}, reason={}",
             event.orderId(), event.reason());
@@ -142,10 +152,12 @@ public class OrderSagaEventHandler {
 
     /**
      * 결제 실패 처리
+     *
+     * fallbackExecution = true: 트랜잭션 컨텍스트가 없어도 실행
      */
     @Async
     @Transactional
-    @EventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
     public void handlePaymentFailed(PaymentFailedEvent event) {
         log.error("[주문-Saga] 결제 실패 수신: orderId={}, reason={}",
             event.orderId(), event.reason());
@@ -157,10 +169,12 @@ public class OrderSagaEventHandler {
 
     /**
      * 쿠폰 사용 실패 처리
+     *
+     * fallbackExecution = true: 트랜잭션 컨텍스트가 없어도 실행
      */
     @Async
     @Transactional
-    @EventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
     public void handleCouponUsageFailed(CouponUsageFailedEvent event) {
         log.error("[주문-Saga] 쿠폰 사용 실패 수신: orderId={}, reason={}",
             event.orderId(), event.reason());

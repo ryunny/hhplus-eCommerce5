@@ -6,9 +6,10 @@ import com.hhplus.ecommerce.domain.repository.OrderRepository;
 import com.hhplus.ecommerce.domain.service.CouponService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 /**
  * 쿠폰 이벤트 핸들러
@@ -33,9 +34,11 @@ public class CouponEventHandler {
 
     /**
      * 주문 생성 → 쿠폰 사용
+     *
+     * AFTER_COMMIT: UseCase의 트랜잭션이 커밋된 후 실행
      */
     @Async
-    @EventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleOrderCreated(OrderCreatedEvent event) {
         // 쿠폰을 사용하지 않는 경우
         if (event.userCouponId() == null) {
@@ -81,7 +84,7 @@ public class CouponEventHandler {
      * 주문 실패 → 보상 트랜잭션 (쿠폰 복구)
      */
     @Async
-    @EventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleOrderFailed(OrderFailedEvent event) {
         // 쿠폰 사용이 성공했었는지 확인
         if (!event.completedSteps().contains("COUPON")) {

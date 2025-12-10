@@ -6,9 +6,10 @@ import com.hhplus.ecommerce.domain.service.ProductService;
 import com.hhplus.ecommerce.domain.vo.Quantity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,9 +38,13 @@ public class StockEventHandler {
 
     /**
      * 주문 생성 → 재고 차감
+     *
+     * AFTER_COMMIT: UseCase의 트랜잭션이 커밋된 후 실행
+     * - 주문이 확실히 DB에 저장된 후 재고 차감
+     * - 트랜잭션 롤백 시 이벤트 미발행
      */
     @Async
-    @EventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleOrderCreated(OrderCreatedEvent event) {
         try {
             log.info("[재고] 재고 차감 시작: orderId={}, items={}", event.orderId(), event.items().size());
@@ -89,7 +94,7 @@ public class StockEventHandler {
      * 실제 프로덕션에서는 "예약" → "확정" 2단계로 구현할 수 있습니다.
      */
     @Async
-    @EventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleOrderConfirmed(OrderConfirmedEvent event) {
         log.info("[재고] 재고 확정: orderId={}", event.orderId());
 
@@ -101,7 +106,7 @@ public class StockEventHandler {
      * 주문 실패 → 보상 트랜잭션 (재고 복구)
      */
     @Async
-    @EventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleOrderFailed(OrderFailedEvent event) {
         // 재고 차감이 성공했었는지 확인
         if (!event.completedSteps().contains("STOCK")) {

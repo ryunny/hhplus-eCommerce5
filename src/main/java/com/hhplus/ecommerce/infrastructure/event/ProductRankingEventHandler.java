@@ -3,17 +3,21 @@ package com.hhplus.ecommerce.infrastructure.event;
 import com.hhplus.ecommerce.domain.event.OrderCompletedEvent;
 import com.hhplus.ecommerce.domain.service.ProductRankingService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
 
 /**
  * 상품 랭킹 업데이트 이벤트 핸들러
  *
- * 주문 트랜잭션 커밋 후 비동기로 Redis 랭킹을 업데이트합니다.
- * - Redis 장애 시에도 주문 트랜잭션은 성공 처리
+ * 주문 완료 후 비동기로 Redis 랭킹을 업데이트합니다.
+ * - Redis 장애 시에도 주문 처리는 성공
  * - 결제 처리와 랭킹 업데이트의 독립성 확보
+ *
+ * 참고: @TransactionalEventListener 대신 @EventListener를 사용하는 이유
+ * - PlaceOrderUseCase에는 @Transactional이 없음 (각 Service가 독립 트랜잭션)
+ * - @TransactionalEventListener(AFTER_COMMIT)는 활성 트랜잭션이 없으면 실행되지 않음
+ * - 주문 완료 시점에는 이미 모든 Service 트랜잭션이 커밋된 상태이므로 @EventListener로 충분
  */
 @Slf4j
 @Component
@@ -31,7 +35,7 @@ public class ProductRankingEventHandler {
      * @param event 주문 완료 이벤트
      */
     @Async
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @EventListener
     public void handleOrderCompleted(OrderCompletedEvent event) {
         try {
             log.info("주문 완료 이벤트 수신 - 랭킹 업데이트 시작: orderId={}", event.orderId());

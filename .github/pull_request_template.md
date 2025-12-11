@@ -13,6 +13,7 @@
 ### **중요 커밋**
 - [8d4e5a9](https://github.com/ryunny/hhplus-eCommerce5/commit/8d4e5a9) - Saga 패턴 구현 (Orchestration vs Choreography)
 - [104377a](https://github.com/ryunny/hhplus-eCommerce5/commit/104377a) - Outbox Pattern 적용 및 인기상품 랭킹 이벤트 추가
+- [52ae660](https://github.com/ryunny/hhplus-eCommerce5/commit/52ae660) - Saga/이벤트/Outbox 통합 테스트 추가
 - [a4d9e5d](https://github.com/ryunny/hhplus-eCommerce5/commit/a4d9e5d) - 날짜별 키 분리 및 TTL 기반 랭킹 관리 개선
 
 ### **간단 회고** (3줄 이내)

@@ -1,5 +1,6 @@
 package com.hhplus.ecommerce.domain.service;
 
+import com.hhplus.ecommerce.config.properties.SchedulerProperties;
 import com.hhplus.ecommerce.domain.entity.Coupon;
 import com.hhplus.ecommerce.domain.entity.CouponQueue;
 import com.hhplus.ecommerce.domain.entity.User;
@@ -36,19 +37,22 @@ public class CouponService {
     private final UserService userService;
     private final RedisPubSubLock pubSubLock;
     private final com.hhplus.ecommerce.config.LockTimeoutConfig lockTimeoutConfig;
+    private final SchedulerProperties schedulerProperties;
 
     public CouponService(UserCouponRepository userCouponRepository,
                         CouponRepository couponRepository,
                         CouponQueueRepository couponQueueRepository,
                         UserService userService,
                         RedisPubSubLock pubSubLock,
-                        com.hhplus.ecommerce.config.LockTimeoutConfig lockTimeoutConfig) {
+                        com.hhplus.ecommerce.config.LockTimeoutConfig lockTimeoutConfig,
+                        SchedulerProperties schedulerProperties) {
         this.userCouponRepository = userCouponRepository;
         this.couponRepository = couponRepository;
         this.couponQueueRepository = couponQueueRepository;
         this.userService = userService;
         this.pubSubLock = pubSubLock;
         this.lockTimeoutConfig = lockTimeoutConfig;
+        this.schedulerProperties = schedulerProperties;
     }
 
     // ===== 쿠폰 조회 =====
@@ -183,24 +187,24 @@ public class CouponService {
      * @return 발급된 UserCoupon
      */
     public UserCoupon issueCoupon(Long userId, Long couponId) {
-        // 1. 사용자 조회 (트랜잭션 밖)
+        // 사용자 조회 (트랜잭션 밖)
         User user = userService.getUser(userId);
 
-        // 2. 쿠폰 정보 사전 조회 (트랜잭션 밖 - 일반 SELECT)
+        // 쿠폰 정보 사전 조회 (트랜잭션 밖 - 일반 SELECT)
         Coupon coupon = getCoupon(couponId);
 
-        // 3. 사전 검증: 이미 발급받았는지 확인 (트랜잭션 밖)
+        // 사전 검증: 이미 발급받았는지 확인 (트랜잭션 밖)
         Optional<UserCoupon> existingCoupon = userCouponRepository.findByUserIdAndCouponId(userId, couponId);
         if (existingCoupon.isPresent()) {
             throw new IllegalStateException("이미 발급받은 쿠폰입니다.");
         }
 
-        // 4. 사전 검증: 발급 가능 여부 확인 (트랜잭션 밖)
+        // 사전 검증: 발급 가능 여부 확인 (트랜잭션 밖)
         if (!coupon.isIssuable()) {
             throw new IllegalStateException("쿠폰의 모든 수량이 소진되었습니다.");
         }
 
-        // 5. 실제 쓰기 작업만 트랜잭션 안에서 (락 시간 최소화)
+        // 실제 쓰기 작업만 트랜잭션 안에서 (락 시간 최소화)
         return issueCouponWithLock(user, couponId);
     }
 
@@ -248,21 +252,21 @@ public class CouponService {
     })
     @Transactional
     public UserCoupon issueCouponTransaction(User user, Long couponId) {
-        // 1. 쿠폰 조회 (일반 SELECT - Redis 락이 동시성 보장)
+        // 쿠폰 조회 (일반 SELECT - Redis 락이 동시성 보장)
         Coupon coupon = couponRepository.findById(couponId)
                 .orElseThrow(() -> new IllegalArgumentException("쿠폰을 찾을 수 없습니다: " + couponId));
 
-        // 2. 재검증: 발급 가능 여부 (동시성 문제 대비)
+        // 재검증: 발급 가능 여부 (동시성 문제 대비)
         if (!coupon.isIssuable()) {
             throw new IllegalStateException("쿠폰의 모든 수량이 소진되었습니다.");
         }
 
-        // 3. 쓰기 작업 (원자적 실행)
-        // 3-1. 발급 수량 증가
+        // 쓰기 작업 (원자적 실행)
+        // 발급 수량 증가
         coupon.increaseIssuedQuantity();
         couponRepository.save(coupon);
 
-        // 3-2. 사용자 쿠폰 생성
+        // 사용자 쿠폰 생성
         UserCoupon userCoupon = new UserCoupon(
                 user,
                 coupon,
@@ -354,16 +358,16 @@ public class CouponService {
      * @return 생성된 CouponQueue (대기 정보 포함)
      */
     public CouponQueue joinQueue(Long userId, Long couponId) {
-        // 1. 사용자 조회 (트랜잭션 밖)
+        // 사용자 조회 (트랜잭션 밖)
         User user = userService.getUser(userId);
 
-        // 2. 쿠폰 조회 (트랜잭션 밖)
+        // 쿠폰 조회 (트랜잭션 밖)
         Coupon coupon = getCoupon(couponId);
 
-        // 3. 기존 대기열 검증 (트랜잭션 밖)
+        // 기존 대기열 검증 (트랜잭션 밖)
         validateExistingQueue(userId, couponId);
 
-        // 4. 대기열 생성 (락 + 트랜잭션)
+        // 대기열 생성 (락 + 트랜잭션)
         return createQueueWithLock(user, coupon);
     }
 
@@ -422,12 +426,12 @@ public class CouponService {
      */
     @Transactional
     private CouponQueue createQueue(User user, Coupon coupon) {
-        // 1. 현재 대기 인원 계산
+        // 현재 대기 인원 계산
         int waitingCount = couponQueueRepository.countByCouponIdAndStatus(coupon.getId(), CouponQueueStatus.WAITING);
         int processingCount = couponQueueRepository.countByCouponIdAndStatus(coupon.getId(), CouponQueueStatus.PROCESSING);
         int queuePosition = waitingCount + processingCount + 1;
 
-        // 2. 대기열 생성
+        // 대기열 생성
         CouponQueue couponQueue = new CouponQueue(user, coupon, CouponQueueStatus.WAITING, queuePosition);
         couponQueueRepository.save(couponQueue);
 
@@ -482,7 +486,7 @@ public class CouponService {
      */
     @Transactional
     public void processQueueForCouponTransaction(Coupon coupon) {
-        // 대기 중인 사람들 조회 (선착순)
+        // 대기 중인 사람들 조회 (선착순, FIFO)
         List<CouponQueue> waitingQueues = couponQueueRepository.findByCouponIdAndStatus(
                 coupon.getId(), CouponQueueStatus.WAITING);
 
@@ -490,8 +494,7 @@ public class CouponService {
             return;
         }
 
-        // 한 번에 처리할 수 (배치 크기)
-        int batchSize = Math.min(10, waitingQueues.size());
+        int batchSize = Math.min(schedulerProperties.getQueue().getBatchSize(), waitingQueues.size());
 
         for (int i = 0; i < batchSize; i++) {
             CouponQueue queue = waitingQueues.get(i);
@@ -537,15 +540,15 @@ public class CouponService {
      */
     @Transactional
     public void processQueueItemTransaction(CouponQueue queue) {
-        // 1. 상태 변경: WAITING -> PROCESSING
+        // 상태 변경: WAITING -> PROCESSING
         queue.updateStatus(CouponQueueStatus.PROCESSING);
         couponQueueRepository.save(queue);
 
-        // 2. 최신 쿠폰 정보 조회 (일반 SELECT - Redis 락이 동시성 보장)
+        // 최신 쿠폰 정보 조회 (일반 SELECT - Redis 락이 동시성 보장)
         Coupon coupon = couponRepository.findById(queue.getCoupon().getId())
                 .orElseThrow(() -> new IllegalArgumentException("쿠폰을 찾을 수 없습니다: " + queue.getCoupon().getId()));
 
-        // 3. 중복 발급 검증
+        // 중복 발급 검증
         Optional<UserCoupon> existing = userCouponRepository.findByUserIdAndCouponId(
                 queue.getUser().getId(), coupon.getId());
         if (existing.isPresent()) {
@@ -554,14 +557,14 @@ public class CouponService {
             return;
         }
 
-        // 4. 발급 가능 여부 확인
+        // 발급 가능 여부 확인
         if (!coupon.isIssuable()) {
             updateQueueFailed(queue, "쿠폰의 모든 수량이 소진되었습니다.");
             log.warn("수량 소진: couponId={}", coupon.getId());
             return;
         }
 
-        // 5. 쿠폰 발급 처리
+        // 쿠폰 발급 처리
         coupon.increaseIssuedQuantity();
         couponRepository.save(coupon);
 
@@ -573,7 +576,7 @@ public class CouponService {
         );
         userCouponRepository.save(userCoupon);
 
-        // 6. 상태 변경: PROCESSING -> COMPLETED
+        // 상태 변경: PROCESSING -> COMPLETED
         queue.updateStatus(CouponQueueStatus.COMPLETED);
         couponQueueRepository.save(queue);
 

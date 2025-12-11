@@ -26,6 +26,20 @@ lock:
     coupon: 5000       # 쿠폰 발급 락: 5초
     batch: 10000       # 배치 작업 락: 10초
 
+# 스케줄러 설정
+scheduler:
+  queue:
+    fixed-delay: 1000        # 쿠폰 대기열 처리 주기: 1초
+    batch-size: 10           # 쿠폰 대기열 배치 크기
+  outbox:
+    fixed-delay: 5000        # Outbox 이벤트 처리 주기: 5초
+    initial-delay: 5000      # Outbox 이벤트 처리 초기 지연: 5초
+  ranking:
+    fixed-delay: 3600000     # 인기상품 랭킹 업데이트 주기: 1시간
+    top-days: 7              # 인기상품 집계 기간: 최근 7일
+    top-count: 5             # 인기상품 상위 개수: 5개
+    calculation-days: 3      # 랭킹 계산 대상 기간: 최근 3일
+
 logging:
   level:
     org.hibernate.SQL: debug

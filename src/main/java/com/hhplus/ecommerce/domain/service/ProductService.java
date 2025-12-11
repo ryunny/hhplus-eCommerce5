@@ -1,5 +1,6 @@
 package com.hhplus.ecommerce.domain.service;
 
+import com.hhplus.ecommerce.config.properties.SchedulerProperties;
 import com.hhplus.ecommerce.domain.dto.ProductSalesDto;
 import com.hhplus.ecommerce.domain.entity.Product;
 import com.hhplus.ecommerce.domain.repository.OrderItemRepository;
@@ -28,12 +29,18 @@ public class ProductService {
     private final OrderItemRepository orderItemRepository;
     private final RedisPubSubLock pubSubLock;
     private final com.hhplus.ecommerce.config.LockTimeoutConfig lockTimeoutConfig;
+    private final SchedulerProperties schedulerProperties;
 
-    public ProductService(ProductRepository productRepository, OrderItemRepository orderItemRepository, RedisPubSubLock pubSubLock, com.hhplus.ecommerce.config.LockTimeoutConfig lockTimeoutConfig) {
+    public ProductService(ProductRepository productRepository,
+                         OrderItemRepository orderItemRepository,
+                         RedisPubSubLock pubSubLock,
+                         com.hhplus.ecommerce.config.LockTimeoutConfig lockTimeoutConfig,
+                         SchedulerProperties schedulerProperties) {
         this.productRepository = productRepository;
         this.orderItemRepository = orderItemRepository;
         this.pubSubLock = pubSubLock;
         this.lockTimeoutConfig = lockTimeoutConfig;
+        this.schedulerProperties = schedulerProperties;
     }
 
     /**
@@ -225,7 +232,8 @@ public class ProductService {
     @Cacheable(value = "ecommerce", keyGenerator = "cacheKeyGenerator")
     @Transactional(readOnly = true)
     public List<ProductSalesDto> getTopSellingProducts(int limit) {
-        LocalDateTime threeDaysAgo = LocalDateTime.now().minusDays(3);
-        return orderItemRepository.getTopSellingProducts(threeDaysAgo, limit);
+        int calculationDays = schedulerProperties.getRanking().getCalculationDays();
+        LocalDateTime cutoffDate = LocalDateTime.now().minusDays(calculationDays);
+        return orderItemRepository.getTopSellingProducts(cutoffDate, limit);
     }
 }

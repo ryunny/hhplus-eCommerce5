@@ -78,7 +78,7 @@ public class RedisQueueProcessor {
 
                         log.info("대기열 처리 시작: couponId={}, waiting={}", coupon.getId(), waitingCount);
 
-                        int processed = queueService.processBatch(coupon.getId(), schedulerProperties.getBatchSize());
+                        int processed = queueService.processBatch(coupon.getId(), schedulerProperties.getQueue().getBatchSize());
                         totalProcessed += processed;
 
                         log.info("대기열 처리 완료: couponId={}, processed={}, remaining={}",

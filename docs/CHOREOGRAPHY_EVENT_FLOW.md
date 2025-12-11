@@ -72,11 +72,16 @@
 └─────────────────┘                   └─────────────────┘
         │                                       │
         ▼                                       ▼
-  주문 상태:                             보상 트랜잭션:
-  CONFIRMED                              - 재고 복구
-                                         - 환불 처리
-                                         - 쿠폰 복구
-                                         주문 상태: FAILED
+┌─────────────────┐                     보상 트랜잭션:
+│ 5. Product      │                     - 재고 복구
+│   Ranking       │                     - 환불 처리
+│   Handler       │                     - 쿠폰 복구
+│ (비동기)        │                     주문 상태: FAILED
+└─────────────────┘
+        │
+        ▼
+  주문 상태: CONFIRMED
+  Redis 랭킹 업데이트
 ```
 
 ## 상세 이벤트 흐름
@@ -299,6 +304,36 @@ public void handleStockReservationFailed(StockReservationFailedEvent event) {
 - 주문 상태: `CONFIRMED`
 - 각 도메인의 예약 정보 삭제 (더 이상 보상 불필요)
 
+### 5단계: 상품 랭킹 업데이트 (ProductRankingEventHandler)
+
+**구독 이벤트**: `OrderConfirmedEvent`
+
+**처리 로직**:
+```java
+@Async
+@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
+public void handleOrderConfirmed(OrderConfirmedEvent event) {
+    try {
+        // 1. 주문 아이템 조회
+        List<OrderItem> orderItems = orderItemRepository.findByOrderId(event.orderId());
+
+        // 2. Redis에 상품별 판매 수량 기록
+        productRankingService.recordSales(orderItems);
+
+        log.info("[인기상품] 랭킹 업데이트 완료: orderId={}", event.orderId());
+    } catch (Exception e) {
+        // 3. Redis 장애 시 로그만 남기고 예외는 전파하지 않음
+        // 주문 트랜잭션은 이미 커밋되었으므로 영향 없음
+        log.error("[인기상품] 랭킹 업데이트 실패 (주문은 정상 처리됨): orderId={}", event.orderId());
+    }
+}
+```
+
+**특징**:
+- `@TransactionalEventListener(phase = AFTER_COMMIT)`: 주문 확정이 확실히 커밋된 후 실행
+- `fallbackExecution = true`: 트랜잭션 컨텍스트가 없어도 실행 보장
+- Redis 장애 시에도 주문 처리는 성공 (느슨한 결합)
+
 #### 4-B. 하나라도 실패 → 보상 트랜잭션
 
 **발행 이벤트**: `OrderFailedEvent`
@@ -353,7 +388,7 @@ public void handleOrderFailed(OrderFailedEvent event) {
 | 이벤트 | 발행자 | 구독자 | 목적 |
 |--------|--------|--------|------|
 | `OrderCreatedEvent` | ChoreographyPlaceOrderUseCase | Stock/Payment/CouponEventHandler | 주문 생성 알림 |
-| `OrderConfirmedEvent` | OrderSagaEventHandler | Stock/Payment/CouponEventHandler | 주문 확정 알림 |
+| `OrderConfirmedEvent` | OrderSagaEventHandler | Stock/Payment/Coupon/ProductRankingEventHandler | 주문 확정 알림 및 랭킹 업데이트 |
 | `OrderFailedEvent` | OrderSagaEventHandler | Stock/Payment/CouponEventHandler | 보상 트랜잭션 트리거 |
 
 ### 재고 이벤트
@@ -376,6 +411,17 @@ public void handleOrderFailed(OrderFailedEvent event) {
 |--------|--------|--------|------|
 | `CouponUsedEvent` | CouponEventHandler | OrderSagaEventHandler | 쿠폰 사용 성공 알림 |
 | `CouponUsageFailedEvent` | CouponEventHandler | OrderSagaEventHandler | 쿠폰 사용 실패 알림 |
+
+### 상품 랭킹 이벤트
+
+| 이벤트 | 발행자 | 구독자 | 목적 |
+|--------|--------|--------|------|
+| `OrderConfirmedEvent` | OrderSagaEventHandler | ProductRankingEventHandler | 주문 확정 후 Redis 랭킹 업데이트 |
+
+**특징**:
+- 비동기 처리 (`@Async` + `@TransactionalEventListener`)
+- Redis 장애 시에도 주문 처리는 성공 (느슨한 결합)
+- 주문 확정 트랜잭션 커밋 후 실행 (`AFTER_COMMIT`)
 
 ## 주문 상태 전이
 
@@ -520,6 +566,9 @@ GET /api/orders/{orderNumber}
 [주문-Saga] 결제 완료 수신: orderId=123, paymentId=789
 [주문-Saga] 쿠폰 사용 완료 수신: orderId=123, userCouponId=100
 [주문-Saga] 주문 확정: orderId=123
+
+[인기상품] 주문 확정 이벤트 수신 (Choreography): orderId=123
+[인기상품] 랭킹 업데이트 완료: orderId=123, items=2
 ```
 
 ### 디버깅 팁
@@ -535,6 +584,11 @@ GET /api/orders/{orderNumber}
 3. **비동기 처리 순서 이해**:
    - 각 핸들러는 `@Async`로 병렬 실행
    - 순서 보장 필요 시 이벤트 체인 사용
+
+4. **상품 랭킹이 업데이트되지 않는 경우**:
+   - ProductRankingEventHandler 로그 확인 (`[인기상품]`)
+   - Redis 연결 상태 확인
+   - 주문이 CONFIRMED 상태인지 확인 (PENDING이나 FAILED는 랭킹 미업데이트)
 
 ## 장단점 비교
 
@@ -576,4 +630,4 @@ GET /api/orders/{orderNumber}
 
 - UseCase 구현: `ChoreographyPlaceOrderUseCase.java`
 - Saga 조율자: `OrderSagaEventHandler.java`
-- 이벤트 핸들러: `StockEventHandler.java`, `PaymentEventHandler.java`, `CouponEventHandler.java`
+- 이벤트 핸들러: `StockEventHandler.java`, `PaymentEventHandler.java`, `CouponEventHandler.java`, `ProductRankingEventHandler.java`

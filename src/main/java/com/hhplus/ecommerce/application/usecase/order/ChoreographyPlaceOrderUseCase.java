@@ -88,11 +88,10 @@ public class ChoreographyPlaceOrderUseCase {
         log.info("===== [Choreography] 주문 생성 시작 =====");
         log.info("사용자: {}, 상품 수: {}", publicId, request.items().size());
 
-        // 1. 사용자 조회
         User user = userService.getUserByPublicId(publicId);
         log.info("[1/7] 사용자 조회 완료: userId={}", user.getId());
 
-        // 2. 상품 조회 (productId로 정렬하여 데드락 방지)
+        // 상품 조회 (productId로 정렬하여 데드락 방지)
         List<CreateOrderRequest.OrderItemRequest> sortedItems = request.items().stream()
                 .sorted(java.util.Comparator.comparing(CreateOrderRequest.OrderItemRequest::productId))
                 .toList();
@@ -108,17 +107,17 @@ public class ChoreographyPlaceOrderUseCase {
 
         log.info("[2/7] 상품 조회 완료: {} 개", products.size());
 
-        // 3. 재고 사전 검증 (빠른 실패)
+        // 재고 사전 검증 (빠른 실패)
         for (int i = 0; i < products.size(); i++) {
             productService.validateStock(products.get(i), quantities.get(i));
         }
         log.info("[3/7] 재고 사전 검증 완료");
 
-        // 4. 주문 금액 계산
+        // 주문 금액 계산
         Money totalAmount = orderService.calculateTotalAmount(products, quantities);
         log.info("[4/7] 주문 금액 계산 완료: totalAmount={}", totalAmount.getAmount());
 
-        // 5. 쿠폰 할인 계산 (쿠폰 사용은 이벤트 핸들러에서 처리)
+        // 쿠폰 할인 계산 (쿠폰 사용은 이벤트 핸들러에서 처리)
         Money discountAmount = Money.zero();
         if (request.userCouponId() != null) {
             UserCoupon userCoupon = couponService.getUserCoupon(request.userCouponId());
@@ -130,11 +129,11 @@ public class ChoreographyPlaceOrderUseCase {
 
         Money finalAmount = totalAmount.subtract(discountAmount);
 
-        // 6. 잔액 사전 검증 (빠른 실패)
+        // 잔액 사전 검증 (빠른 실패)
         userService.validateBalance(user, finalAmount);
         log.info("[6/7] 잔액 사전 검증 완료");
 
-        // 7. 주문 생성 (PENDING 상태)
+        // 주문 생성 (PENDING 상태)
         Phone shippingPhone = new Phone(request.shippingPhone());
         UserCoupon userCoupon = null;
         if (request.userCouponId() != null) {
@@ -155,7 +154,7 @@ public class ChoreographyPlaceOrderUseCase {
         // 이벤트 발행 (핵심 로직은 이벤트 핸들러가 처리)
         // ==========================================
 
-        // 8. 주문 생성 이벤트를 Outbox에 저장
+        // 주문 생성 이벤트를 Outbox에 저장
         List<OrderCreatedEvent.OrderItem> eventItems = sortedItems.stream()
                 .map(item -> new OrderCreatedEvent.OrderItem(
                         item.productId(),

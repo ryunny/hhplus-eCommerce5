@@ -76,13 +76,13 @@ public class UserService {
      * @param amount 차감할 금액
      */
     public void deductBalance(Long userId, Money amount) {
-        // 1. 사전 조회 (트랜잭션 밖)
+        // 사전 조회 (트랜잭션 밖)
         User user = getUser(userId);
 
-        // 2. 사전 검증 (트랜잭션 밖)
+        // 사전 검증 (트랜잭션 밖)
         validateBalance(user, amount);
 
-        // 3. 실제 차감만 트랜잭션 안에서 (락 시간 최소화)
+        // 실제 차감만 트랜잭션 안에서 (락 시간 최소화)
         deductBalanceWithLock(userId, amount);
     }
 
@@ -101,7 +101,6 @@ public class UserService {
     })
     @Transactional
     private User deductBalanceWithLock(Long userId, Money amount) {
-        // 락 시작!
         User user = userRepository.findByIdWithLock(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
 
@@ -112,7 +111,6 @@ public class UserService {
 
         user.deductBalance(amount);
         // 더티 체킹으로 자동 저장
-        // 락 해제!
         return user;
     }
 
@@ -125,13 +123,13 @@ public class UserService {
      * @param amount 차감할 금액
      */
     public void deductBalanceByPublicId(String publicId, Money amount) {
-        // 1. 사전 조회 (트랜잭션 밖)
+        // 사전 조회 (트랜잭션 밖)
         User user = getUserByPublicId(publicId);
 
-        // 2. 사전 검증 (트랜잭션 밖)
+        // 사전 검증 (트랜잭션 밖)
         validateBalance(user, amount);
 
-        // 3. 실제 차감만 트랜잭션 안에서
+        // 실제 차감만 트랜잭션 안에서
         deductBalanceByPublicIdWithLock(publicId, amount);
     }
 

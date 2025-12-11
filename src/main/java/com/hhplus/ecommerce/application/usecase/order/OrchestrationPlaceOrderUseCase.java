@@ -93,11 +93,10 @@ public class OrchestrationPlaceOrderUseCase {
         log.info("===== [Orchestration] 주문 생성 시작 =====");
         log.info("사용자: {}, 상품 수: {}", publicId, request.items().size());
 
-        // 1. 사용자 조회
         User user = userService.getUserByPublicId(publicId);
         log.info("[1/11] 사용자 조회 완료: userId={}", user.getId());
 
-        // 2. 상품 조회 및 수량 변환 (productId로 정렬하여 데드락 방지)
+        // 상품 조회 및 수량 변환 (productId로 정렬하여 데드락 방지)
         List<CreateOrderRequest.OrderItemRequest> sortedItems = request.items().stream()
                 .sorted(java.util.Comparator.comparing(CreateOrderRequest.OrderItemRequest::productId))
                 .toList();
@@ -113,17 +112,17 @@ public class OrchestrationPlaceOrderUseCase {
 
         log.info("[2/11] 상품 조회 완료: {} 개", products.size());
 
-        // 3. 재고 검증 (주문 전에 미리 검증 - 빠른 실패)
+        // 재고 검증 (주문 전에 미리 검증 - 빠른 실패)
         for (int i = 0; i < products.size(); i++) {
             productService.validateStock(products.get(i), quantities.get(i));
         }
         log.info("[3/11] 재고 사전 검증 완료");
 
-        // 4. 주문 금액 계산
+        // 주문 금액 계산
         Money totalAmount = orderService.calculateTotalAmount(products, quantities);
         log.info("[4/11] 주문 금액 계산 완료: totalAmount={}", totalAmount.getAmount());
 
-        // 5. 쿠폰 적용 (선택적)
+        // 쿠폰 적용 (선택적)
         UserCoupon userCoupon = null;
         Money discountAmount = Money.zero();
 
@@ -137,11 +136,11 @@ public class OrchestrationPlaceOrderUseCase {
 
         Money finalAmount = totalAmount.subtract(discountAmount);
 
-        // 6. 잔액 검증 (결제 전에 미리 검증 - 빠른 실패)
+        // 잔액 검증 (결제 전에 미리 검증 - 빠른 실패)
         userService.validateBalance(user, finalAmount);
         log.info("[6/11] 잔액 사전 검증 완료");
 
-        // 7. 주문 생성 (초기 상태: PENDING)
+        // 주문 생성 (초기 상태: PENDING)
         Phone shippingPhone = new Phone(request.shippingPhone());
         Order order = orderService.createOrder(
                 user, userCoupon,
@@ -164,7 +163,7 @@ public class OrchestrationPlaceOrderUseCase {
         Payment payment;
 
         try {
-            // 8. 주문 아이템 생성 및 재고 차감
+            // 주문 아이템 생성 및 재고 차감
             for (int i = 0; i < products.size(); i++) {
                 Product product = products.get(i);
                 Quantity quantity = quantities.get(i);
@@ -180,7 +179,7 @@ public class OrchestrationPlaceOrderUseCase {
             }
             log.info("[8/11] 재고 차감 및 주문 아이템 생성 완료: {} 개", orderItems.size());
 
-            // 9. 쿠폰 사용
+            // 쿠폰 사용
             if (request.userCouponId() != null) {
                 couponService.useCoupon(request.userCouponId(), user.getId());
                 couponUsed = true;
@@ -189,16 +188,16 @@ public class OrchestrationPlaceOrderUseCase {
                 log.info("[9/11] 쿠폰 미사용");
             }
 
-            // 10. 잔액 차감
+            // 잔액 차감
             userService.deductBalanceByPublicId(publicId, finalAmount);
             balanceDeducted = true;
             log.info("[10/11] 잔액 차감 완료: amount={}", finalAmount.getAmount());
 
-            // 11. 결제 생성
+            // 결제 생성
             payment = paymentService.createPayment(order, finalAmount);
             log.info("[11/11] 결제 생성 완료: paymentId={}", payment.getId());
 
-            // 12. 주문 상태 변경 (PAID)
+            // 주문 상태 변경 (PAID)
             orderService.updateOrderStatus(order.getId(), OrderStatus.PAID);
             log.info("주문 상태 변경 완료: orderId={}, status=PAID", order.getId());
 
@@ -210,7 +209,7 @@ public class OrchestrationPlaceOrderUseCase {
             // 보상 트랜잭션 (Compensation Transaction)
             // ==========================================
 
-            // 1. 잔액 복구
+            // 잔액 복구
             if (balanceDeducted) {
                 try {
                     userService.chargeBalanceByPublicId(publicId, finalAmount);
@@ -221,7 +220,7 @@ public class OrchestrationPlaceOrderUseCase {
                 }
             }
 
-            // 2. 쿠폰 복구
+            // 쿠폰 복구
             if (couponUsed) {
                 try {
                     couponService.cancelCoupon(request.userCouponId());
@@ -232,7 +231,7 @@ public class OrchestrationPlaceOrderUseCase {
                 }
             }
 
-            // 3. 재고 복구
+            // 재고 복구
             for (int i = 0; i < decreasedProducts.size(); i++) {
                 try {
                     productService.increaseStock(
@@ -248,7 +247,7 @@ public class OrchestrationPlaceOrderUseCase {
                 }
             }
 
-            // 4. 주문 상태 변경 (FAILED)
+            // 주문 상태 변경 (FAILED)
             try {
                 orderService.updateOrderStatus(order.getId(), OrderStatus.FAILED);
                 log.info("주문 상태 변경 완료: orderId={}, status=FAILED", order.getId());
@@ -263,7 +262,7 @@ public class OrchestrationPlaceOrderUseCase {
         // 비동기 처리 영역 (이벤트 발행)
         // ==========================================
 
-        // 13. 데이터 플랫폼 전송 이벤트 저장 (Outbox Pattern)
+        // 데이터 플랫폼 전송 이벤트 저장 (Outbox Pattern)
         try {
             outboxService.savePaymentCompletedEvent(payment);
             log.info("📤 Outbox 이벤트 저장 완료: paymentId={} (스케줄러가 비동기 처리)", payment.getId());
@@ -271,7 +270,7 @@ public class OrchestrationPlaceOrderUseCase {
             log.error("⚠️ Outbox 이벤트 저장 실패 (주문은 성공): paymentId={}", payment.getId(), e);
         }
 
-        // 14. 주문 완료 이벤트 발행 (비동기 - 랭킹 업데이트 등)
+        // 주문 완료 이벤트 발행 (비동기 - 랭킹 업데이트 등)
         try {
             eventPublisher.publishEvent(new OrderCompletedEvent(order.getId(), orderItems));
             log.info("📢 OrderCompletedEvent 발행 완료: orderId={} (비동기로 랭킹 업데이트)", order.getId());

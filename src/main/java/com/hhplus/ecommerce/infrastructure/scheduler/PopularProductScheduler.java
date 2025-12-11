@@ -1,5 +1,6 @@
 package com.hhplus.ecommerce.infrastructure.scheduler;
 
+import com.hhplus.ecommerce.config.properties.SchedulerProperties;
 import com.hhplus.ecommerce.domain.entity.PopularProduct;
 import com.hhplus.ecommerce.domain.repository.PopularProductRepository;
 import com.hhplus.ecommerce.domain.service.ProductRankingService;
@@ -19,8 +20,8 @@ import java.util.Optional;
  * 인기 상품 갱신 스케줄러 (하이브리드 방식)
  *
  * 실시간 Redis 데이터를 주기적으로 DB에 백업합니다.
- * - 실행 주기: 1시간마다
- * - 1일/7일 랭킹을 DB에 영속화
+ * - 실행 주기: scheduler.ranking.fixed-delay
+ * - 집계 기간/개수: scheduler.ranking.top-days, scheduler.ranking.top-count
  * - Redis 장애 시 Fallback으로 사용
  * - 오래된 Redis 데이터 정리 (TTL 설정)
  */
@@ -31,27 +32,31 @@ public class PopularProductScheduler {
     private final ProductRankingService productRankingService;
     private final PopularProductRepository popularProductRepository;
     private final RedisTemplate<String, String> redisTemplate;
+    private final SchedulerProperties schedulerProperties;
 
     public PopularProductScheduler(ProductRankingService productRankingService,
                                   PopularProductRepository popularProductRepository,
-                                  RedisTemplate<String, String> redisTemplate) {
+                                  RedisTemplate<String, String> redisTemplate,
+                                  SchedulerProperties schedulerProperties) {
         this.productRankingService = productRankingService;
         this.popularProductRepository = popularProductRepository;
         this.redisTemplate = redisTemplate;
+        this.schedulerProperties = schedulerProperties;
     }
 
     /**
-     * Redis 데이터를 DB에 백업 (1시간마다)
-     * 7일 기준 랭킹을 popular_products 테이블에 저장합니다.
+     * Redis 데이터를 DB에 백업
      */
-    @Scheduled(fixedDelay = 3600000) // 1시간 = 3,600,000ms
+    @Scheduled(fixedDelayString = "${scheduler.ranking.fixed-delay}")
     @Transactional
     public void backupRedisRankingToDB() {
         log.info("인기 상품 DB 백업 시작 (Redis → DB)");
 
         try {
-            // 1. Redis에서 7일 기준 Top 5 조회
-            List<PopularProductResponse> topProducts = productRankingService.getTopProducts(7, 5);
+            int topDays = schedulerProperties.getRanking().getTopDays();
+            int topCount = schedulerProperties.getRanking().getTopCount();
+
+            List<PopularProductResponse> topProducts = productRankingService.getTopProducts(topDays, topCount);
 
             if (topProducts.isEmpty()) {
                 log.warn("Redis에 7일 기준 인기 상품 데이터 없음 (백업 스킵)");

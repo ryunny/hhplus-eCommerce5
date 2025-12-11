@@ -20,9 +20,10 @@ import java.util.List;
  * 1. PENDING 상태의 이벤트를 조회
  * 2. 이벤트 발행 (ApplicationEventPublisher)
  * 3. 성공 시 SUCCESS 상태로 변경
- * 4. 실패 시 재시도 카운트 증가 (최대 3회)
+ * 4. 실패 시 재시도 카운트 증가
  *
- * 실행 주기: 1초마다
+ * 실행 주기: scheduler.outbox.fixed-delay
+ * 초기 지연: scheduler.outbox.initial-delay
  */
 @Slf4j
 @Component
@@ -42,16 +43,13 @@ public class OutboxEventScheduler {
 
     /**
      * Outbox 이벤트 폴링 및 발행
-     *
-     * fixedDelay = 1000: 이전 실행 종료 후 1초 뒤에 다시 실행
-     * initialDelay = 5000: 애플리케이션 시작 후 5초 뒤에 첫 실행
      */
-    @Scheduled(fixedDelay = 1000, initialDelay = 5000)
+    @Scheduled(fixedDelayString = "${scheduler.outbox.fixed-delay}",
+               initialDelayString = "${scheduler.outbox.initial-delay}")
     @Transactional
     public void processOutboxEvents() {
-        // PENDING 상태이고 재시도 가능한 이벤트 조회
         List<OutboxEvent> pendingEvents = outboxEventRepository
-                .findByStatusAndRetryCountLessThan(OutboxStatus.PENDING, 3);
+                .findByStatusAndRetryCountLessThan(OutboxStatus.PENDING, OutboxEvent.MAX_RETRY_COUNT);
 
         if (pendingEvents.isEmpty()) {
             return;

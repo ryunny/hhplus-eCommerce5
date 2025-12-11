@@ -1,5 +1,5 @@
 ## :pushpin: PR 제목 규칙
-[STEP 15-16] 이름 - 선택 시나리오 (e-commerce/concert)
+[STEP 15-16] 이하륜 - 선택 시나리오 (e-commerce)
 
 ---
 ### STEP 15 Application Event

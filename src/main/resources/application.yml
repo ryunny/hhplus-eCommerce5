@@ -40,6 +40,8 @@ scheduler:
     top-count: 5             # 인기상품 상위 개수: 5개
     calculation-days: 3      # 랭킹 계산 대상 기간: 최근 3일
     default-query-days: 1    # 인기상품 조회 API 기본값: 1일
+    key-ttl-days: 10         # 랭킹 키 TTL: 10일 (7일보다 여유)
+    temp-key-ttl-seconds: 60 # 임시 UNION 키 TTL: 60초
 
 logging:
   level:

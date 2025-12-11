@@ -183,10 +183,31 @@ public class RedisKeyGenerator {
     }
 
     /**
+     * 특정 날짜의 인기 상품 랭킹 키 (Sorted Set)
+     *
+     * @param date 날짜
+     * @return ranking:products:{yyyy-MM-dd}
+     */
+    public static String productRankingByDate(java.time.LocalDate date) {
+        return "ranking:products:" + date.toString();
+    }
+
+    /**
+     * 인기 상품 랭킹 임시 UNION 키
+     *
+     * @return ranking:products:temp:{uuid}
+     */
+    public static String productRankingTempKey() {
+        return "ranking:products:temp:" + java.util.UUID.randomUUID();
+    }
+
+    /**
      * 1일 기준 인기 상품 랭킹 (Sorted Set)
      *
      * @return ranking:products:1day
+     * @deprecated 날짜별 키 분리 방식으로 변경. {@link #productRankingByDate(java.time.LocalDate)} 사용
      */
+    @Deprecated
     public static String productRanking1Day() {
         return "ranking:products:1day";
     }
@@ -218,7 +239,9 @@ public class RedisKeyGenerator {
      * 7일 기준 인기 상품 랭킹 (Sorted Set)
      *
      * @return ranking:products:7days
+     * @deprecated 날짜별 키 분리 방식으로 변경. {@link #productRankingByDate(java.time.LocalDate)} 사용
      */
+    @Deprecated
     public static String productRanking7Days() {
         return "ranking:products:7days";
     }
@@ -228,7 +251,9 @@ public class RedisKeyGenerator {
      *
      * @param days 기간 (1 또는 7)
      * @return ranking:products:{days}day(s)
+     * @deprecated 날짜별 키 분리 방식으로 변경. {@link #productRankingByDate(java.time.LocalDate)} 사용
      */
+    @Deprecated
     public static String productRankingByDays(int days) {
         if (days == 1) {
             return productRanking1Day();

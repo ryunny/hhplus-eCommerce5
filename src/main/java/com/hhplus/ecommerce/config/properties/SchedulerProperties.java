@@ -37,5 +37,7 @@ public class SchedulerProperties {
         private int topCount = 5;               // 상위 5개
         private int calculationDays = 3;        // 최근 3일
         private int defaultQueryDays = 1;       // API 조회 기본값: 1일
+        private int keyTtlDays = 10;            // 랭킹 키 TTL: 10일 (7일보다 여유)
+        private long tempKeyTtlSeconds = 60;    // 임시 키 TTL: 60초
     }
 }

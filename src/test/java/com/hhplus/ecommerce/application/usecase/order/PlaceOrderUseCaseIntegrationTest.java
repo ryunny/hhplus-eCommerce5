@@ -31,7 +31,7 @@ import static org.assertj.core.api.Assertions.*;
 class PlaceOrderUseCaseIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
-    private PlaceOrderUseCase placeOrderUseCase;
+    private OrchestrationPlaceOrderUseCase placeOrderUseCase;
 
     @Autowired
     private UserRepository userRepository;

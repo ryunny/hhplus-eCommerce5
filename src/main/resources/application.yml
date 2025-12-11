@@ -39,6 +39,7 @@ scheduler:
     top-days: 7              # 인기상품 집계 기간: 최근 7일
     top-count: 5             # 인기상품 상위 개수: 5개
     calculation-days: 3      # 랭킹 계산 대상 기간: 최근 3일
+    default-query-days: 1    # 인기상품 조회 API 기본값: 1일
 
 logging:
   level:

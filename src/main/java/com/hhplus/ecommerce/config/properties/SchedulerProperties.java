@@ -36,5 +36,6 @@ public class SchedulerProperties {
         private int topDays = 7;                // 최근 7일
         private int topCount = 5;               // 상위 5개
         private int calculationDays = 3;        // 최근 3일
+        private int defaultQueryDays = 1;       // API 조회 기본값: 1일
     }
 }

@@ -2,6 +2,7 @@ package com.hhplus.ecommerce.domain.entity;
 
 import com.hhplus.ecommerce.domain.enums.OrderStatus;
 import com.hhplus.ecommerce.domain.vo.Money;
+import com.hhplus.ecommerce.domain.vo.OrderStepStatus;
 import com.hhplus.ecommerce.domain.vo.Phone;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -60,6 +61,10 @@ public class Order {
     @Column(nullable = false, length = 20)
     private OrderStatus status;
 
+    // Saga 패턴: 각 단계의 상태 추적
+    @Embedded
+    private OrderStepStatus stepStatus = new OrderStepStatus();
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -104,5 +109,19 @@ public class Order {
 
     public void updateStatus(OrderStatus newStatus) {
         this.status = newStatus;
+    }
+
+    /**
+     * 주문 실패 처리
+     */
+    public void markAsFailed(String reason) {
+        this.status = OrderStatus.FAILED;
+    }
+
+    /**
+     * 주문 확정 처리
+     */
+    public void confirm() {
+        this.status = OrderStatus.CONFIRMED;
     }
 }

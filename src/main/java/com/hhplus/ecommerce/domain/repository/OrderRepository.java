@@ -10,6 +10,12 @@ public interface OrderRepository {
 
     Optional<Order> findById(Long id);
 
+    /**
+     * 비관적 락을 사용한 주문 조회
+     * Saga 패턴에서 동시 업데이트 방지용
+     */
+    Optional<Order> findByIdWithLock(Long id);
+
     List<Order> findByUserId(Long userId);
 
     List<Order> findByUserPublicId(String publicId);

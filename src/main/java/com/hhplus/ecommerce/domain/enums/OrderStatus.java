@@ -11,7 +11,8 @@ public enum OrderStatus {
     CONFIRMED("주문 확인"),
     SHIPPED("배송 중"),
     DELIVERED("배송 완료"),
-    CANCELLED("취소됨");
+    CANCELLED("취소됨"),
+    FAILED("실패");  // 보상 트랜잭션 완료 후 최종 실패 상태
 
     private final String description;
 }

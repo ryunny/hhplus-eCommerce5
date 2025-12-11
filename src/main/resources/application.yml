@@ -1,0 +1,50 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/ecommerce?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: ecommerce_user
+    password: ecommerce123
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+# 분산 락 타임아웃 설정 (밀리초)
+lock:
+  timeout:
+    product: 5000      # 상품 재고 락: 5초
+    coupon: 5000       # 쿠폰 발급 락: 5초
+    batch: 10000       # 배치 작업 락: 10초
+
+# 스케줄러 설정
+scheduler:
+  queue:
+    fixed-delay: 1000        # 쿠폰 대기열 처리 주기: 1초
+    batch-size: 10           # 쿠폰 대기열 배치 크기
+  outbox:
+    fixed-delay: 5000        # Outbox 이벤트 처리 주기: 5초
+    initial-delay: 5000      # Outbox 이벤트 처리 초기 지연: 5초
+  ranking:
+    fixed-delay: 3600000     # 인기상품 랭킹 업데이트 주기: 1시간
+    top-days: 7              # 인기상품 집계 기간: 최근 7일
+    top-count: 5             # 인기상품 상위 개수: 5개
+    calculation-days: 3      # 랭킹 계산 대상 기간: 최근 3일
+    default-query-days: 1    # 인기상품 조회 API 기본값: 1일
+    key-ttl-days: 10         # 랭킹 키 TTL: 10일 (7일보다 여유)
+    temp-key-ttl-seconds: 60 # 임시 UNION 키 TTL: 60초
+
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.hibernate.type.descriptor.sql.BasicBinder: trace
+    com.hhplus.ecommerce: debug

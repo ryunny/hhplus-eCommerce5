@@ -61,7 +61,7 @@ public class OutboxEvent {
     /**
      * 최대 재시도 횟수
      */
-    private static final int MAX_RETRY_COUNT = 3;
+    public static final int MAX_RETRY_COUNT = 3;
 
     /**
      * 생성 시각

@@ -801,9 +801,5 @@ CREATE INDEX idx_coupons_id ON coupons(id);
 - Repository: `src/main/java/com/hhplus/ecommerce/infrastructure/persistence/`
 - Service: `src/main/java/com/hhplus/ecommerce/domain/service/`
 - 테스트: `src/test/java/com/hhplus/ecommerce/`
-
 ---
 
-**작성일**: 2025년 1월
-**작성자**: 항해플러스 백엔드 3기
-**프로젝트**: E-Commerce 시스템

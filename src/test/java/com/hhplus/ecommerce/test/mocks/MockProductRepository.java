@@ -60,6 +60,12 @@ public class MockProductRepository implements ProductRepository {
     }
 
     @Override
+    public List<Product> findAllByIdWithCategory(List<Long> ids) {
+        // Mock에서는 일반 조회와 동일하게 동작 (JOIN FETCH는 JPA 기능)
+        return findAllById(ids);
+    }
+
+    @Override
     public List<Product> findByCategoryId(Long categoryId) {
         return products.values().stream()
                 .filter(product -> product.getCategory().getId().equals(categoryId))

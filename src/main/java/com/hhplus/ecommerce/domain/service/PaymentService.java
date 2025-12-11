@@ -54,6 +54,20 @@ public class PaymentService {
     }
 
     /**
+     * 결제 취소 (보상 트랜잭션용)
+     *
+     * @param paymentId 결제 ID
+     */
+    @Transactional
+    public void cancelPayment(Long paymentId) {
+        Payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new IllegalArgumentException("결제를 찾을 수 없습니다: " + paymentId));
+
+        payment.updateStatus(PaymentStatus.REFUNDED);
+        log.info("결제 취소 완료: paymentId={}, orderId={}", paymentId, payment.getOrder().getId());
+    }
+
+    /**
      * 데이터 플랫폼 전송 (Outbox Processor에서 호출)
      * 외부 시스템에 결제 완료 데이터를 전송합니다.
      *

@@ -11,9 +11,9 @@
 - [x] 트랜잭션이 분리되더라도 데이터 일관성을 보장할 수 있는 분산 트랜잭션 설계
 
 ### **중요 커밋**
-- [104377a](https://github.com/ryunny/hhplus-eCommerce5/commit/104377a) - Transactional Outbox Pattern 적용 및 이벤트 핸들러 트랜잭션 개선
 - [8d4e5a9](https://github.com/ryunny/hhplus-eCommerce5/commit/8d4e5a9) - Saga 패턴 구현 (Orchestration vs Choreography)
-- [a4d9e5d](https://github.com/ryunny/hhplus-eCommerce5/commit/a4d9e5d) - 날짜별 키 분리 및 TTL 기반 랭킹 관리로 개선
+- [104377a](https://github.com/ryunny/hhplus-eCommerce5/commit/104377a) - Outbox Pattern 적용 및 인기상품 랭킹 이벤트 추가
+- [a4d9e5d](https://github.com/ryunny/hhplus-eCommerce5/commit/a4d9e5d) - 날짜별 키 분리 및 TTL 기반 랭킹 관리 개선
 
 ### **간단 회고** (3줄 이내)
 - **잘한 점**: Outbox Pattern과 Saga로 이벤트 기반 아키텍처 구현, @TransactionalEventListener와 비동기 처리로 트랜잭션 분리 및 데이터 일관성 보장

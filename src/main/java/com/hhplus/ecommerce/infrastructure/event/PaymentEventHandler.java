@@ -77,9 +77,11 @@ public class PaymentEventHandler {
 
             // 성공 이벤트를 Outbox에 저장
             PaymentCompletedEvent successEvent = new PaymentCompletedEvent(
-                event.orderId(),
                 payment.getId(),
-                event.finalAmount()
+                payment.getPaymentId(),
+                event.orderId(),
+                event.finalAmount().getAmount(),
+                "COMPLETED"
             );
             outboxService.saveEvent("PAYMENT_COMPLETED", event.orderId(), successEvent);
 

@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit;
  *
  * Sorted Set 활용:
  * - Key: queue:coupon:{couponId}
- * - Member: user:{userId}
+ * - Member: {userId} (Long을 String으로 변환)
  * - Score: timestamp (밀리초) - 자동 선착순 정렬
  *
  * 장점:
@@ -122,7 +122,7 @@ public class RedisCouponQueueService {
 
         // 3. Redis Sorted Set에 추가
         String queueKey = RedisKeyGenerator.couponQueue(couponId);
-        String member = "user:" + userId;
+        String member = userId.toString();
         double score = System.currentTimeMillis(); // timestamp (밀리초)
 
         // 원자적 연산: 이미 있으면 false 반환
@@ -154,7 +154,7 @@ public class RedisCouponQueueService {
      */
     public Integer getQueuePosition(Long userId, Long couponId) {
         String queueKey = RedisKeyGenerator.couponQueue(couponId);
-        String member = "user:" + userId;
+        String member = userId.toString();
 
         // ZRANK: O(log N)
         Long rank = redisTemplate.opsForZSet().rank(queueKey, member);
@@ -375,13 +375,13 @@ public class RedisCouponQueueService {
 
     /**
      * Redis member에서 사용자 ID 추출
-     * "user:123" → 123
+     * "123" → 123
      *
      * @param member Redis member
      * @return 사용자 ID
      */
     private Long extractUserId(String member) {
-        return Long.parseLong(member.replace("user:", ""));
+        return Long.parseLong(member);
     }
 
     /**

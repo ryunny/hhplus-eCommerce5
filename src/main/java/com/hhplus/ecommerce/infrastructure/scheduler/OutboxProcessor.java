@@ -1,12 +1,14 @@
 package com.hhplus.ecommerce.infrastructure.scheduler;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hhplus.ecommerce.config.properties.SchedulerProperties;
 import com.hhplus.ecommerce.domain.entity.OutboxEvent;
 import com.hhplus.ecommerce.domain.entity.Payment;
 import com.hhplus.ecommerce.domain.enums.OutboxStatus;
+import com.hhplus.ecommerce.domain.event.PaymentCompletedEvent;
 import com.hhplus.ecommerce.domain.repository.OutboxEventRepository;
 import com.hhplus.ecommerce.domain.repository.PaymentRepository;
-import com.hhplus.ecommerce.domain.service.OutboxService;
 import com.hhplus.ecommerce.domain.service.PaymentService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -26,20 +28,20 @@ import java.util.List;
 public class OutboxProcessor {
 
     private final OutboxEventRepository outboxEventRepository;
-    private final OutboxService outboxService;
     private final PaymentRepository paymentRepository;
     private final PaymentService paymentService;
+    private final ObjectMapper objectMapper;
     private final SchedulerProperties schedulerProperties;
 
     public OutboxProcessor(OutboxEventRepository outboxEventRepository,
-                          OutboxService outboxService,
                           PaymentRepository paymentRepository,
                           PaymentService paymentService,
+                          ObjectMapper objectMapper,
                           SchedulerProperties schedulerProperties) {
         this.outboxEventRepository = outboxEventRepository;
-        this.outboxService = outboxService;
         this.paymentRepository = paymentRepository;
         this.paymentService = paymentService;
+        this.objectMapper = objectMapper;
         this.schedulerProperties = schedulerProperties;
     }
 
@@ -75,7 +77,7 @@ public class OutboxProcessor {
             outboxEventRepository.save(event);
 
             // 페이로드 역직렬화
-            OutboxService.PaymentEventPayload payload = outboxService.deserializePayload(event.getPayload());
+            PaymentCompletedEvent payload = deserializePayload(event.getPayload());
 
             // Payment 조회
             Payment payment = paymentRepository.findByIdOrThrow(payload.paymentId());
@@ -105,6 +107,21 @@ public class OutboxProcessor {
                 log.error("Outbox 이벤트 처리 최종 실패: eventId={}, retryCount={}",
                         event.getId(), event.getRetryCount(), e);
             }
+        }
+    }
+
+    /**
+     * JSON 페이로드를 PaymentCompletedEvent로 역직렬화
+     *
+     * @param payload JSON 문자열
+     * @return PaymentCompletedEvent
+     */
+    private PaymentCompletedEvent deserializePayload(String payload) {
+        try {
+            return objectMapper.readValue(payload, PaymentCompletedEvent.class);
+        } catch (JsonProcessingException e) {
+            log.error("Payload 역직렬화 실패: {}", payload, e);
+            throw new RuntimeException("Payload 역직렬화 실패", e);
         }
     }
 }

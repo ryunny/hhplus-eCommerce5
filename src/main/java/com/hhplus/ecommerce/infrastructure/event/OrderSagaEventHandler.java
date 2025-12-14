@@ -145,9 +145,7 @@ public class OrderSagaEventHandler {
         log.error("[주문-Saga] 재고 예약 실패 수신: orderId={}, reason={}",
             event.orderId(), event.reason());
 
-        failOrder(event.orderId(), event.reason(), order -> {
-            order.getStepStatus().markStockReservationFailed(event.reason());
-        });
+        failOrder(event.orderId(), event.reason(), SagaFailureType.STOCK_RESERVATION);
     }
 
     /**
@@ -162,9 +160,7 @@ public class OrderSagaEventHandler {
         log.error("[주문-Saga] 결제 실패 수신: orderId={}, reason={}",
             event.orderId(), event.reason());
 
-        failOrder(event.orderId(), event.reason(), order -> {
-            order.getStepStatus().markPaymentFailed(event.reason());
-        });
+        failOrder(event.orderId(), event.reason(), SagaFailureType.PAYMENT);
     }
 
     /**
@@ -179,9 +175,7 @@ public class OrderSagaEventHandler {
         log.error("[주문-Saga] 쿠폰 사용 실패 수신: orderId={}, reason={}",
             event.orderId(), event.reason());
 
-        failOrder(event.orderId(), event.reason(), order -> {
-            order.getStepStatus().markCouponUsageFailed(event.reason());
-        });
+        failOrder(event.orderId(), event.reason(), SagaFailureType.COUPON_USAGE);
     }
 
     // ========================================
@@ -209,9 +203,14 @@ public class OrderSagaEventHandler {
 
     /**
      * 주문 실패 처리 및 보상 트랜잭션 트리거
+     *
+     * Consumer 람다 대신 SagaFailureType Enum을 사용하여 가독성을 향상시켰습니다.
+     *
+     * @param orderId 주문 ID
+     * @param reason 실패 사유
+     * @param failureType 실패 타입 (재고/결제/쿠폰)
      */
-    private void failOrder(Long orderId, String reason,
-                          java.util.function.Consumer<Order> statusUpdater) {
+    private void failOrder(Long orderId, String reason, SagaFailureType failureType) {
         Order order = orderRepository.findByIdWithLock(orderId)
             .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다: " + orderId));
 
@@ -221,12 +220,13 @@ public class OrderSagaEventHandler {
             return;
         }
 
-        // 실패 상태 업데이트
-        statusUpdater.accept(order);
+        // 실패 타입별 상태 업데이트
+        failureType.markFailure(order, reason);
         order.markAsFailed(reason);
         orderRepository.save(order);
 
-        log.error("[주문-Saga] 주문 실패 처리: orderId={}, reason={}", orderId, reason);
+        log.error("[주문-Saga] 주문 실패 처리: orderId={}, failureType={}, reason={}",
+            orderId, failureType, reason);
 
         // 보상 트랜잭션 이벤트를 Outbox에 저장
         OrderFailedEvent event = new OrderFailedEvent(

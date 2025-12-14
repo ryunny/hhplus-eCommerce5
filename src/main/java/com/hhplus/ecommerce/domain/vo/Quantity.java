@@ -28,6 +28,10 @@ public class Quantity implements Serializable {
         }
     }
 
+    public static Quantity of(Integer value) {
+        return new Quantity(value);
+    }
+
     public Quantity add(Quantity other) {
         return new Quantity(this.value + other.value);
     }

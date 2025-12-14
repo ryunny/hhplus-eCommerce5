@@ -9,10 +9,6 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
-/**
- * 배송지 정보 엔티티
- * 사용자의 배송지 주소록을 관리합니다.
- */
 @Entity
 @Table(name = "shipping_addresses")
 @Getter

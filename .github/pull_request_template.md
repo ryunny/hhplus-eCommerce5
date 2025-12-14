@@ -1,22 +1,16 @@
 ## :pushpin: PR 제목 규칙
-[STEP 15-16] 이하륜 - 선택 시나리오 (e-commerce)
+[STEP17-18] 이하륜 - 선택 시나리오 (e-commerce/concert)
 
 ---
-### STEP 15 Application Event
-- [x] 주문/예약 정보를 원 트랜잭션이 종료된 이후에 전송
-- [x] 주문/예약 정보를 전달하는 부가 로직에 대한 관심사를 메인 서비스에서 분리
+### STEP 17 카프카 기초 학습 및 활용
+- [] 카프카에 대한 기본 개념 학습 문서 작성
+- [] 실시간 주문/예약 정보를 카프카 메시지로 발행
 
-### STEP 16 Transaction Diagnosis
-- [x] 도메인별로 트랜잭션이 분리되었을 때 발생 가능한 문제 파악
-- [x] 트랜잭션이 분리되더라도 데이터 일관성을 보장할 수 있는 분산 트랜잭션 설계
-
-### **중요 커밋**
-- [8d4e5a9](https://github.com/ryunny/hhplus-eCommerce5/commit/8d4e5a9) - Saga 패턴 구현 (Orchestration vs Choreography)
-- [104377a](https://github.com/ryunny/hhplus-eCommerce5/commit/104377a) - Outbox Pattern 적용 및 인기상품 랭킹 이벤트 추가
-- [52ae660](https://github.com/ryunny/hhplus-eCommerce5/commit/52ae660) - Saga/이벤트/Outbox 통합 테스트 추가
-- [a4d9e5d](https://github.com/ryunny/hhplus-eCommerce5/commit/a4d9e5d) - 날짜별 키 분리 및 TTL 기반 랭킹 관리 개선
+### STEP 18 카프카를 활용하여 비즈니스 프로세스 개선
+- [] 카프카를 특징을 활용하도록 쿠폰/대기열 설계문서 작성
+- [] 설계문서대로 카프카를 활용한 기능 구현
 
 ### **간단 회고** (3줄 이내)
-- **잘한 점**: Outbox Pattern과 Saga로 이벤트 기반 아키텍처 구현, @TransactionalEventListener와 비동기 처리로 트랜잭션 분리 및 데이터 일관성 보장
-- **어려운 점**: 분산 트랜잭션 환경에서 실패 복구(재시도/보상), 이벤트 순서 보장, 중복 발행 방지 등 예외 상황 처리 설계
-- **다음 시도**: Kafka 같은 메시지 브로커 도입으로 이벤트 스트리밍 확장성 개선 및 이벤트 소싱 패턴 적용
+- **잘한 점**:
+- **어려운 점**:
+- **다음 시도**:

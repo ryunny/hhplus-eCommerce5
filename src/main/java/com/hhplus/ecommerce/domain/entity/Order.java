@@ -85,10 +85,6 @@ public class Order {
         this.createdAt = LocalDateTime.now();
     }
 
-    /**
-     * ShippingAddress로부터 주문 생성 (스냅샷 패턴)
-     * 주문 시점의 배송지 정보를 스냅샷으로 저장하여 나중에 배송지가 변경되어도 과거 주문 정보는 유지됩니다.
-     */
     public static Order createWithShippingAddress(User user, UserCoupon userCoupon,
                                                    ShippingAddress shippingAddress,
                                                    Money totalAmount, Money discountAmount,
@@ -111,16 +107,10 @@ public class Order {
         this.status = newStatus;
     }
 
-    /**
-     * 주문 실패 처리
-     */
     public void markAsFailed(String reason) {
         this.status = OrderStatus.FAILED;
     }
 
-    /**
-     * 주문 확정 처리
-     */
     public void confirm() {
         this.status = OrderStatus.CONFIRMED;
     }

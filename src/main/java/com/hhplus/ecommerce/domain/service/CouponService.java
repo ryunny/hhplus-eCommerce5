@@ -69,8 +69,7 @@ public class CouponService {
     @Cacheable(value = "ecommerce", keyGenerator = "cacheKeyGenerator")
     @Transactional(readOnly = true)
     public Coupon getCoupon(Long couponId) {
-        return couponRepository.findById(couponId)
-                .orElseThrow(() -> new IllegalArgumentException("쿠폰을 찾을 수 없습니다: " + couponId));
+        return couponRepository.findByIdOrThrow(couponId);
     }
 
     /**
@@ -117,8 +116,7 @@ public class CouponService {
      */
     @Transactional(readOnly = true)
     public UserCoupon getUserCoupon(Long userCouponId) {
-        return userCouponRepository.findById(userCouponId)
-                .orElseThrow(() -> new IllegalArgumentException("쿠폰을 찾을 수 없습니다: " + userCouponId));
+        return userCouponRepository.findByIdOrThrow(userCouponId);
     }
 
     // ===== 쿠폰 사용 =====
@@ -132,8 +130,7 @@ public class CouponService {
      */
     @Transactional
     public UserCoupon useCoupon(Long userCouponId, Long userId) {
-        UserCoupon userCoupon = userCouponRepository.findById(userCouponId)
-                .orElseThrow(() -> new IllegalArgumentException("쿠폰을 찾을 수 없습니다: " + userCouponId));
+        UserCoupon userCoupon = userCouponRepository.findByIdOrThrow(userCouponId);
 
         // 쿠폰 소유권 검증
         if (!userCoupon.getUser().getId().equals(userId)) {
@@ -154,8 +151,7 @@ public class CouponService {
      */
     @Transactional
     public void cancelCoupon(Long userCouponId) {
-        UserCoupon userCoupon = userCouponRepository.findById(userCouponId)
-                .orElseThrow(() -> new IllegalArgumentException("쿠폰을 찾을 수 없습니다: " + userCouponId));
+        UserCoupon userCoupon = userCouponRepository.findByIdOrThrow(userCouponId);
 
         userCoupon.cancel();
         // 더티 체킹으로 자동 저장
@@ -253,8 +249,7 @@ public class CouponService {
     @Transactional
     public UserCoupon issueCouponTransaction(User user, Long couponId) {
         // 쿠폰 조회 (일반 SELECT - Redis 락이 동시성 보장)
-        Coupon coupon = couponRepository.findById(couponId)
-                .orElseThrow(() -> new IllegalArgumentException("쿠폰을 찾을 수 없습니다: " + couponId));
+        Coupon coupon = couponRepository.findByIdOrThrow(couponId);
 
         // 재검증: 발급 가능 여부 (동시성 문제 대비)
         if (!coupon.isIssuable()) {
@@ -328,8 +323,7 @@ public class CouponService {
 
                     // 쿠폰 발급 수량 감소 (비관적 락)
                     Long couponId = userCoupon.getCoupon().getId();
-                    Coupon coupon = couponRepository.findByIdWithLock(couponId)
-                            .orElseThrow(() -> new IllegalArgumentException("쿠폰을 찾을 수 없습니다: " + couponId));
+                    Coupon coupon = couponRepository.findByIdWithLockOrThrow(couponId);
                     coupon.decreaseIssuedQuantity();
                     couponRepository.save(coupon);
 
@@ -448,8 +442,7 @@ public class CouponService {
      */
     @Transactional(readOnly = true)
     public CouponQueue getQueueStatus(Long userId, Long couponId) {
-        return couponQueueRepository.findByUserIdAndCouponId(userId, couponId)
-                .orElseThrow(() -> new IllegalArgumentException("대기열에 진입하지 않았습니다."));
+        return couponQueueRepository.findByUserIdAndCouponIdOrThrow(userId, couponId);
     }
 
     /**
@@ -545,8 +538,7 @@ public class CouponService {
         couponQueueRepository.save(queue);
 
         // 최신 쿠폰 정보 조회 (일반 SELECT - Redis 락이 동시성 보장)
-        Coupon coupon = couponRepository.findById(queue.getCoupon().getId())
-                .orElseThrow(() -> new IllegalArgumentException("쿠폰을 찾을 수 없습니다: " + queue.getCoupon().getId()));
+        Coupon coupon = couponRepository.findByIdOrThrow(queue.getCoupon().getId());
 
         // 중복 발급 검증
         Optional<UserCoupon> existing = userCouponRepository.findByUserIdAndCouponId(

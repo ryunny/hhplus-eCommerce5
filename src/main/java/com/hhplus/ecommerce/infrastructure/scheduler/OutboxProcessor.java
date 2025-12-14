@@ -78,8 +78,7 @@ public class OutboxProcessor {
             OutboxService.PaymentEventPayload payload = outboxService.deserializePayload(event.getPayload());
 
             // Payment 조회
-            Payment payment = paymentRepository.findById(payload.paymentId())
-                    .orElseThrow(() -> new IllegalArgumentException("결제를 찾을 수 없습니다: " + payload.paymentId()));
+            Payment payment = paymentRepository.findByIdOrThrow(payload.paymentId());
 
             // 외부 API 호출 (데이터 플랫폼 전송)
             paymentService.sendToDataPlatform(payment);

@@ -14,4 +14,14 @@ public interface PaymentRepository {
     Optional<Payment> findByPaymentId(String paymentId);
 
     void deleteById(Long id);
+
+    default Payment findByIdOrThrow(Long id) {
+        return findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("결제를 찾을 수 없습니다: " + id));
+    }
+
+    default Payment findByPaymentIdOrThrow(String paymentId) {
+        return findByPaymentId(paymentId)
+                .orElseThrow(() -> new IllegalArgumentException("결제를 찾을 수 없습니다: " + paymentId));
+    }
 }

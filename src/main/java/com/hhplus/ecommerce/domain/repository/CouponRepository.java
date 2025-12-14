@@ -18,4 +18,14 @@ public interface CouponRepository {
     Optional<Coupon> findByIdWithLock(Long id);
 
     void deleteById(Long id);
+
+    default Coupon findByIdOrThrow(Long id) {
+        return findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("쿠폰을 찾을 수 없습니다: " + id));
+    }
+
+    default Coupon findByIdWithLockOrThrow(Long id) {
+        return findByIdWithLock(id)
+                .orElseThrow(() -> new IllegalArgumentException("쿠폰을 찾을 수 없습니다: " + id));
+    }
 }

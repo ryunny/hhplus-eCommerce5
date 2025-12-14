@@ -24,4 +24,14 @@ public interface ProductRepository {
     Optional<Product> findByIdWithLock(Long id);
 
     void deleteById(Long id);
+
+    default Product findByIdOrThrow(Long id) {
+        return findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다: " + id));
+    }
+
+    default Product findByIdWithLockOrThrow(Long id) {
+        return findByIdWithLock(id)
+                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다: " + id));
+    }
 }

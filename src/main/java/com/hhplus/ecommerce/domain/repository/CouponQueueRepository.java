@@ -20,4 +20,9 @@ public interface CouponQueueRepository {
     int countByCouponIdAndStatus(Long couponId, CouponQueueStatus status);
 
     void deleteById(Long id);
+
+    default CouponQueue findByUserIdAndCouponIdOrThrow(Long userId, Long couponId) {
+        return findByUserIdAndCouponId(userId, couponId)
+                .orElseThrow(() -> new IllegalArgumentException("대기열에 진입하지 않았습니다."));
+    }
 }

@@ -11,9 +11,10 @@ import java.util.List;
 /**
  * 쿠폰 대기열 처리 UseCase (스케줄러)
  *
- * Background Job: "1초마다 대기 중인 사용자들에게 쿠폰을 발급한다"
+ * Background Job: 대기 중인 사용자들에게 쿠폰을 발급한다
  *
- * 한 번에 최대 10명까지 처리하여 시스템 부하를 관리합니다.
+ * 실행 주기: scheduler.queue.fixed-delay
+ * 배치 크기: scheduler.queue.batch-size
  */
 @Slf4j
 @Service
@@ -28,7 +29,7 @@ public class ProcessCouponQueueUseCase {
     /**
      * 스케줄러로 실행되는 대기열 처리
      */
-    @Scheduled(fixedDelay = 1000)
+    @Scheduled(fixedDelayString = "${scheduler.queue.fixed-delay}")
     public void execute() {
         List<Coupon> issuableCoupons = couponService.getIssuableCoupons();
 

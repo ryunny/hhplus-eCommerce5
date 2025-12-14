@@ -1,0 +1,36 @@
+> Task :compileJava UP-TO-DATE
+> Task :processResources
+> Task :classes
+
+> Task :compileTestJava
+C:\sparta-coding\3Week\ecommerce\ecommerce\src\test\java\com\hhplus\ecommerce\test\mocks\MockProductRepository.java:13: error: MockProductRepository is not abstract and does not override abstract method findAllByIdWithCategory(List<Long>) in ProductRepository
+public class MockProductRepository implements ProductRepository {
+       ^
+C:\sparta-coding\3Week\ecommerce\ecommerce\src\test\java\com\hhplus\ecommerce\test\mocks\MockUserCouponRepository.java:14: error: MockUserCouponRepository is not abstract and does not override abstract method findByStatus(CouponStatus) in UserCouponRepository
+public class MockUserCouponRepository implements UserCouponRepository {
+       ^
+2 errors
+
+> Task :compileTestJava FAILED
+
+[Incubating] Problems report is available at: file:///C:/sparta-coding/3Week/ecommerce/ecommerce/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':compileTestJava'.
+> Compilation failed; see the compiler output below.
+  C:\sparta-coding\3Week\ecommerce\ecommerce\src\test\java\com\hhplus\ecommerce\test\mocks\MockProductRepository.java:13: error: MockProductRepository is not abstract and does not override abstract method findAllByIdWithCategory(List<Long>) in ProductRepository
+  public class MockProductRepository implements ProductRepository {
+         ^
+  C:\sparta-coding\3Week\ecommerce\ecommerce\src\test\java\com\hhplus\ecommerce\test\mocks\MockUserCouponRepository.java:14: error: MockUserCouponRepository is not abstract and does not override abstract method findByStatus(CouponStatus) in UserCouponRepository
+  public class MockUserCouponRepository implements UserCouponRepository {
+         ^
+  2 errors
+
+* Try:
+> Check your code and dependencies to fix the compilation error(s)
+> Run with --scan to get full insights.
+
+BUILD FAILED in 8s
+3 actionable tasks: 2 executed, 1 up-to-date

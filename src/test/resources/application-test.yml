@@ -1,6 +1,8 @@
 spring:
   datasource:
-    # Testcontainers에서 동적으로 설정됨
+    url: jdbc:mysql://localhost:3306/ecommerce?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: ecommerce_user
+    password: ecommerce123
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
@@ -12,6 +14,11 @@ spring:
         format_sql: true
         use_sql_comments: true
     defer-datasource-initialization: false
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
 
 logging:
   level:

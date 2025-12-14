@@ -1,6 +1,6 @@
 # E-Commerce API
 
-항해플러스 3주차 과제 - 이커머스 시스템 백엔드 API
+항해플러스 7주차 과제 - 이커머스 시스템 백엔드 API
 
 ## 📋 프로젝트 개요
 
@@ -8,7 +8,13 @@
 
 ## 📚 주요 문서
 
+- **[Redis 기반 대규모 트래픽 처리 시스템 설계 및 구현 보고서](./REDIS_SYSTEM_DESIGN_REPORT.md)** ⭐ NEW
+  - 인기 상품 랭킹 시스템 (Redis Sorted Set)
+  - 선착순 쿠폰 대기열 시스템 (Redis Sorted Set)
+  - 성능 99% 개선 사례 및 트러블슈팅
 - **[동시성 문제 분석 및 해결 방안 보고서](./CONCURRENCY_REPORT.md)** - DB 비관적 락을 활용한 동시성 제어
+- **[캐시 최적화 보고서](./CACHE_OPTIMIZATION_REPORT.md)** - Redis Cache 적용 및 성능 개선
+- **[Redis 장애 대응 전략](./REDIS_FAILOVER_STRATEGY.md)** - Fallback 및 Circuit Breaker 패턴
 - **[데이터베이스 ERD](./ERD.md)** - 테이블 구조 및 관계도
 - **[데이터베이스 설정 가이드](./DATABASE_SETUP.md)** - MySQL 설정 및 초기 구성
 - **[운영 환경 가이드](./PRODUCTION_GUIDE.md)** - 프로덕션 배포 및 운영
@@ -545,5 +551,5 @@ This project is created for educational purposes.
 
 ---
 
-**개발자**: 항해플러스 백엔드 3기
+**개발자**: 항해플러스 백엔드 10기 이하륜
 **프로젝트 기간**: 2025년 1월

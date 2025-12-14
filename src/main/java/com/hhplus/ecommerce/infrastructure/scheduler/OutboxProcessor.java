@@ -1,5 +1,6 @@
 package com.hhplus.ecommerce.infrastructure.scheduler;
 
+import com.hhplus.ecommerce.config.properties.SchedulerProperties;
 import com.hhplus.ecommerce.domain.entity.OutboxEvent;
 import com.hhplus.ecommerce.domain.entity.Payment;
 import com.hhplus.ecommerce.domain.enums.OutboxStatus;
@@ -28,25 +29,27 @@ public class OutboxProcessor {
     private final OutboxService outboxService;
     private final PaymentRepository paymentRepository;
     private final PaymentService paymentService;
+    private final SchedulerProperties schedulerProperties;
 
     public OutboxProcessor(OutboxEventRepository outboxEventRepository,
                           OutboxService outboxService,
                           PaymentRepository paymentRepository,
-                          PaymentService paymentService) {
+                          PaymentService paymentService,
+                          SchedulerProperties schedulerProperties) {
         this.outboxEventRepository = outboxEventRepository;
         this.outboxService = outboxService;
         this.paymentRepository = paymentRepository;
         this.paymentService = paymentService;
+        this.schedulerProperties = schedulerProperties;
     }
 
     /**
-     * 5초마다 대기 중인 Outbox 이벤트 처리
+     * Outbox 이벤트 처리 (설정: scheduler.outbox.fixed-delay)
      */
-    @Scheduled(fixedDelay = 5000)
+    @Scheduled(fixedDelayString = "${scheduler.outbox.fixed-delay}")
     public void processOutboxEvents() {
-        // PENDING 상태이면서 재시도 횟수가 3번 미만인 이벤트 조회
         List<OutboxEvent> pendingEvents = outboxEventRepository
-                .findByStatusAndRetryCountLessThan(OutboxStatus.PENDING, 3);
+                .findByStatusAndRetryCountLessThan(OutboxStatus.PENDING, OutboxEvent.MAX_RETRY_COUNT);
 
         if (pendingEvents.isEmpty()) {
             return;
@@ -67,28 +70,28 @@ public class OutboxProcessor {
     @Transactional
     public void processEvent(OutboxEvent event) {
         try {
-            // 1. 상태 변경: PENDING -> PROCESSING
+            // 상태 변경: PENDING -> PROCESSING
             event.markAsProcessing();
             outboxEventRepository.save(event);
 
-            // 2. 페이로드 역직렬화
+            // 페이로드 역직렬화
             OutboxService.PaymentEventPayload payload = outboxService.deserializePayload(event.getPayload());
 
-            // 3. Payment 조회
+            // Payment 조회
             Payment payment = paymentRepository.findById(payload.paymentId())
                     .orElseThrow(() -> new IllegalArgumentException("결제를 찾을 수 없습니다: " + payload.paymentId()));
 
-            // 4. 외부 API 호출 (데이터 플랫폼 전송)
+            // 외부 API 호출 (데이터 플랫폼 전송)
             paymentService.sendToDataPlatform(payment);
 
-            // 5. 성공 처리
+            // 성공 처리
             event.markAsSuccess();
             outboxEventRepository.save(event);
 
             log.info("Outbox 이벤트 처리 성공: eventId={}, paymentId={}", event.getId(), payment.getId());
 
         } catch (Exception e) {
-            // 6. 실패 처리: 재시도 카운트 증가
+            // 실패 처리: 재시도 카운트 증가
             String errorMessage = e.getMessage();
             if (errorMessage != null && errorMessage.length() > 500) {
                 errorMessage = errorMessage.substring(0, 500);

@@ -2,10 +2,37 @@
 > Task :processResources UP-TO-DATE
 > Task :classes UP-TO-DATE
 > Task :compileTestJava UP-TO-DATE
-> Task :processTestResources UP-TO-DATE
-> Task :testClasses UP-TO-DATE
-> Task :test UP-TO-DATE
-> Task :jacocoTestReport UP-TO-DATE
+> Task :processTestResources
+> Task :testClasses
 
-BUILD SUCCESSFUL in 2s
-6 actionable tasks: 6 up-to-date
+> Task :test
+
+DistributedLockComparisonTest > Spin Lock: 100 스레드가 재시도하며 10개 발급 (Redis 부하 높음) FAILED
+    java.lang.IllegalStateException at DefaultCacheAwareContextLoaderDelegate.java:180
+        Caused by: org.springframework.beans.factory.BeanCreationException at AbstractAutowireCapableBeanFactory.java:1826
+            Caused by: jakarta.persistence.PersistenceException at AbstractEntityManagerFactoryBean.java:431
+                Caused by: org.hibernate.exception.JDBCConnectionException at SQLExceptionTypeDelegate.java:51
+                    Caused by: java.sql.SQLNonTransientConnectionException at SQLError.java:102
+                        Caused by: com.mysql.cj.exceptions.UnableToConnectException at Constructor.java:499
+
+DistributedLockComparisonTest > Pub/Sub Lock: 100 스레드가 순차 대기하며 10개 발급 (효율적) FAILED
+    java.lang.IllegalStateException at DefaultCacheAwareContextLoaderDelegate.java:145
+
+DistributedLockComparisonTest > Simple Lock: 100 스레드 중 1개만 즉시 성공, 나머지는 즉시 실패 FAILED
+    java.lang.IllegalStateException at DefaultCacheAwareContextLoaderDelegate.java:145
+
+3 tests completed, 3 failed
+
+> Task :test FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':test'.
+> There were failing tests. See the report at: file:///C:/sparta-coding/3Week/ecommerce/ecommerce/build/reports/tests/test/index.html
+
+* Try:
+> Run with --scan to get full insights.
+
+BUILD FAILED in 21s
+5 actionable tasks: 2 executed, 3 up-to-date

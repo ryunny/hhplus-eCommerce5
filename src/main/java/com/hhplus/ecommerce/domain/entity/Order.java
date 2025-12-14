@@ -2,6 +2,7 @@ package com.hhplus.ecommerce.domain.entity;
 
 import com.hhplus.ecommerce.domain.enums.OrderStatus;
 import com.hhplus.ecommerce.domain.vo.Money;
+import com.hhplus.ecommerce.domain.vo.OrderStepStatus;
 import com.hhplus.ecommerce.domain.vo.Phone;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -60,6 +61,10 @@ public class Order {
     @Column(nullable = false, length = 20)
     private OrderStatus status;
 
+    // Saga 패턴: 각 단계의 상태 추적
+    @Embedded
+    private OrderStepStatus stepStatus = new OrderStepStatus();
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -80,10 +85,6 @@ public class Order {
         this.createdAt = LocalDateTime.now();
     }
 
-    /**
-     * ShippingAddress로부터 주문 생성 (스냅샷 패턴)
-     * 주문 시점의 배송지 정보를 스냅샷으로 저장하여 나중에 배송지가 변경되어도 과거 주문 정보는 유지됩니다.
-     */
     public static Order createWithShippingAddress(User user, UserCoupon userCoupon,
                                                    ShippingAddress shippingAddress,
                                                    Money totalAmount, Money discountAmount,
@@ -104,5 +105,13 @@ public class Order {
 
     public void updateStatus(OrderStatus newStatus) {
         this.status = newStatus;
+    }
+
+    public void markAsFailed(String reason) {
+        this.status = OrderStatus.FAILED;
+    }
+
+    public void confirm() {
+        this.status = OrderStatus.CONFIRMED;
     }
 }

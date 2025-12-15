@@ -11,6 +11,8 @@ public interface OutboxEventRepository {
 
     Optional<OutboxEvent> findById(Long id);
 
+    Optional<OutboxEvent> findByAggregateId(Long aggregateId);
+
     List<OutboxEvent> findByStatus(OutboxStatus status);
 
     List<OutboxEvent> findByStatusAndRetryCountLessThan(OutboxStatus status, int maxRetryCount);

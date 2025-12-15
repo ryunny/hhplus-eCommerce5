@@ -42,7 +42,11 @@ public class OutboxEvent {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    private LocalDateTime processedAt;
+    private LocalDateTime publishedAt;
+
+    private LocalDateTime consumedAt;
+
+    private LocalDateTime completedAt;
 
     @Column(length = 500)
     private String failedReason;
@@ -56,16 +60,61 @@ public class OutboxEvent {
         this.createdAt = LocalDateTime.now();
     }
 
-    public void markAsProcessing() {
+    /**
+     * Kafka로 메시지 발행 완료
+     */
+    public void markAsPublished() {
         if (this.status != OutboxStatus.PENDING) {
-            throw new IllegalStateException("PENDING 상태에서만 PROCESSING으로 변경 가능합니다.");
+            throw new IllegalStateException("PENDING 상태에서만 PUBLISHED로 변경 가능합니다.");
         }
-        this.status = OutboxStatus.PROCESSING;
+        this.status = OutboxStatus.PUBLISHED;
+        this.publishedAt = LocalDateTime.now();
     }
 
+    /**
+     * @deprecated 하위 호환성을 위한 메서드. markAsPublished() 사용 권장
+     */
+    @Deprecated
+    public void markAsProcessing() {
+        markAsPublished();
+    }
+
+    /**
+     * @deprecated 하위 호환성을 위한 메서드. markAsCompleted() 사용 권장
+     */
+    @Deprecated
     public void markAsSuccess() {
-        this.status = OutboxStatus.SUCCESS;
-        this.processedAt = LocalDateTime.now();
+        // PUBLISHED 상태에서 바로 COMPLETED로 변경 (기존 동작 유지)
+        if (this.status == OutboxStatus.PUBLISHED) {
+            this.status = OutboxStatus.CONSUMED;
+            this.consumedAt = LocalDateTime.now();
+        }
+        if (this.status == OutboxStatus.CONSUMED) {
+            this.status = OutboxStatus.COMPLETED;
+            this.completedAt = LocalDateTime.now();
+        }
+    }
+
+    /**
+     * Consumer가 메시지 수신
+     */
+    public void markAsConsumed() {
+        if (this.status != OutboxStatus.PUBLISHED) {
+            throw new IllegalStateException("PUBLISHED 상태에서만 CONSUMED로 변경 가능합니다.");
+        }
+        this.status = OutboxStatus.CONSUMED;
+        this.consumedAt = LocalDateTime.now();
+    }
+
+    /**
+     * 처리 최종 완료
+     */
+    public void markAsCompleted() {
+        if (this.status != OutboxStatus.CONSUMED) {
+            throw new IllegalStateException("CONSUMED 상태에서만 COMPLETED로 변경 가능합니다.");
+        }
+        this.status = OutboxStatus.COMPLETED;
+        this.completedAt = LocalDateTime.now();
     }
 
     public void incrementRetryCount(String errorMessage) {
@@ -75,7 +124,7 @@ public class OutboxEvent {
         if (this.retryCount >= MAX_RETRY_COUNT) {
             // 최대 재시도 횟수 초과 시 FAILED 상태로 변경
             this.status = OutboxStatus.FAILED;
-            this.processedAt = LocalDateTime.now();
+            this.completedAt = LocalDateTime.now();
         } else {
             // 재시도 가능하면 PENDING으로 복원
             this.status = OutboxStatus.PENDING;

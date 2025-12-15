@@ -26,6 +26,11 @@ public class OutboxEventRepositoryImpl implements OutboxEventRepository {
     }
 
     @Override
+    public Optional<OutboxEvent> findByAggregateId(Long aggregateId) {
+        return outboxEventJpaRepository.findByAggregateId(aggregateId);
+    }
+
+    @Override
     public List<OutboxEvent> findByStatus(OutboxStatus status) {
         return outboxEventJpaRepository.findByStatus(status);
     }

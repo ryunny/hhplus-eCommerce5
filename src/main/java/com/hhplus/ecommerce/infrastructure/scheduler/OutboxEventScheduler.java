@@ -16,6 +16,8 @@ import java.util.List;
 /**
  * Outbox 이벤트 폴링 스케줄러
  *
+ * ⚠️ 현재 비활성화됨 - Kafka 기반 OutboxProcessor 사용
+ *
  * Transactional Outbox Pattern의 핵심:
  * 1. PENDING 상태의 이벤트를 조회
  * 2. 이벤트 발행 (ApplicationEventPublisher)
@@ -26,7 +28,7 @@ import java.util.List;
  * 초기 지연: scheduler.outbox.initial-delay
  */
 @Slf4j
-@Component
+//@Component // Kafka 사용으로 비활성화
 public class OutboxEventScheduler {
 
     private final OutboxEventRepository outboxEventRepository;

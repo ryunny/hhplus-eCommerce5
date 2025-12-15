@@ -14,9 +14,14 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 /**
- * Outbox 이벤트 폴링 스케줄러
+ * Outbox 이벤트 폴링 스케줄러 (내부 이벤트용)
  *
- * ⚠️ 현재 비활성화됨 - Kafka 기반 OutboxProcessor 사용
+ * 역할:
+ * - Choreography/Orchestration 패턴의 내부 이벤트 처리
+ * - ApplicationEventPublisher를 통한 이벤트 발행
+ * - ORDER_CREATED, STOCK_RESERVED, PAYMENT_FAILED 등
+ *
+ * 외부 시스템 전송 이벤트(PAYMENT_COMPLETED)는 OutboxProcessor가 Kafka로 전송
  *
  * Transactional Outbox Pattern의 핵심:
  * 1. PENDING 상태의 이벤트를 조회
@@ -28,7 +33,7 @@ import java.util.List;
  * 초기 지연: scheduler.outbox.initial-delay
  */
 @Slf4j
-//@Component // Kafka 사용으로 비활성화
+@Component
 public class OutboxEventScheduler {
 
     private final OutboxEventRepository outboxEventRepository;
@@ -44,7 +49,9 @@ public class OutboxEventScheduler {
     }
 
     /**
-     * Outbox 이벤트 폴링 및 발행
+     * Outbox 이벤트 폴링 및 발행 (내부 이벤트만 처리)
+     *
+     * PAYMENT_COMPLETED는 OutboxProcessor가 Kafka로 전송
      */
     @Scheduled(fixedDelayString = "${scheduler.outbox.fixed-delay}",
                initialDelayString = "${scheduler.outbox.initial-delay}")
@@ -53,11 +60,16 @@ public class OutboxEventScheduler {
         List<OutboxEvent> pendingEvents = outboxEventRepository
                 .findByStatusAndRetryCountLessThan(OutboxStatus.PENDING, OutboxEvent.MAX_RETRY_COUNT);
 
+        // PAYMENT_COMPLETED는 OutboxProcessor가 처리하므로 제외
+        pendingEvents = pendingEvents.stream()
+                .filter(event -> !"PAYMENT_COMPLETED".equals(event.getEventType()))
+                .toList();
+
         if (pendingEvents.isEmpty()) {
             return;
         }
 
-        log.info("📦 Outbox 폴링: {} 개의 이벤트 처리 시작", pendingEvents.size());
+        log.info("📦 Outbox 폴링 (내부 이벤트): {} 개의 이벤트 처리 시작", pendingEvents.size());
 
         for (OutboxEvent outbox : pendingEvents) {
             try {

@@ -51,7 +51,10 @@ import java.util.List;
  * 9. 잔액 차감 ← 실패 시 재고 + 쿠폰 + 잔액 보상
  * 10. 결제 생성
  * 11. 주문 상태 변경 (PAID)
- * 12. [비동기] 데이터 플랫폼 전송 (Outbox)
+ * 12. [비동기] 데이터 플랫폼 전송 (Outbox + Kafka)
+ *     - PAYMENT_COMPLETED 이벤트를 Outbox에 저장
+ *     - OutboxProcessor가 Kafka로 전송
+ *     - PaymentEventConsumer가 외부 시스템으로 전송
  * 13. [비동기] 랭킹 업데이트 (이벤트)
  */
 @Slf4j
@@ -262,10 +265,10 @@ public class OrchestrationPlaceOrderUseCase {
         // 비동기 처리 영역 (이벤트 발행)
         // ==========================================
 
-        // 데이터 플랫폼 전송 이벤트 저장 (Outbox Pattern)
+        // 데이터 플랫폼 전송 이벤트 저장 (Outbox Pattern + Kafka)
         try {
             outboxService.savePaymentCompletedEvent(payment);
-            log.info("📤 Outbox 이벤트 저장 완료: paymentId={} (스케줄러가 비동기 처리)", payment.getId());
+            log.info("📤 Outbox 이벤트 저장 완료: paymentId={} (OutboxProcessor → Kafka → 외부 시스템)", payment.getId());
         } catch (Exception e) {
             log.error("⚠️ Outbox 이벤트 저장 실패 (주문은 성공): paymentId={}", payment.getId(), e);
         }

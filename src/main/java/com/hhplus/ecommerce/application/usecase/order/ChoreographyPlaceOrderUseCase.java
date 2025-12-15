@@ -40,7 +40,9 @@ import java.util.List;
  * ❌ 모니터링 복잡
  *
  * 이벤트 흐름:
- * 1. UseCase: 주문 생성 (PENDING) → OrderCreatedEvent 발행
+ * 1. UseCase: 주문 생성 (PENDING) → Outbox 저장 + 즉시 발행
+ *    - Outbox 저장: 안전성 보장 (재시도 가능)
+ *    - ApplicationEventPublisher: 즉시 실행 (@TransactionalEventListener AFTER_COMMIT)
  * 2. [병렬 처리] 각 핸들러가 독립적으로 처리:
  *    - StockEventHandler: 재고 차감 → StockReservedEvent 또는 StockReservationFailedEvent
  *    - PaymentEventHandler: 결제 처리 → PaymentCompletedEvent 또는 PaymentFailedEvent
@@ -60,24 +62,29 @@ public class ChoreographyPlaceOrderUseCase {
     private final UserService userService;
     private final CouponService couponService;
     private final OutboxService outboxService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public ChoreographyPlaceOrderUseCase(OrderService orderService,
                                          ProductService productService,
                                          UserService userService,
                                          CouponService couponService,
-                                         OutboxService outboxService) {
+                                         OutboxService outboxService,
+                                         ApplicationEventPublisher eventPublisher) {
         this.orderService = orderService;
         this.productService = productService;
         this.userService = userService;
         this.couponService = couponService;
         this.outboxService = outboxService;
+        this.eventPublisher = eventPublisher;
     }
 
     /**
      * 주문 생성 실행
      *
-     * ⚠️ 주의: 이 메서드는 주문을 PENDING 상태로 생성하고 이벤트만 발행합니다.
-     * 실제 재고 차감, 결제, 쿠폰 사용은 이벤트 핸들러가 비동기로 처리합니다.
+     * ⚠️ 주의: 이 메서드는 주문을 PENDING 상태로 생성하고 즉시 이벤트를 발행합니다.
+     * - Outbox에 백업 저장 (안전성 보장)
+     * - ApplicationEventPublisher로 즉시 발행 (실시간성)
+     * - 실제 재고 차감, 결제, 쿠폰 사용은 이벤트 핸들러가 트랜잭션 커밋 후 처리
      *
      * @param publicId 사용자 Public ID (UUID)
      * @param request 주문 요청 DTO
@@ -173,11 +180,15 @@ public class ChoreographyPlaceOrderUseCase {
                     request.userCouponId()
             );
 
-            // Outbox에 저장 (트랜잭션과 함께 커밋됨)
+            // 1. Outbox에 저장 (백업/재시도용 - 트랜잭션과 함께 커밋됨)
             outboxService.saveEvent("ORDER_CREATED", order.getId(), event);
 
-            log.info("===== OrderCreatedEvent Outbox 저장 완료 =====");
-            log.info("→ 스케줄러가 Outbox를 폴링하여 이벤트 발행합니다");
+            // 2. 즉시 발행 (실시간 처리 - 트랜잭션 커밋 후 AFTER_COMMIT으로 실행)
+            eventPublisher.publishEvent(event);
+
+            log.info("===== OrderCreatedEvent 발행 완료 =====");
+            log.info("→ Outbox 백업 완료 (재시도 보장)");
+            log.info("→ 이벤트 즉시 발행 (트랜잭션 커밋 후 실행)");
             log.info("→ 다음 단계는 이벤트 핸들러들이 병렬로 처리합니다:");
             log.info("  ├─ StockEventHandler: 재고 차감");
             log.info("  ├─ PaymentEventHandler: 결제 처리 (잔액 차감)");
@@ -188,7 +199,7 @@ public class ChoreographyPlaceOrderUseCase {
             log.info("  └─ 하나라도 실패 → FAILED + 자동 보상 트랜잭션");
 
         } catch (Exception e) {
-            log.error("❌ OrderCreatedEvent Outbox 저장 실패: orderId={}", order.getId(), e);
+            log.error("❌ OrderCreatedEvent 발행 실패: orderId={}", order.getId(), e);
 
             // Outbox 저장 실패 시 주문 실패 처리
             try {

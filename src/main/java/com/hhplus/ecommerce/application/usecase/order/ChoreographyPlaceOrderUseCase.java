@@ -1,5 +1,6 @@
 package com.hhplus.ecommerce.application.usecase.order;
 
+import com.hhplus.ecommerce.config.KafkaConfig;
 import com.hhplus.ecommerce.domain.entity.*;
 import com.hhplus.ecommerce.domain.event.OrderCreatedEvent;
 import com.hhplus.ecommerce.domain.service.*;
@@ -8,7 +9,7 @@ import com.hhplus.ecommerce.domain.vo.Phone;
 import com.hhplus.ecommerce.domain.vo.Quantity;
 import com.hhplus.ecommerce.presentation.dto.CreateOrderRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -62,29 +63,29 @@ public class ChoreographyPlaceOrderUseCase {
     private final UserService userService;
     private final CouponService couponService;
     private final OutboxService outboxService;
-    private final ApplicationEventPublisher eventPublisher;
+    private final KafkaTemplate<String, OrderCreatedEvent> kafkaTemplate;
 
     public ChoreographyPlaceOrderUseCase(OrderService orderService,
                                          ProductService productService,
                                          UserService userService,
                                          CouponService couponService,
                                          OutboxService outboxService,
-                                         ApplicationEventPublisher eventPublisher) {
+                                         KafkaTemplate<String, OrderCreatedEvent> kafkaTemplate) {
         this.orderService = orderService;
         this.productService = productService;
         this.userService = userService;
         this.couponService = couponService;
         this.outboxService = outboxService;
-        this.eventPublisher = eventPublisher;
+        this.kafkaTemplate = kafkaTemplate;
     }
 
     /**
      * 주문 생성 실행
      *
-     * ⚠️ 주의: 이 메서드는 주문을 PENDING 상태로 생성하고 즉시 이벤트를 발행합니다.
+     * ⚠️ 주의: 이 메서드는 주문을 PENDING 상태로 생성하고 Kafka로 이벤트를 발행합니다.
      * - Outbox에 백업 저장 (안전성 보장)
-     * - ApplicationEventPublisher로 즉시 발행 (실시간성)
-     * - 실제 재고 차감, 결제, 쿠폰 사용은 이벤트 핸들러가 트랜잭션 커밋 후 처리
+     * - Kafka로 즉시 발행 (실시간성, 확장성)
+     * - 실제 재고 차감, 결제, 쿠폰 사용은 Kafka Consumer가 처리
      *
      * @param publicId 사용자 Public ID (UUID)
      * @param request 주문 요청 DTO
@@ -183,18 +184,22 @@ public class ChoreographyPlaceOrderUseCase {
             // 1. Outbox에 저장 (백업/재시도용 - 트랜잭션과 함께 커밋됨)
             outboxService.saveEvent("ORDER_CREATED", order.getId(), event);
 
-            // 2. 즉시 발행 (실시간 처리 - 트랜잭션 커밋 후 AFTER_COMMIT으로 실행)
-            eventPublisher.publishEvent(event);
+            // 2. Kafka로 즉시 발행 (실시간 처리 - MSA 환경 지원)
+            kafkaTemplate.send(
+                KafkaConfig.ORDER_CREATED_TOPIC,
+                order.getId().toString(),  // key (같은 주문은 같은 파티션)
+                event
+            );
 
-            log.info("===== OrderCreatedEvent 발행 완료 =====");
+            log.info("===== OrderCreatedEvent Kafka 발행 완료 =====");
             log.info("→ Outbox 백업 완료 (재시도 보장)");
-            log.info("→ 이벤트 즉시 발행 (트랜잭션 커밋 후 실행)");
-            log.info("→ 다음 단계는 이벤트 핸들러들이 병렬로 처리합니다:");
+            log.info("→ Kafka 토픽: {} (주문 ID: {})", KafkaConfig.ORDER_CREATED_TOPIC, order.getId());
+            log.info("→ 다음 단계는 Kafka Consumer들이 병렬로 처리합니다:");
             log.info("  ├─ StockEventHandler: 재고 차감");
             log.info("  ├─ PaymentEventHandler: 결제 처리 (잔액 차감)");
             log.info("  └─ CouponEventHandler: 쿠폰 사용");
             log.info("");
-            log.info("→ OrderSagaEventHandler가 결과를 수집합니다:");
+            log.info("→ OrderSagaEventHandler가 Kafka에서 결과를 수집합니다:");
             log.info("  ├─ 모두 성공 → CONFIRMED");
             log.info("  └─ 하나라도 실패 → FAILED + 자동 보상 트랜잭션");
 

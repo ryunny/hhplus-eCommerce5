@@ -5,10 +5,12 @@ import com.hhplus.ecommerce.config.KafkaConfig;
 import com.hhplus.ecommerce.domain.entity.Coupon;
 import com.hhplus.ecommerce.domain.entity.User;
 import com.hhplus.ecommerce.domain.entity.UserCoupon;
+import com.hhplus.ecommerce.domain.enums.CouponStatus;
 import com.hhplus.ecommerce.domain.event.CouponIssueFailedEvent;
 import com.hhplus.ecommerce.domain.event.CouponIssueRequestedEvent;
 import com.hhplus.ecommerce.domain.event.CouponIssuedEvent;
-import com.hhplus.ecommerce.domain.service.CouponService;
+import com.hhplus.ecommerce.domain.repository.CouponRepository;
+import com.hhplus.ecommerce.domain.repository.UserCouponRepository;
 import com.hhplus.ecommerce.domain.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -38,18 +40,21 @@ import java.time.Instant;
 @Component
 public class CouponIssueEventHandler {
 
-    private final CouponService couponService;
+    private final CouponRepository couponRepository;
+    private final UserCouponRepository userCouponRepository;
     private final UserService userService;
     private final RedisTemplate<String, String> redisTemplate;
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final ObjectMapper objectMapper;
 
-    public CouponIssueEventHandler(CouponService couponService,
+    public CouponIssueEventHandler(CouponRepository couponRepository,
+                                  UserCouponRepository userCouponRepository,
                                   UserService userService,
                                   RedisTemplate<String, String> redisTemplate,
                                   KafkaTemplate<String, Object> kafkaTemplate,
                                   ObjectMapper objectMapper) {
-        this.couponService = couponService;
+        this.couponRepository = couponRepository;
+        this.userCouponRepository = userCouponRepository;
         this.userService = userService;
         this.redisTemplate = redisTemplate;
         this.kafkaTemplate = kafkaTemplate;
@@ -89,16 +94,32 @@ public class CouponIssueEventHandler {
             // ====================================
             // Step 2: DB에서 실제 발급
             // ====================================
-            Coupon coupon = couponService.getCouponWithLock(event.couponId());
+            // 쿠폰 조회 (비관적 락)
+            Coupon coupon = couponRepository.findByIdWithLockOrThrow(event.couponId());
             User user = userService.getUser(event.userId());
 
-            // 재고 확인 (비관적 락)
+            // 재고 확인
             if (!coupon.hasStock()) {
                 throw new IllegalStateException("쿠폰 재고가 소진되었습니다");
             }
 
-            // 중복 발급 체크 (DB unique 제약)
-            UserCoupon userCoupon = couponService.issueCoupon(coupon, user);
+            // 중복 발급 체크
+            if (userCouponRepository.findByUserIdAndCouponId(user.getId(), coupon.getId()).isPresent()) {
+                throw new IllegalStateException("이미 발급받은 쿠폰입니다");
+            }
+
+            // 쿠폰 발급 처리
+            coupon.increaseIssuedQuantity();
+            couponRepository.save(coupon);
+
+            // 사용자 쿠폰 생성
+            UserCoupon userCoupon = new UserCoupon(
+                user,
+                coupon,
+                CouponStatus.UNUSED,
+                coupon.getEndDate()
+            );
+            userCouponRepository.save(userCoupon);
 
             log.info("[쿠폰-Kafka] 발급 완료: userCouponId={}, couponId={}, userId={}",
                 userCoupon.getId(), event.couponId(), event.userId());

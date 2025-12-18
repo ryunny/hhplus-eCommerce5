@@ -37,7 +37,7 @@ public class QueueController {
 
     private final UserService userService;
     private final RedisTemplate<String, String> redisTemplate;
-    private final KafkaTemplate<String, QueueEnteredEvent> kafkaTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
     private final ObjectMapper objectMapper;
 
     /**

@@ -37,7 +37,7 @@ public class CouponController {
     // Kafka 기반 선착순 쿠폰 발급용
     private final UserService userService;
     private final RedisTemplate<String, String> redisTemplate;
-    private final KafkaTemplate<String, CouponIssueRequestedEvent> kafkaTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @GetMapping("/issuable")
     public ResponseEntity<List<CouponResponse>> getIssuableCoupons() {

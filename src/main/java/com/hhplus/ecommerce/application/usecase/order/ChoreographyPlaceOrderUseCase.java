@@ -63,14 +63,14 @@ public class ChoreographyPlaceOrderUseCase {
     private final UserService userService;
     private final CouponService couponService;
     private final OutboxService outboxService;
-    private final KafkaTemplate<String, OrderCreatedEvent> kafkaTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     public ChoreographyPlaceOrderUseCase(OrderService orderService,
                                          ProductService productService,
                                          UserService userService,
                                          CouponService couponService,
                                          OutboxService outboxService,
-                                         KafkaTemplate<String, OrderCreatedEvent> kafkaTemplate) {
+                                         KafkaTemplate<String, Object> kafkaTemplate) {
         this.orderService = orderService;
         this.productService = productService;
         this.userService = userService;

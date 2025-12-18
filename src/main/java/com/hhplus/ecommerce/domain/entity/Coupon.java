@@ -96,6 +96,10 @@ public class Coupon {
                 && issuedQuantity < totalQuantity;
     }
 
+    public boolean hasStock() {
+        return issuedQuantity < totalQuantity;
+    }
+
     public void increaseIssuedQuantity() {
         if (!isIssuable()) {
             throw new IllegalStateException("쿠폰을 발급할 수 없습니다.");

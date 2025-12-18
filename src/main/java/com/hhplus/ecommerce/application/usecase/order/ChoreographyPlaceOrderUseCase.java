@@ -192,16 +192,8 @@ public class ChoreographyPlaceOrderUseCase {
             );
 
             log.info("===== OrderCreatedEvent Kafka 발행 완료 =====");
-            log.info("→ Outbox 백업 완료 (재시도 보장)");
             log.info("→ Kafka 토픽: {} (주문 ID: {})", KafkaConfig.ORDER_CREATED_TOPIC, order.getId());
-            log.info("→ 다음 단계는 Kafka Consumer들이 병렬로 처리합니다:");
-            log.info("  ├─ StockEventHandler: 재고 차감");
-            log.info("  ├─ PaymentEventHandler: 결제 처리 (잔액 차감)");
-            log.info("  └─ CouponEventHandler: 쿠폰 사용");
-            log.info("");
-            log.info("→ OrderSagaEventHandler가 Kafka에서 결과를 수집합니다:");
-            log.info("  ├─ 모두 성공 → CONFIRMED");
-            log.info("  └─ 하나라도 실패 → FAILED + 자동 보상 트랜잭션");
+
 
         } catch (Exception e) {
             log.error("❌ OrderCreatedEvent 발행 실패: orderId={}", order.getId(), e);

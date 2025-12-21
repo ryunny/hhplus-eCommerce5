@@ -49,8 +49,7 @@ public class PaymentService {
      */
     @Transactional(readOnly = true)
     public Payment getPaymentByPaymentId(String paymentId) {
-        return paymentRepository.findByPaymentId(paymentId)
-                .orElseThrow(() -> new IllegalArgumentException("결제를 찾을 수 없습니다: " + paymentId));
+        return paymentRepository.findByPaymentIdOrThrow(paymentId);
     }
 
     /**

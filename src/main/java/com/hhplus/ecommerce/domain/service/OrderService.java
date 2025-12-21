@@ -105,8 +105,7 @@ public class OrderService {
      */
     @Transactional
     public void updateOrderStatus(Long orderId, OrderStatus status) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다: " + orderId));
+        Order order = orderRepository.findByIdOrThrow(orderId);
         order.updateStatus(status);
         // 더티 체킹으로 자동 저장 (save() 불필요)
     }
@@ -119,8 +118,7 @@ public class OrderService {
      */
     @Transactional(readOnly = true)
     public Order getOrder(Long orderId) {
-        return orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다: " + orderId));
+        return orderRepository.findByIdOrThrow(orderId);
     }
 
     /**
@@ -131,8 +129,7 @@ public class OrderService {
      */
     @Transactional(readOnly = true)
     public Order getOrderByOrderNumber(String orderNumber) {
-        return orderRepository.findByOrderNumber(orderNumber)
-                .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다: " + orderNumber));
+        return orderRepository.findByOrderNumberOrThrow(orderNumber);
     }
 
     /**

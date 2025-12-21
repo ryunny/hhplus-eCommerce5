@@ -55,8 +55,7 @@ public class ProductService {
     @Cacheable(value = "ecommerce", keyGenerator = "cacheKeyGenerator")
     @Transactional(readOnly = true)
     public Product getProduct(Long productId) {
-        return productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다: " + productId));
+        return productRepository.findByIdOrThrow(productId);
     }
 
     /**
@@ -152,8 +151,7 @@ public class ProductService {
     @Transactional
     public void decreaseStockTransaction(Long productId, Quantity quantity) {
         // 상품 조회 (일반 SELECT - Redis 락이 동시성 보장)
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다: " + productId));
+        Product product = productRepository.findByIdOrThrow(productId);
 
         // 재검증 (동시성 문제 대비)
         if (!product.hasSufficientStock(quantity)) {
@@ -195,8 +193,7 @@ public class ProductService {
      */
     @Transactional
     public void increaseStockTransaction(Long productId, Quantity quantity) {
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다: " + productId));
+        Product product = productRepository.findByIdOrThrow(productId);
         product.increaseStock(quantity);
         // 더티 체킹으로 자동 저장
     }

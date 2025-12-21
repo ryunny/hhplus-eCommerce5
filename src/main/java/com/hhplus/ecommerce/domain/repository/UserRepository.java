@@ -22,4 +22,24 @@ public interface UserRepository {
     Optional<User> findByPublicIdWithLock(String publicId);
 
     void deleteById(Long id);
+
+    default User findByIdOrThrow(Long id) {
+        return findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + id));
+    }
+
+    default User findByPublicIdOrThrow(String publicId) {
+        return findByPublicId(publicId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + publicId));
+    }
+
+    default User findByIdWithLockOrThrow(Long id) {
+        return findByIdWithLock(id)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + id));
+    }
+
+    default User findByPublicIdWithLockOrThrow(String publicId) {
+        return findByPublicIdWithLock(publicId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + publicId));
+    }
 }

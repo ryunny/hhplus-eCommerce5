@@ -14,11 +14,23 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 /**
- * Outbox 이벤트 폴링 스케줄러
+ * Outbox 이벤트 폴링 스케줄러 (재시도 전용)
+ *
+ * 역할:
+ * - 즉시 발행이 실패한 이벤트의 재시도 처리
+ * - PENDING 상태로 남아있는 이벤트를 폴링하여 재발행
+ * - ORDER_CREATED, STOCK_RESERVED, PAYMENT_FAILED 등 내부 이벤트
+ *
+ * 정상 흐름:
+ * 1. ChoreographyPlaceOrderUseCase가 즉시 발행 → 성공 시 바로 처리
+ * 2. 실패 시 PENDING 상태로 Outbox에 남음
+ * 3. 이 스케줄러가 주기적으로 재시도
+ *
+ * 외부 시스템 전송 이벤트(PAYMENT_COMPLETED)는 OutboxProcessor가 Kafka로 전송
  *
  * Transactional Outbox Pattern의 핵심:
  * 1. PENDING 상태의 이벤트를 조회
- * 2. 이벤트 발행 (ApplicationEventPublisher)
+ * 2. 이벤트 재발행 (ApplicationEventPublisher)
  * 3. 성공 시 SUCCESS 상태로 변경
  * 4. 실패 시 재시도 카운트 증가
  *
@@ -42,7 +54,9 @@ public class OutboxEventScheduler {
     }
 
     /**
-     * Outbox 이벤트 폴링 및 발행
+     * Outbox 이벤트 폴링 및 발행 (내부 이벤트만 처리)
+     *
+     * PAYMENT_COMPLETED는 OutboxProcessor가 Kafka로 전송
      */
     @Scheduled(fixedDelayString = "${scheduler.outbox.fixed-delay}",
                initialDelayString = "${scheduler.outbox.initial-delay}")
@@ -51,11 +65,16 @@ public class OutboxEventScheduler {
         List<OutboxEvent> pendingEvents = outboxEventRepository
                 .findByStatusAndRetryCountLessThan(OutboxStatus.PENDING, OutboxEvent.MAX_RETRY_COUNT);
 
+        // PAYMENT_COMPLETED는 OutboxProcessor가 처리하므로 제외
+        pendingEvents = pendingEvents.stream()
+                .filter(event -> !"PAYMENT_COMPLETED".equals(event.getEventType()))
+                .toList();
+
         if (pendingEvents.isEmpty()) {
             return;
         }
 
-        log.info("📦 Outbox 폴링: {} 개의 이벤트 처리 시작", pendingEvents.size());
+        log.info("📦 Outbox 재시도 (내부 이벤트): {} 개의 실패한 이벤트 재처리 시작", pendingEvents.size());
 
         for (OutboxEvent outbox : pendingEvents) {
             try {
@@ -71,7 +90,7 @@ public class OutboxEventScheduler {
                 outbox.markAsSuccess();
                 outboxEventRepository.save(outbox);
 
-                log.info("✅ Outbox 이벤트 발행 성공: eventType={}, outboxId={}, aggregateId={}",
+                log.info("✅ Outbox 이벤트 재시도 성공: eventType={}, outboxId={}, aggregateId={}",
                         outbox.getEventType(), outbox.getId(), outbox.getAggregateId());
 
             } catch (Exception e) {
@@ -79,7 +98,7 @@ public class OutboxEventScheduler {
                 outbox.incrementRetryCount(e.getMessage());
                 outboxEventRepository.save(outbox);
 
-                log.error("❌ Outbox 이벤트 발행 실패: eventType={}, outboxId={}, retryCount={}, error={}",
+                log.error("❌ Outbox 이벤트 재시도 실패: eventType={}, outboxId={}, retryCount={}, error={}",
                         outbox.getEventType(), outbox.getId(), outbox.getRetryCount(), e.getMessage());
 
                 // 최대 재시도 횟수 초과 시 경고
@@ -90,7 +109,7 @@ public class OutboxEventScheduler {
             }
         }
 
-        log.info("📦 Outbox 폴링 완료");
+        log.info("📦 Outbox 재시도 완료");
     }
 
     /**

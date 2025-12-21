@@ -34,7 +34,13 @@
       "Bash(xargs cat:*)",
       "Bash(Select-String -Pattern \"(테스트|성공|실패|소요|BUILD)\" -Context 0,1)",
       "Bash(timeout 10 bash:*)",
-      "Bash(Select-String -Pattern \"(테스트|성공|실패|소요|BUILD|error|FAILED)\" -Context 0,1)"
+      "Bash(Select-String -Pattern \"(테스트|성공|실패|소요|BUILD|error|FAILED)\" -Context 0,1)",
+      "Bash(git cherry-pick:*)",
+      "Bash(./gradlew:*)",
+      "Bash(git restore:*)",
+      "Bash(docker-compose ps:*)",
+      "Bash(docker-compose logs:*)",
+      "Bash(powershell -Command \"Remove-Item -Path $env:USERPROFILE\\.gradle\\caches\\8.14.3\\transforms\\7420c96d926c57d307e65e95db497ee2 -Recurse -Force -ErrorAction SilentlyContinue; Remove-Item -Path $env:USERPROFILE\\.gradle\\caches\\8.14.3\\transforms\\3e4f1048957674a7feda44e37211c483 -Recurse -Force -ErrorAction SilentlyContinue; Remove-Item -Path $env:USERPROFILE\\.gradle\\caches\\8.14.3\\transforms\\4d86d94149337e0118e290d54dc9087f -Recurse -Force -ErrorAction SilentlyContinue\")"
     ],
     "deny": [],
     "ask": []

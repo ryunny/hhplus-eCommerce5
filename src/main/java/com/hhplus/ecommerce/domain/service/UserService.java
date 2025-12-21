@@ -32,8 +32,7 @@ public class UserService {
     @Cacheable(value = "ecommerce", keyGenerator = "cacheKeyGenerator")
     @Transactional(readOnly = true)
     public User getUser(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
+        return userRepository.findByIdOrThrow(userId);
     }
 
     /**
@@ -48,8 +47,7 @@ public class UserService {
     @Cacheable(value = "ecommerce", keyGenerator = "cacheKeyGenerator")
     @Transactional(readOnly = true)
     public User getUserByPublicId(String publicId) {
-        return userRepository.findByPublicId(publicId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + publicId));
+        return userRepository.findByPublicIdOrThrow(publicId);
     }
 
     /**
@@ -101,8 +99,7 @@ public class UserService {
     })
     @Transactional
     private User deductBalanceWithLock(Long userId, Money amount) {
-        User user = userRepository.findByIdWithLock(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
+        User user = userRepository.findByIdWithLockOrThrow(userId);
 
         // 재검증 (동시성 문제 대비)
         if (!user.hasEnoughBalance(amount)) {
@@ -148,8 +145,7 @@ public class UserService {
     })
     @Transactional
     private User deductBalanceByPublicIdWithLock(String publicId, Money amount) {
-        User user = userRepository.findByPublicIdWithLock(publicId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + publicId));
+        User user = userRepository.findByPublicIdWithLockOrThrow(publicId);
 
         // 재검증
         if (!user.hasEnoughBalance(amount)) {
@@ -173,8 +169,7 @@ public class UserService {
     @CacheEvict(value = "ecommerce", key = "T(com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator).userCacheKey(#userId)")
     @Transactional
     public User chargeBalance(Long userId, Money amount) {
-        User user = userRepository.findByIdWithLock(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
+        User user = userRepository.findByIdWithLockOrThrow(userId);
         user.chargeBalance(amount);
         // 더티 체킹으로 자동 저장 (save() 불필요)
         return user;
@@ -196,8 +191,7 @@ public class UserService {
     })
     @Transactional
     public User chargeBalanceByPublicId(String publicId, Money amount) {
-        User user = userRepository.findByPublicIdWithLock(publicId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + publicId));
+        User user = userRepository.findByPublicIdWithLockOrThrow(publicId);
         user.chargeBalance(amount);
         // 더티 체킹으로 자동 저장 (save() 불필요)
         return user;

@@ -23,4 +23,14 @@ public interface OrderRepository {
     Optional<Order> findByOrderNumber(String orderNumber);
 
     void deleteById(Long id);
+
+    default Order findByIdOrThrow(Long id) {
+        return findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다: " + id));
+    }
+
+    default Order findByOrderNumberOrThrow(String orderNumber) {
+        return findByOrderNumber(orderNumber)
+                .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다: " + orderNumber));
+    }
 }

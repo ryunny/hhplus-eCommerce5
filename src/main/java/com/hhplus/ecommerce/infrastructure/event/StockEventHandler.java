@@ -1,25 +1,24 @@
 package com.hhplus.ecommerce.infrastructure.event;
 
+import com.hhplus.ecommerce.config.KafkaConfig;
 import com.hhplus.ecommerce.domain.entity.Product;
 import com.hhplus.ecommerce.domain.event.*;
 import com.hhplus.ecommerce.domain.service.ProductService;
 import com.hhplus.ecommerce.domain.vo.Quantity;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 /**
- * 재고 이벤트 핸들러
+ * 재고 이벤트 핸들러 (Kafka Consumer)
  *
- * 주문 생성/실패/확정 이벤트를 구독하여 재고를 관리합니다.
+ * Kafka에서 주문 생성/실패 이벤트를 구독하여 재고를 관리합니다.
  */
 @Slf4j
 @Component
@@ -27,32 +26,34 @@ public class StockEventHandler {
 
     private final ProductService productService;
     private final com.hhplus.ecommerce.domain.service.OutboxService outboxService;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     // 주문별 재고 차감 기록 (보상 트랜잭션용)
     private final Map<Long, StockReservation> reservations = new HashMap<>();
 
     public StockEventHandler(ProductService productService,
-                            com.hhplus.ecommerce.domain.service.OutboxService outboxService) {
+                            com.hhplus.ecommerce.domain.service.OutboxService outboxService,
+                            KafkaTemplate<String, Object> kafkaTemplate) {
         this.productService = productService;
         this.outboxService = outboxService;
+        this.kafkaTemplate = kafkaTemplate;
     }
 
     /**
-     * 주문 생성 → 재고 차감
+     * 주문 생성 → 재고 차감 (Kafka Consumer)
      *
-     * AFTER_COMMIT: UseCase의 트랜잭션이 커밋된 후 실행
-     * - 주문이 확실히 DB에 저장된 후 재고 차감
-     * - 트랜잭션 롤백 시 이벤트 미발행
+     * Kafka 토픽: order.created
+     * - Kafka에서 OrderCreatedEvent 수신
+     * - 재고 차감 처리
+     * - 성공/실패 이벤트를 Kafka로 발행
      *
      * @Transactional: 재고 차감 + Outbox 저장을 하나의 트랜잭션으로 처리
-     * - 둘 중 하나라도 실패하면 모두 롤백
      */
-    @Async
     @Transactional
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @KafkaListener(topics = KafkaConfig.ORDER_CREATED_TOPIC, groupId = "stock-service")
     public void handleOrderCreated(OrderCreatedEvent event) {
         try {
-            log.info("[재고] 재고 차감 시작: orderId={}, items={}", event.orderId(), event.items().size());
+            log.info("[재고-Kafka] 재고 차감 시작: orderId={}, items={}", event.orderId(), event.items().size());
 
             String reservationId = UUID.randomUUID().toString();
             StockReservation reservation = new StockReservation(reservationId, event.orderId());
@@ -67,83 +68,97 @@ public class StockEventHandler {
                 // 보상 트랜잭션을 위해 기록
                 reservation.addItem(item.productId(), quantity);
 
-                log.info("[재고] 재고 차감 완료: orderId={}, productId={}, quantity={}",
+                log.info("[재고-Kafka] 재고 차감 완료: orderId={}, productId={}, quantity={}",
                     event.orderId(), item.productId(), quantity.getValue());
             }
 
             // 예약 정보 저장
             reservations.put(event.orderId(), reservation);
 
-            // 성공 이벤트를 Outbox에 저장
+            // 성공 이벤트를 Kafka로 발행
             StockReservedEvent successEvent = new StockReservedEvent(
                 event.orderId(),
                 reservationId
             );
             outboxService.saveEvent("STOCK_RESERVED", event.orderId(), successEvent);
+            kafkaTemplate.send(
+                KafkaConfig.STOCK_RESERVED_TOPIC,
+                event.orderId().toString(),
+                successEvent
+            );
 
-            log.info("[재고] 재고 차감 성공: orderId={}, reservationId={}", event.orderId(), reservationId);
+            log.info("[재고-Kafka] 재고 차감 성공 → Kafka 발행: orderId={}, topic={}",
+                event.orderId(), KafkaConfig.STOCK_RESERVED_TOPIC);
 
         } catch (Exception e) {
-            log.error("[재고] 재고 차감 실패: orderId={}, error={}", event.orderId(), e.getMessage(), e);
+            log.error("[재고-Kafka] 재고 차감 실패: orderId={}, error={}", event.orderId(), e.getMessage(), e);
 
-            // 실패 이벤트를 Outbox에 저장
+            // 실패 이벤트를 Kafka로 발행
             StockReservationFailedEvent failEvent = new StockReservationFailedEvent(
                 event.orderId(),
                 e.getMessage()
             );
             outboxService.saveEvent("STOCK_RESERVATION_FAILED", event.orderId(), failEvent);
+            kafkaTemplate.send(
+                KafkaConfig.STOCK_RESERVATION_FAILED_TOPIC,
+                event.orderId().toString(),
+                failEvent
+            );
+
+            log.info("[재고-Kafka] 재고 차감 실패 → Kafka 발행: orderId={}, topic={}",
+                event.orderId(), KafkaConfig.STOCK_RESERVATION_FAILED_TOPIC);
         }
     }
 
     /**
-     * 주문 확정 → 재고 확정 (현재는 이미 차감되어 있으므로 로그만)
+     * 주문 확정 → 재고 확정 (Kafka Consumer)
      *
-     * 실제 프로덕션에서는 "예약" → "확정" 2단계로 구현할 수 있습니다.
+     * Kafka 토픽: order.confirmed
+     * - 현재는 이미 차감되어 있으므로 예약 정보만 제거
+     * - 실제 프로덕션에서는 "예약" → "확정" 2단계로 구현할 수 있습니다.
      */
-    @Async
     @Transactional
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @KafkaListener(topics = KafkaConfig.ORDER_CONFIRMED_TOPIC, groupId = "stock-service")
     public void handleOrderConfirmed(OrderConfirmedEvent event) {
-        log.info("[재고] 재고 확정: orderId={}", event.orderId());
+        log.info("[재고-Kafka] 재고 확정: orderId={}", event.orderId());
 
         // 예약 정보 제거 (더 이상 보상 트랜잭션 필요 없음)
         reservations.remove(event.orderId());
     }
 
     /**
-     * 주문 실패 → 보상 트랜잭션 (재고 복구)
+     * 주문 실패 → 보상 트랜잭션 (재고 복구) (Kafka Consumer)
      */
-    @Async
     @Transactional
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @KafkaListener(topics = KafkaConfig.ORDER_FAILED_TOPIC, groupId = "stock-service")
     public void handleOrderFailed(OrderFailedEvent event) {
         // 재고 차감이 성공했었는지 확인
         if (!event.completedSteps().contains("STOCK")) {
-            log.info("[재고] 보상 트랜잭션 불필요 (재고 차감 안됨): orderId={}", event.orderId());
+            log.info("[재고-Kafka] 보상 트랜잭션 불필요 (재고 차감 안됨): orderId={}", event.orderId());
             return;
         }
 
         StockReservation reservation = reservations.get(event.orderId());
         if (reservation == null) {
-            log.error("[재고] 보상 트랜잭션 실패: 예약 정보 없음, orderId={}", event.orderId());
+            log.error("[재고-Kafka] 보상 트랜잭션 실패: 예약 정보 없음, orderId={}", event.orderId());
             return;
         }
 
         try {
-            log.info("[재고] 보상 트랜잭션 시작 (재고 복구): orderId={}", event.orderId());
+            log.info("[재고-Kafka] 보상 트랜잭션 시작 (재고 복구): orderId={}", event.orderId());
 
             // 차감했던 재고 복구
             for (StockReservation.ReservationItem item : reservation.getItems()) {
                 productService.increaseStock(item.productId(), item.quantity());
 
-                log.info("[재고] 재고 복구 완료: orderId={}, productId={}, quantity={}",
+                log.info("[재고-Kafka] 재고 복구 완료: orderId={}, productId={}, quantity={}",
                     event.orderId(), item.productId(), item.quantity().getValue());
             }
 
             // 예약 정보 제거
             reservations.remove(event.orderId());
 
-            log.info("[재고] 보상 트랜잭션 완료: orderId={}", event.orderId());
+            log.info("[재고-Kafka] 보상 트랜잭션 완료: orderId={}", event.orderId());
 
         } catch (Exception e) {
             log.error("[재고] 보상 트랜잭션 실패: orderId={}, error={}", event.orderId(), e.getMessage(), e);

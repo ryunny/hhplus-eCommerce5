@@ -52,6 +52,10 @@ public class Money implements Serializable {
         return this.amount < other.amount;
     }
 
+    public static Money of(Long amount) {
+        return new Money(amount);
+    }
+
     public static Money zero() {
         return new Money(0L);
     }

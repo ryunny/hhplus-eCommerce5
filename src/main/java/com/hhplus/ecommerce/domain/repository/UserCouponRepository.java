@@ -22,4 +22,9 @@ public interface UserCouponRepository {
     Optional<UserCoupon> findByUserIdAndCouponId(Long userId, Long couponId);
 
     void deleteById(Long id);
+
+    default UserCoupon findByIdOrThrow(Long id) {
+        return findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("쿠폰을 찾을 수 없습니다: " + id));
+    }
 }

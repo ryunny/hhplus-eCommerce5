@@ -37,6 +37,8 @@ public class OrderStepStatus {
      */
     private String stockReservationId;
     private Long paymentId;
+
+    @jakarta.persistence.Column(name = "step_user_coupon_id")
     private Long userCouponId;
 
     /**

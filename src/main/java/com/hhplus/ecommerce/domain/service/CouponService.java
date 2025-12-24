@@ -66,7 +66,7 @@ public class CouponService {
      * @param couponId 쿠폰 ID
      * @return 쿠폰
      */
-    @Cacheable(value = "ecommerce", keyGenerator = "cacheKeyGenerator")
+    @Cacheable(value = "coupons", keyGenerator = "cacheKeyGenerator")
     @Transactional(readOnly = true)
     public Coupon getCoupon(Long couponId) {
         return couponRepository.findByIdOrThrow(couponId);
@@ -80,7 +80,7 @@ public class CouponService {
      *
      * @return 발급 가능한 쿠폰 목록
      */
-    @Cacheable(value = "ecommerce", keyGenerator = "cacheKeyGenerator")
+    @Cacheable(value = "issuableCoupons", keyGenerator = "cacheKeyGenerator")
     @Transactional(readOnly = true)
     public List<Coupon> getIssuableCoupons() {
         return couponRepository.findIssuableCoupons(LocalDateTime.now());
@@ -243,8 +243,8 @@ public class CouponService {
      * @return 발급된 UserCoupon
      */
     @org.springframework.cache.annotation.Caching(evict = {
-        @CacheEvict(value = "ecommerce", key = "T(com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator).couponCacheKey(#couponId)"),
-        @CacheEvict(value = "ecommerce", key = "T(com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator).issuableCouponsCacheKey()")
+        @CacheEvict(value = "coupons", key = "T(com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator).couponCacheKey(#couponId)"),
+        @CacheEvict(value = "issuableCoupons", key = "T(com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator).issuableCouponsCacheKey()")
     })
     @Transactional
     public UserCoupon issueCouponTransaction(User user, Long couponId) {

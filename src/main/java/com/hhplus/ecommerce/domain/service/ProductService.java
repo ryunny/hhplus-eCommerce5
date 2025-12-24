@@ -52,7 +52,7 @@ public class ProductService {
      * @param productId 상품 ID
      * @return 상품 엔티티
      */
-    @Cacheable(value = "ecommerce", keyGenerator = "cacheKeyGenerator")
+    @Cacheable(value = "products", keyGenerator = "cacheKeyGenerator")
     @Transactional(readOnly = true)
     public Product getProduct(Long productId) {
         return productRepository.findByIdOrThrow(productId);
@@ -147,7 +147,7 @@ public class ProductService {
      * @param productId 상품 ID
      * @param quantity 차감할 수량
      */
-    @CacheEvict(value = "ecommerce", key = "T(com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator).productCacheKey(#productId)")
+    @CacheEvict(value = "products", key = "T(com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator).productCacheKey(#productId)")
     @Transactional
     public void decreaseStockTransaction(Long productId, Quantity quantity) {
         // 상품 조회 (일반 SELECT - Redis 락이 동시성 보장)
@@ -226,7 +226,7 @@ public class ProductService {
      * @param limit 조회할 상품 개수
      * @return 상품 판매 통계 DTO 목록
      */
-    @Cacheable(value = "ecommerce", keyGenerator = "cacheKeyGenerator")
+    @Cacheable(value = "topProducts", keyGenerator = "cacheKeyGenerator")
     @Transactional(readOnly = true)
     public List<ProductSalesDto> getTopSellingProducts(int limit) {
         int calculationDays = schedulerProperties.getRanking().getCalculationDays();

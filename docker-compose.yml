@@ -71,8 +71,100 @@ services:
       timeout: 10s
       retries: 5
 
+  # Pinpoint APM
+  pinpoint-hbase:
+    image: pinpointdocker/pinpoint-hbase:3.0.0
+    container_name: pinpoint-hbase
+    environment:
+      - HBASE_ZOOKEEPER_QUORUM=pinpoint-hbase
+    ports:
+      - "2182:2181"
+      - "16000:16000"
+      - "16010:16010"
+      - "16020:16020"
+      - "16030:16030"
+    volumes:
+      - hbase_data:/home/pinpoint/hbase
+      - zookeeper_data_pinpoint:/home/pinpoint/zookeeper
+    networks:
+      - pinpoint
+
+  pinpoint-collector:
+    image: pinpointdocker/pinpoint-collector:3.0.0
+    container_name: pinpoint-collector
+    depends_on:
+      - pinpoint-hbase
+    ports:
+      - "9991:9991"
+      - "9992:9992"
+      - "9993:9993"
+      - "9994:9994"
+      - "9995:9995"
+      - "9996:9996"
+    environment:
+      - SPRING_PROFILES_ACTIVE=release
+      - PINPOINT_ZOOKEEPER_ADDRESS=pinpoint-hbase
+      - CLUSTER_ENABLE=true
+      - HBASE_HOST=pinpoint-hbase
+      - HBASE_PORT=2181
+    networks:
+      - pinpoint
+
+  pinpoint-web:
+    image: pinpointdocker/pinpoint-web:3.0.0
+    container_name: pinpoint-web
+    depends_on:
+      - pinpoint-hbase
+      - pinpoint-collector
+    ports:
+      - "8079:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=release
+      - PINPOINT_ZOOKEEPER_ADDRESS=pinpoint-hbase
+      - CLUSTER_ENABLE=true
+      - HBASE_HOST=pinpoint-hbase
+      - HBASE_PORT=2181
+      - ADMIN_PASSWORD=admin
+    networks:
+      - pinpoint
+
+  ecommerce-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ecommerce-app
+    depends_on:
+      - mysql
+      - redis
+      - kafka
+      - pinpoint-collector
+    ports:
+      - "8081:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/ecommerce
+      - SPRING_DATASOURCE_USERNAME=ecommerce_user
+      - SPRING_DATASOURCE_PASSWORD=ecommerce123
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - PINPOINT_AGENT_ID=ecommerce-app-1
+      - PINPOINT_AGENT_NAME=ecommerce-service
+      - PINPOINT_COLLECTOR_IP=pinpoint-collector
+    networks:
+      - default
+      - pinpoint
+
+networks:
+  default:
+    driver: bridge
+  pinpoint:
+    driver: bridge
+
 volumes:
   mysql_data:
   redis_data:
   zookeeper_data:
   kafka_data:
+  hbase_data:
+  zookeeper_data_pinpoint:

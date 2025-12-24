@@ -29,7 +29,7 @@ public class UserService {
      * @param userId 사용자 ID
      * @return 사용자 엔티티
      */
-    @Cacheable(value = "ecommerce", keyGenerator = "cacheKeyGenerator")
+    @Cacheable(value = "users", keyGenerator = "cacheKeyGenerator")
     @Transactional(readOnly = true)
     public User getUser(Long userId) {
         return userRepository.findByIdOrThrow(userId);
@@ -44,7 +44,7 @@ public class UserService {
      * @param publicId 사용자 Public ID (UUID)
      * @return 사용자 엔티티
      */
-    @Cacheable(value = "ecommerce", keyGenerator = "cacheKeyGenerator")
+    @Cacheable(value = "users", keyGenerator = "cacheKeyGenerator")
     @Transactional(readOnly = true)
     public User getUserByPublicId(String publicId) {
         return userRepository.findByPublicIdOrThrow(publicId);
@@ -94,8 +94,8 @@ public class UserService {
      * @param amount 차감할 금액
      */
     @org.springframework.cache.annotation.Caching(evict = {
-        @CacheEvict(value = "ecommerce", key = "T(com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator).userCacheKey(#userId)"),
-        @CacheEvict(value = "ecommerce", key = "T(com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator).userCacheKeyByPublicId(#result.publicId)")
+        @CacheEvict(value = "users", key = "T(com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator).userCacheKey(#userId)"),
+        @CacheEvict(value = "users", key = "T(com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator).userCacheKeyByPublicId(#result.publicId)")
     })
     @Transactional
     private User deductBalanceWithLock(Long userId, Money amount) {
@@ -140,8 +140,8 @@ public class UserService {
      * @param amount 차감할 금액
      */
     @org.springframework.cache.annotation.Caching(evict = {
-        @CacheEvict(value = "ecommerce", key = "T(com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator).userCacheKey(#result.id)"),
-        @CacheEvict(value = "ecommerce", key = "T(com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator).userCacheKeyByPublicId(#publicId)")
+        @CacheEvict(value = "users", key = "T(com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator).userCacheKey(#result.id)"),
+        @CacheEvict(value = "users", key = "T(com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator).userCacheKeyByPublicId(#publicId)")
     })
     @Transactional
     private User deductBalanceByPublicIdWithLock(String publicId, Money amount) {
@@ -166,7 +166,7 @@ public class UserService {
      * @param amount 충전할 금액
      * @return 충전 후 사용자 정보
      */
-    @CacheEvict(value = "ecommerce", key = "T(com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator).userCacheKey(#userId)")
+    @CacheEvict(value = "users", key = "T(com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator).userCacheKey(#userId)")
     @Transactional
     public User chargeBalance(Long userId, Money amount) {
         User user = userRepository.findByIdWithLockOrThrow(userId);
@@ -186,8 +186,8 @@ public class UserService {
      * @return 충전 후 사용자 정보
      */
     @org.springframework.cache.annotation.Caching(evict = {
-        @CacheEvict(value = "ecommerce", key = "T(com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator).userCacheKey(#result.id)"),
-        @CacheEvict(value = "ecommerce", key = "T(com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator).userCacheKeyByPublicId(#publicId)")
+        @CacheEvict(value = "users", key = "T(com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator).userCacheKey(#result.id)"),
+        @CacheEvict(value = "users", key = "T(com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator).userCacheKeyByPublicId(#publicId)")
     })
     @Transactional
     public User chargeBalanceByPublicId(String publicId, Money amount) {

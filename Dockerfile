@@ -16,7 +16,9 @@ RUN apt-get update && \
     tar -zxf pinpoint-agent.tar.gz -C /pinpoint-agent --strip-components=1 && \
     rm pinpoint-agent.tar.gz && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* && \
+    sed -i 's/profiler.transport.grpc.collector.ip=127.0.0.1/profiler.transport.grpc.collector.ip=pinpoint-collector/g' /pinpoint-agent/profiles/release/pinpoint.config && \
+    sed -i 's/profiler.collector.ip=127.0.0.1/profiler.collector.ip=pinpoint-collector/g' /pinpoint-agent/profiles/release/pinpoint.config
 
 # 애플리케이션 JAR 복사
 COPY --from=build /app/build/libs/*.jar /app/app.jar
@@ -34,4 +36,5 @@ ENTRYPOINT ["java", \
     "-Dpinpoint.applicationName=ecommerce-service", \
     "-Dpinpoint.profiler.profiles.active=release", \
     "-Dpinpoint.collector.ip=pinpoint-collector", \
+    "-Dpinpoint.profiler.transport.grpc.collector.ip=pinpoint-collector", \
     "-jar", "/app/app.jar"]

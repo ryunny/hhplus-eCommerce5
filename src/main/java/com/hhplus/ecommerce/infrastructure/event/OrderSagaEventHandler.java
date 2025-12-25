@@ -67,7 +67,7 @@ public class OrderSagaEventHandler {
             return;
         }
 
-        order.getStepStatus().markCouponUsed(event.userCouponId());
+        order.getStepStatus().markCouponUsed();
         orderRepository.save(order);
         checkAndConfirmOrder(order);
     }

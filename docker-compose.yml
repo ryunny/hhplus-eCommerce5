@@ -53,12 +53,14 @@ services:
     container_name: ecommerce-kafka
     ports:
       - "9092:9092"
+      - "9093:9093"
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:9093
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:9093
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
     depends_on:
@@ -75,8 +77,10 @@ services:
   pinpoint-hbase:
     image: pinpointdocker/pinpoint-hbase:3.0.0
     container_name: pinpoint-hbase
+    hostname: pinpoint-hbase
     environment:
       - HBASE_ZOOKEEPER_QUORUM=pinpoint-hbase
+      - HBASE_MANAGES_ZK=true
     ports:
       - "2182:2181"
       - "16000:16000"
@@ -86,6 +90,7 @@ services:
     volumes:
       - hbase_data:/home/pinpoint/hbase
       - zookeeper_data_pinpoint:/home/pinpoint/zookeeper
+      - ./hbase-site.xml:/opt/hbase/hbase-2.2.6/conf/hbase-site.xml
     networks:
       - pinpoint
 
@@ -141,6 +146,7 @@ services:
     ports:
       - "8081:8080"
     environment:
+      - SERVER_PORT=8080
       - SPRING_PROFILES_ACTIVE=dev
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/ecommerce
       - SPRING_DATASOURCE_USERNAME=ecommerce_user

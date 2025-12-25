@@ -38,9 +38,6 @@ public class OrderStepStatus {
     private String stockReservationId;
     private Long paymentId;
 
-    @jakarta.persistence.Column(name = "step_user_coupon_id")
-    private Long userCouponId;
-
     /**
      * 실패 정보
      */
@@ -70,9 +67,8 @@ public class OrderStepStatus {
         this.failedStep = "PAYMENT";
     }
 
-    public void markCouponUsed(Long userCouponId) {
+    public void markCouponUsed() {
         this.couponUsage = StepResult.SUCCESS;
-        this.userCouponId = userCouponId;
     }
 
     public void markCouponUsageFailed(String reason) {

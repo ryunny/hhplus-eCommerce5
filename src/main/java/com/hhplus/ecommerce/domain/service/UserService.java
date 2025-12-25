@@ -26,7 +26,6 @@ public class UserService {
      * CacheKeyGenerator를 통해 RedisKeyGenerator.userCacheKey() 호출
      * 실제 Redis 키: cache:users:{userId}
      *
-     * @param userId 사용자 ID
      * @return 사용자 엔티티
      */
     @Cacheable(value = "users", keyGenerator = "cacheKeyGenerator")
@@ -41,7 +40,6 @@ public class UserService {
      * CacheKeyGenerator를 통해 RedisKeyGenerator.userCacheKeyByPublicId() 호출
      * 실제 Redis 키: cache:users:publicId:{publicId}
      *
-     * @param publicId 사용자 Public ID (UUID)
      * @return 사용자 엔티티
      */
     @Cacheable(value = "users", keyGenerator = "cacheKeyGenerator")
@@ -53,8 +51,6 @@ public class UserService {
     /**
      * 잔액 충분성 검증
      *
-     * @param user 사용자
-     * @param amount 필요 금액
      * @throws IllegalStateException 잔액이 부족한 경우
      */
     public void validateBalance(User user, Money amount) {
@@ -69,9 +65,6 @@ public class UserService {
      * 트랜잭션 범위를 최소화하여 DB 락 시간을 줄입니다.
      * - 트랜잭션 밖: 사용자 조회, 사전 검증
      * - 트랜잭션 안: 비관적 락 + 재검증 + 차감만
-     *
-     * @param userId 사용자 ID
-     * @param amount 차감할 금액
      */
     public void deductBalance(Long userId, Money amount) {
         // 사전 조회 (트랜잭션 밖)
@@ -89,9 +82,6 @@ public class UserService {
      *
      * 캐시 일관성: ID와 publicId 두 캐시 키 모두 무효화
      * RedisKeyGenerator를 통해 통일된 키 형식으로 삭제
-     *
-     * @param userId 사용자 ID
-     * @param amount 차감할 금액
      */
     @org.springframework.cache.annotation.Caching(evict = {
         @CacheEvict(value = "users", key = "T(com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator).userCacheKey(#userId)"),
@@ -115,9 +105,6 @@ public class UserService {
      * 잔액 차감 (Public ID 기반)
      *
      * 트랜잭션 범위를 최소화하여 DB 락 시간을 줄입니다.
-     *
-     * @param publicId 사용자 Public ID (UUID)
-     * @param amount 차감할 금액
      */
     public void deductBalanceByPublicId(String publicId, Money amount) {
         // 사전 조회 (트랜잭션 밖)
@@ -135,9 +122,6 @@ public class UserService {
      *
      * 캐시 일관성: ID와 publicId 두 캐시 키 모두 무효화
      * RedisKeyGenerator를 통해 통일된 키 형식으로 삭제
-     *
-     * @param publicId 사용자 Public ID
-     * @param amount 차감할 금액
      */
     @org.springframework.cache.annotation.Caching(evict = {
         @CacheEvict(value = "users", key = "T(com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator).userCacheKey(#result.id)"),
@@ -162,8 +146,6 @@ public class UserService {
      *
      * RedisKeyGenerator를 통해 통일된 캐시 키 형식으로 무효화
      *
-     * @param userId 사용자 ID
-     * @param amount 충전할 금액
      * @return 충전 후 사용자 정보
      */
     @CacheEvict(value = "users", key = "T(com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator).userCacheKey(#userId)")
@@ -181,8 +163,6 @@ public class UserService {
      * 캐시 일관성: 전체 삭제 대신 ID와 publicId 두 캐시 키만 무효화
      * RedisKeyGenerator를 통해 통일된 키 형식으로 삭제
      *
-     * @param publicId 사용자 Public ID (UUID)
-     * @param amount 충전할 금액
      * @return 충전 후 사용자 정보
      */
     @org.springframework.cache.annotation.Caching(evict = {

@@ -51,27 +51,14 @@ public class PaymentEventHandler {
      * Kafka 토픽: order.created
      * - 잔액 차감 + 결제 엔티티 생성
      * - 성공/실패 이벤트를 Kafka로 발행
-     *
-     * @Transactional: 잔액 차감 + 결제 생성 + Outbox 저장을 하나의 트랜잭션으로 처리
      */
-    @Transactional
     @KafkaListener(topics = KafkaConfig.ORDER_CREATED_TOPIC, groupId = "payment-service")
     public void handleOrderCreated(OrderCreatedEvent event) {
         try {
             log.info("[결제-Kafka] 결제 처리 시작: orderId={}, amount={}",
                 event.orderId(), event.finalAmount().getAmount());
 
-            Order order = orderRepository.findById(event.orderId())
-                .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다: " + event.orderId()));
-
-            // 1. 잔액 차감
-            userService.deductBalance(event.userId(), event.finalAmount());
-
-            log.info("[결제-Kafka] 잔액 차감 완료: orderId={}, userId={}, amount={}",
-                event.orderId(), event.userId(), event.finalAmount().getAmount());
-
-            // 2. 결제 엔티티 생성
-            Payment payment = paymentService.createPayment(order, event.finalAmount());
+            Payment payment = processPaymentInTransaction(event);
 
             log.info("[결제-Kafka] 결제 생성 완료: orderId={}, paymentId={}",
                 event.orderId(), payment.getId());
@@ -84,7 +71,6 @@ public class PaymentEventHandler {
                 event.finalAmount().getAmount(),
                 "COMPLETED"
             );
-            outboxService.saveEvent("PAYMENT_COMPLETED", event.orderId(), successEvent);
             kafkaTemplate.send(
                 KafkaConfig.PAYMENT_COMPLETED_INTERNAL_TOPIC,
                 event.orderId().toString(),
@@ -103,7 +89,6 @@ public class PaymentEventHandler {
                 event.orderId(),
                 "잔액 부족: " + e.getMessage()
             );
-            outboxService.saveEvent("PAYMENT_FAILED", event.orderId(), failEvent);
             kafkaTemplate.send(
                 KafkaConfig.PAYMENT_FAILED_TOPIC,
                 event.orderId().toString(),
@@ -117,13 +102,39 @@ public class PaymentEventHandler {
                 event.orderId(),
                 e.getMessage()
             );
-            outboxService.saveEvent("PAYMENT_FAILED", event.orderId(), failEvent);
             kafkaTemplate.send(
                 KafkaConfig.PAYMENT_FAILED_TOPIC,
                 event.orderId().toString(),
                 failEvent
             );
         }
+    }
+
+    @Transactional
+    protected Payment processPaymentInTransaction(OrderCreatedEvent event) {
+        Order order = orderRepository.findById(event.orderId())
+            .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다: " + event.orderId()));
+
+        // 1. 잔액 차감
+        userService.deductBalance(event.userId(), event.finalAmount());
+
+        log.info("[결제-Kafka] 잔액 차감 완료: orderId={}, userId={}, amount={}",
+            event.orderId(), event.userId(), event.finalAmount().getAmount());
+
+        // 2. 결제 엔티티 생성
+        Payment payment = paymentService.createPayment(order, event.finalAmount());
+
+        // 3. Outbox 저장
+        PaymentCompletedEvent successEvent = new PaymentCompletedEvent(
+            payment.getId(),
+            payment.getPaymentId(),
+            event.orderId(),
+            event.finalAmount().getAmount(),
+            "COMPLETED"
+        );
+        outboxService.saveEvent("PAYMENT_COMPLETED", event.orderId(), successEvent);
+
+        return payment;
     }
 
     /**

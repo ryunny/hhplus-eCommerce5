@@ -26,8 +26,6 @@ public class PaymentService {
     /**
      * 결제 생성
      *
-     * @param order 주문
-     * @param amount 결제 금액
      * @return 생성된 결제
      */
     @Transactional
@@ -44,7 +42,6 @@ public class PaymentService {
     /**
      * 결제 조회 (Payment ID 기반)
      *
-     * @param paymentId 결제 ID (UUID)
      * @return 결제
      */
     @Transactional(readOnly = true)
@@ -54,8 +51,6 @@ public class PaymentService {
 
     /**
      * 결제 취소 (보상 트랜잭션용)
-     *
-     * @param paymentId 결제 ID
      */
     @Transactional
     public void cancelPayment(Long paymentId) {
@@ -72,8 +67,6 @@ public class PaymentService {
      *
      * 이 메서드는 OutboxProcessor 스케줄러에서 비동기로 호출되며,
      * 주문 트랜잭션과 완전히 분리되어 실행됩니다.
-     *
-     * @param payment 결제
      */
     @Transactional
     public void sendToDataPlatform(Payment payment) {

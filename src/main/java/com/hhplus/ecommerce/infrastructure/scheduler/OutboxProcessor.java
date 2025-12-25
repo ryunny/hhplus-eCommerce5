@@ -62,10 +62,7 @@ public class OutboxProcessor {
 
     /**
      * 개별 이벤트 처리 - Kafka로 메시지 전송
-     *
-     * @param event 처리할 Outbox 이벤트
      */
-    @Transactional
     public void processEvent(OutboxEvent event) {
         try {
             // 페이로드 역직렬화
@@ -76,21 +73,15 @@ public class OutboxProcessor {
                               payload.orderId().toString(),
                               payload);
 
-            // 상태 변경: PENDING -> PUBLISHED
-            event.markAsPublished();
-            outboxEventRepository.save(event);
+            // 상태 변경 (별도 트랜잭션)
+            markEventAsPublished(event);
 
             log.info("Outbox 이벤트 Kafka 전송 성공: eventId={}, paymentId={}, orderId={}",
                     event.getId(), payload.paymentId(), payload.orderId());
 
         } catch (Exception e) {
-            // 실패 처리: 재시도 카운트 증가
-            String errorMessage = e.getMessage();
-            if (errorMessage != null && errorMessage.length() > 500) {
-                errorMessage = errorMessage.substring(0, 500);
-            }
-            event.incrementRetryCount(errorMessage);
-            outboxEventRepository.save(event);
+            // 실패 처리: 재시도 카운트 증가 (별도 트랜잭션)
+            incrementRetryCount(event, e);
 
             if (event.canRetry()) {
                 log.warn("Outbox 이벤트 Kafka 전송 실패 (재시도 예정): eventId={}, retryCount={}, error={}",
@@ -102,11 +93,24 @@ public class OutboxProcessor {
         }
     }
 
+    @Transactional
+    protected void markEventAsPublished(OutboxEvent event) {
+        event.markAsPublished();
+        outboxEventRepository.save(event);
+    }
+
+    @Transactional
+    protected void incrementRetryCount(OutboxEvent event, Exception e) {
+        String errorMessage = e.getMessage();
+        if (errorMessage != null && errorMessage.length() > 500) {
+            errorMessage = errorMessage.substring(0, 500);
+        }
+        event.incrementRetryCount(errorMessage);
+        outboxEventRepository.save(event);
+    }
+
     /**
      * JSON 페이로드를 PaymentCompletedEvent로 역직렬화
-     *
-     * @param payload JSON 문자열
-     * @return PaymentCompletedEvent
      */
     private PaymentCompletedEvent deserializePayload(String payload) {
         try {

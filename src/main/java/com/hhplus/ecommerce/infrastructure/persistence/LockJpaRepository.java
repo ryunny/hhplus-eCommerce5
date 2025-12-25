@@ -20,7 +20,6 @@ public interface LockJpaRepository extends JpaRepository<DistributedLock, String
     /**
      * 락 조회 (비관적 락 사용 - SELECT FOR UPDATE)
      *
-     * @param lockKey 락 키
      * @return 락 엔티티 (Optional)
      */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
@@ -30,7 +29,6 @@ public interface LockJpaRepository extends JpaRepository<DistributedLock, String
     /**
      * 만료된 락 삭제 (배치 정리용)
      *
-     * @param now 현재 시각
      * @return 삭제된 락 개수
      */
     @Modifying
@@ -39,8 +37,6 @@ public interface LockJpaRepository extends JpaRepository<DistributedLock, String
 
     /**
      * 락 키로 삭제 (락 해제)
-     *
-     * @param lockKey 락 키
      */
     void deleteByLockKey(String lockKey);
 }

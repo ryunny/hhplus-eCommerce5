@@ -95,20 +95,30 @@ public class OrderSagaEventHandler {
 
     private void checkAndConfirmOrder(Order order) {
         if (order.getStepStatus().allCompleted()) {
-            order.confirm();
-            orderRepository.save(order);
+            confirmOrderInTransaction(order);
 
             OrderConfirmedEvent event = new OrderConfirmedEvent(
                 order.getId(),
                 order.getStepStatus()
             );
-            outboxService.saveEvent("ORDER_CONFIRMED", order.getId(), event);
             kafkaTemplate.send(
                 KafkaConfig.ORDER_CONFIRMED_TOPIC,
                 order.getId().toString(),
                 event
             );
         }
+    }
+
+    @Transactional
+    protected void confirmOrderInTransaction(Order order) {
+        order.confirm();
+        orderRepository.save(order);
+
+        OrderConfirmedEvent event = new OrderConfirmedEvent(
+            order.getId(),
+            order.getStepStatus()
+        );
+        outboxService.saveEvent("ORDER_CONFIRMED", order.getId(), event);
     }
 
     private void failOrder(Long orderId, String reason, SagaFailureType failureType) {
@@ -119,22 +129,33 @@ public class OrderSagaEventHandler {
             return;
         }
 
-        failureType.markFailure(order, reason);
-        order.markAsFailed(reason);
-        orderRepository.save(order);
-
-        log.error("주문 실패: orderId={}, failureType={}, reason={}", orderId, failureType, reason);
+        failOrderInTransaction(order, reason, failureType);
 
         OrderFailedEvent event = new OrderFailedEvent(
             orderId,
             reason,
             order.getStepStatus().getCompletedSteps()
         );
-        outboxService.saveEvent("ORDER_FAILED", orderId, event);
         kafkaTemplate.send(
             KafkaConfig.ORDER_FAILED_TOPIC,
             orderId.toString(),
             event
         );
+    }
+
+    @Transactional
+    protected void failOrderInTransaction(Order order, String reason, SagaFailureType failureType) {
+        failureType.markFailure(order, reason);
+        order.markAsFailed(reason);
+        orderRepository.save(order);
+
+        log.error("주문 실패: orderId={}, failureType={}, reason={}", order.getId(), failureType, reason);
+
+        OrderFailedEvent event = new OrderFailedEvent(
+            order.getId(),
+            reason,
+            order.getStepStatus().getCompletedSteps()
+        );
+        outboxService.saveEvent("ORDER_FAILED", order.getId(), event);
     }
 }

@@ -36,11 +36,6 @@ public class OutboxService {
      * REQUIRED: 호출자의 트랜잭션에 참여
      * - 호출자와 같은 트랜잭션에서 실행되어 함께 커밋 또는 롤백
      * - Transactional Outbox Pattern의 핵심: 비즈니스 로직과 이벤트 저장이 원자적으로 처리
-     *
-     * @param eventType 이벤트 타입 (예: "ORDER_CREATED")
-     * @param aggregateId 집합 루트 ID (예: orderId)
-     * @param event 이벤트 객체 (JSON으로 직렬화됨)
-     * @return 저장된 OutboxEvent
      */
     @Transactional(propagation = Propagation.REQUIRED)
     public OutboxEvent saveEvent(String eventType, Long aggregateId, Object event) {
@@ -64,9 +59,6 @@ public class OutboxService {
 
     /**
      * Payment 완료 이벤트를 Outbox에 저장
-     *
-     * @param payment 결제 정보
-     * @return 저장된 OutboxEvent
      */
     public OutboxEvent savePaymentCompletedEvent(Payment payment) {
         try {
@@ -97,10 +89,6 @@ public class OutboxService {
 
     /**
      * JSON 페이로드를 지정된 타입으로 역직렬화
-     *
-     * @param payload JSON 문자열
-     * @param eventClass 이벤트 클래스
-     * @return 역직렬화된 이벤트 객체
      */
     public <T> T deserializeEvent(String payload, Class<T> eventClass) {
         try {
@@ -114,9 +102,6 @@ public class OutboxService {
 
     /**
      * JSON 페이로드를 PaymentEventPayload로 역직렬화 (하위 호환성)
-     *
-     * @param payload JSON 문자열
-     * @return PaymentEventPayload
      */
     public PaymentEventPayload deserializePayload(String payload) {
         return deserializeEvent(payload, PaymentEventPayload.class);

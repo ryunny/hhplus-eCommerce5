@@ -30,7 +30,7 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: com.hhplus.ecommerce.domain.event
-      auto-offset-reset: earliest
+      auto-offset-reset: latest
 
 # 분산 락 타임아웃 설정 (밀리초)
 lock:

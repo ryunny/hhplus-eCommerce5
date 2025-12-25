@@ -61,11 +61,6 @@ public class RedisPubSubLock {
      * DB 락 시도 (Redis Fallback)
      *
      * Spin-lock 방식으로 DB 비관적 락 획득 시도
-     *
-     * @param key 락 키
-     * @param waitTime 최대 대기 시간
-     * @param timeUnit 시간 단위
-     * @return 락 획득 성공 여부
      */
     private boolean tryDbLock(String key, long waitTime, TimeUnit timeUnit) {
         long endTime = System.currentTimeMillis() + timeUnit.toMillis(waitTime);
@@ -99,9 +94,6 @@ public class RedisPubSubLock {
 
     /**
      * DB 락 획득 (새 트랜잭션에서 실행)
-     *
-     * @param key 락 키
-     * @param ttlSeconds TTL (초)
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     protected void acquireDbLock(String key, long ttlSeconds) {
@@ -133,8 +125,6 @@ public class RedisPubSubLock {
 
     /**
      * DB 락 해제 (새 트랜잭션에서 실행)
-     *
-     * @param key 락 키
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     protected void releaseDbLock(String key) {

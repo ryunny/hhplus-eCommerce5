@@ -63,10 +63,9 @@ public class CouponService {
      * CacheKeyGenerator를 통해 RedisKeyGenerator.couponCacheKey() 호출
      * 실제 Redis 키: cache:coupons:{couponId}
      *
-     * @param couponId 쿠폰 ID
      * @return 쿠폰
      */
-    @Cacheable(value = "ecommerce", keyGenerator = "cacheKeyGenerator")
+    @Cacheable(value = "coupons", keyGenerator = "cacheKeyGenerator")
     @Transactional(readOnly = true)
     public Coupon getCoupon(Long couponId) {
         return couponRepository.findByIdOrThrow(couponId);
@@ -80,7 +79,7 @@ public class CouponService {
      *
      * @return 발급 가능한 쿠폰 목록
      */
-    @Cacheable(value = "ecommerce", keyGenerator = "cacheKeyGenerator")
+    @Cacheable(value = "issuableCoupons", keyGenerator = "cacheKeyGenerator")
     @Transactional(readOnly = true)
     public List<Coupon> getIssuableCoupons() {
         return couponRepository.findIssuableCoupons(LocalDateTime.now());
@@ -89,7 +88,6 @@ public class CouponService {
     /**
      * 사용자의 쿠폰 목록 조회
      *
-     * @param userId 사용자 ID
      * @return 사용자 쿠폰 목록
      */
     @Transactional(readOnly = true)
@@ -100,7 +98,6 @@ public class CouponService {
     /**
      * 사용자의 사용 가능한 쿠폰 목록 조회
      *
-     * @param userId 사용자 ID
      * @return 사용 가능한 쿠폰 목록
      */
     @Transactional(readOnly = true)
@@ -111,7 +108,6 @@ public class CouponService {
     /**
      * 사용자 쿠폰 조회
      *
-     * @param userCouponId 사용자 쿠폰 ID
      * @return UserCoupon
      */
     @Transactional(readOnly = true)
@@ -124,7 +120,6 @@ public class CouponService {
     /**
      * 쿠폰 사용
      *
-     * @param userCouponId 사용자 쿠폰 ID
      * @param userId 사용자 ID (검증용)
      * @return 사용된 UserCoupon
      */
@@ -146,8 +141,6 @@ public class CouponService {
 
     /**
      * 쿠폰 사용 취소 (주문 취소 시)
-     *
-     * @param userCouponId 사용자 쿠폰 ID
      */
     @Transactional
     public void cancelCoupon(Long userCouponId) {
@@ -160,8 +153,6 @@ public class CouponService {
     /**
      * 할인 금액 계산
      *
-     * @param userCoupon 사용자 쿠폰
-     * @param orderAmount 주문 금액
      * @return 할인 금액
      */
     public Money calculateDiscount(UserCoupon userCoupon, Money orderAmount) {
@@ -178,8 +169,6 @@ public class CouponService {
      * - 트랜잭션 밖: 사용자 조회, 사전 검증 (중복, 발급 가능 여부)
      * - 트랜잭션 안: 비관적 락 + 재검증 + 쓰기만 수행
      *
-     * @param userId 사용자 ID
-     * @param couponId 쿠폰 ID
      * @return 발급된 UserCoupon
      */
     public UserCoupon issueCoupon(Long userId, Long couponId) {
@@ -210,8 +199,6 @@ public class CouponService {
      * Redis Pub/Sub Lock을 사용하여 분산 환경에서도 동시성을 제어합니다.
      * - Redis 락 획득 → DB 트랜잭션 (재검증 + 쓰기) → Redis 락 해제
      *
-     * @param user 사용자
-     * @param couponId 쿠폰 ID
      * @return 발급된 UserCoupon
      */
     private UserCoupon issueCouponWithLock(User user, Long couponId) {
@@ -238,13 +225,11 @@ public class CouponService {
      * - 발급된 쿠폰의 캐시만 무효화 (전체 삭제 대신)
      * - 발급 가능 쿠폰 목록은 변경되므로 전체 삭제
      *
-     * @param user 사용자
-     * @param couponId 쿠폰 ID
      * @return 발급된 UserCoupon
      */
     @org.springframework.cache.annotation.Caching(evict = {
-        @CacheEvict(value = "ecommerce", key = "T(com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator).couponCacheKey(#couponId)"),
-        @CacheEvict(value = "ecommerce", key = "T(com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator).issuableCouponsCacheKey()")
+        @CacheEvict(value = "coupons", key = "T(com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator).couponCacheKey(#couponId)"),
+        @CacheEvict(value = "issuableCoupons", key = "T(com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator).issuableCouponsCacheKey()")
     })
     @Transactional
     public UserCoupon issueCouponTransaction(User user, Long couponId) {
@@ -347,8 +332,6 @@ public class CouponService {
      * - 트랜잭션 밖: 사용자/쿠폰 조회, 기존 대기열 검증
      * - 트랜잭션 안: 대기 인원 계산 + 대기열 생성 (쓰기만)
      *
-     * @param userId 사용자 ID
-     * @param couponId 쿠폰 ID
      * @return 생성된 CouponQueue (대기 정보 포함)
      */
     public CouponQueue joinQueue(Long userId, Long couponId) {
@@ -367,9 +350,6 @@ public class CouponService {
 
     /**
      * 기존 대기열 검증
-     *
-     * @param userId 사용자 ID
-     * @param couponId 쿠폰 ID
      */
     private void validateExistingQueue(Long userId, Long couponId) {
         Optional<CouponQueue> existingQueue = couponQueueRepository.findByUserIdAndCouponId(userId, couponId);
@@ -390,8 +370,6 @@ public class CouponService {
      * Redis Pub/Sub Lock을 사용하여 분산 환경에서도 동시성을 제어합니다.
      * - Redis 락 획득 → DB 트랜잭션 (대기 인원 계산 + 대기열 생성) → Redis 락 해제
      *
-     * @param user 사용자
-     * @param coupon 쿠폰
      * @return 생성된 CouponQueue
      */
     private CouponQueue createQueueWithLock(User user, Coupon coupon) {
@@ -414,8 +392,6 @@ public class CouponService {
     /**
      * 대기열 생성 트랜잭션 (Redis 락으로 보호됨)
      *
-     * @param user 사용자
-     * @param coupon 쿠폰
      * @return 생성된 CouponQueue
      */
     @Transactional
@@ -436,8 +412,6 @@ public class CouponService {
     /**
      * 대기 상태 조회
      *
-     * @param userId 사용자 ID
-     * @param couponId 쿠폰 ID
      * @return 대기열 정보
      */
     @Transactional(readOnly = true)
@@ -451,8 +425,6 @@ public class CouponService {
      * Redis Pub/Sub Lock을 사용하여 여러 서버에서 동시에 같은 쿠폰의 대기열을 처리하지 않도록 제어합니다.
      * 대기 중인 사용자들을 순서대로 처리하여 쿠폰을 발급합니다.
      * 한 번에 최대 10명까지 처리하며, 발급 실패 시 FAILED 상태로 변경합니다.
-     *
-     * @param coupon 처리할 쿠폰
      */
     public void processQueueForCoupon(Coupon coupon) {
         String lockKey = RedisKeyGenerator.couponQueueBatchLock(coupon.getId());
@@ -474,8 +446,6 @@ public class CouponService {
 
     /**
      * 특정 쿠폰의 대기열 처리 트랜잭션 (Redis 락으로 보호됨)
-     *
-     * @param coupon 처리할 쿠폰
      */
     @Transactional
     public void processQueueForCouponTransaction(Coupon coupon) {
@@ -501,8 +471,6 @@ public class CouponService {
      * Redis Pub/Sub Lock을 사용하여 분산 환경에서도 동시성을 제어합니다.
      * - Redis 락 획득 → DB 트랜잭션 (상태 변경 + 쿠폰 발급) → Redis 락 해제
      * - 실패 시 자동 롤백되어 데이터 정합성 보장
-     *
-     * @param queue 처리할 대기열 항목
      */
     public void processQueueItem(CouponQueue queue) {
         String lockKey = RedisKeyGenerator.couponQueueItemLock(queue.getCoupon().getId());
@@ -528,8 +496,6 @@ public class CouponService {
 
     /**
      * 대기열 처리 트랜잭션 (Redis 락으로 보호됨)
-     *
-     * @param queue 처리할 대기열 항목
      */
     @Transactional
     public void processQueueItemTransaction(CouponQueue queue) {
@@ -577,9 +543,6 @@ public class CouponService {
 
     /**
      * 대기열 실패 상태 업데이트
-     *
-     * @param queue 대기열
-     * @param reason 실패 사유
      */
     private void updateQueueFailed(CouponQueue queue, String reason) {
         queue.updateStatus(CouponQueueStatus.FAILED);
@@ -651,7 +614,6 @@ public class CouponService {
     /**
      * 사용자의 쿠폰 목록 조회 (Public ID 기반)
      *
-     * @param publicId 사용자 Public ID (UUID)
      * @return 사용자 쿠폰 목록
      */
     @Transactional(readOnly = true)
@@ -663,7 +625,6 @@ public class CouponService {
     /**
      * 사용자의 사용 가능한 쿠폰 목록 조회 (Public ID 기반)
      *
-     * @param publicId 사용자 Public ID (UUID)
      * @return 사용 가능한 쿠폰 목록
      */
     @Transactional(readOnly = true)
@@ -675,8 +636,6 @@ public class CouponService {
     /**
      * 즉시 쿠폰 발급 (Public ID 기반)
      *
-     * @param publicId 사용자 Public ID (UUID)
-     * @param couponId 쿠폰 ID
      * @return 발급된 UserCoupon
      */
     public UserCoupon issueCouponByPublicId(String publicId, Long couponId) {
@@ -687,8 +646,6 @@ public class CouponService {
     /**
      * 선착순 쿠폰 대기열 진입 (Public ID 기반)
      *
-     * @param publicId 사용자 Public ID (UUID)
-     * @param couponId 쿠폰 ID
      * @return 생성된 CouponQueue
      */
     public CouponQueue joinQueueByPublicId(String publicId, Long couponId) {
@@ -699,8 +656,6 @@ public class CouponService {
     /**
      * 대기 상태 조회 (Public ID 기반)
      *
-     * @param publicId 사용자 Public ID (UUID)
-     * @param couponId 쿠폰 ID
      * @return 대기열 정보
      */
     @Transactional(readOnly = true)

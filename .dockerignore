@@ -1,0 +1,15 @@
+.git
+.gitignore
+.gradle
+build
+.idea
+*.iml
+*.log
+*.md
+.claude
+docker-compose.yml
+Dockerfile
+.dockerignore
+test_output*.txt
+build-output.txt
+simple_lock_test.log

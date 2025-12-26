@@ -24,10 +24,6 @@ public class RedisKeyGenerator {
     /**
      * Lock 키 생성 (범용)
      *
-     * @param domain 도메인 (예: coupon, product, order)
-     * @param usecase UseCase 이름 (예: issueCoupon, placeOrder)
-     * @param action 액션 (예: direct, stock, batch)
-     * @param resource 리소스 ID
      * @return Redis Lock 키 (형식: lock:{domain}:{usecase}:{action}:{resource})
      */
     public static String lockKey(String domain, String usecase, String action, String resource) {
@@ -37,7 +33,6 @@ public class RedisKeyGenerator {
     /**
      * 쿠폰 즉시 발급 락 키
      *
-     * @param couponId 쿠폰 ID
      * @return lock:coupon:issueCoupon:direct:{couponId}
      */
     public static String couponIssueLock(Long couponId) {
@@ -47,7 +42,6 @@ public class RedisKeyGenerator {
     /**
      * 쿠폰 대기열 진입 락 키
      *
-     * @param couponId 쿠폰 ID
      * @return lock:coupon:joinQueue:queue:{couponId}
      */
     public static String couponQueueJoinLock(Long couponId) {
@@ -57,7 +51,6 @@ public class RedisKeyGenerator {
     /**
      * 쿠폰 대기열 개별 처리 락 키
      *
-     * @param couponId 쿠폰 ID
      * @return lock:coupon:processQueue:item:{couponId}
      */
     public static String couponQueueItemLock(Long couponId) {
@@ -67,7 +60,6 @@ public class RedisKeyGenerator {
     /**
      * 쿠폰 대기열 배치 처리 락 키
      *
-     * @param couponId 쿠폰 ID
      * @return lock:coupon:processQueue:batch:{couponId}
      */
     public static String couponQueueBatchLock(Long couponId) {
@@ -95,7 +87,6 @@ public class RedisKeyGenerator {
     /**
      * 상품 재고 차감 락 키 (주문 시)
      *
-     * @param productId 상품 ID
      * @return lock:order:placeOrder:stock:{productId}
      */
     public static String productStockDecreaseLock(Long productId) {
@@ -105,7 +96,6 @@ public class RedisKeyGenerator {
     /**
      * 상품 재고 복구 락 키 (주문 취소 시)
      *
-     * @param productId 상품 ID
      * @return lock:order:cancelOrder:stock:{productId}
      */
     public static String productStockIncreaseLock(Long productId) {
@@ -115,8 +105,6 @@ public class RedisKeyGenerator {
     /**
      * Cache 키 생성 (범용)
      *
-     * @param domain 도메인 (예: products, coupons, users)
-     * @param resource 리소스 ID 또는 키
      * @return Redis Cache 키
      */
     public static String cacheKey(String domain, String resource) {
@@ -126,7 +114,6 @@ public class RedisKeyGenerator {
     /**
      * 상품 캐시 키
      *
-     * @param productId 상품 ID
      * @return cache:products:{productId}
      */
     public static String productCacheKey(Long productId) {
@@ -136,7 +123,6 @@ public class RedisKeyGenerator {
     /**
      * 쿠폰 캐시 키
      *
-     * @param couponId 쿠폰 ID
      * @return cache:coupons:{couponId}
      */
     public static String couponCacheKey(Long couponId) {
@@ -146,7 +132,6 @@ public class RedisKeyGenerator {
     /**
      * 사용자 캐시 키 (ID 기반)
      *
-     * @param userId 사용자 ID
      * @return cache:users:{userId}
      */
     public static String userCacheKey(Long userId) {
@@ -156,7 +141,6 @@ public class RedisKeyGenerator {
     /**
      * 사용자 캐시 키 (PublicId 기반)
      *
-     * @param publicId 사용자 공개 ID
      * @return cache:users:publicId:{publicId}
      */
     public static String userCacheKeyByPublicId(String publicId) {
@@ -166,7 +150,6 @@ public class RedisKeyGenerator {
     /**
      * 인기 상품 목록 캐시 키
      *
-     * @param limit 조회 개수
      * @return cache:topProducts:{limit}
      */
     public static String topProductsCacheKey(Integer limit) {
@@ -185,7 +168,6 @@ public class RedisKeyGenerator {
     /**
      * 특정 날짜의 인기 상품 랭킹 키 (Sorted Set)
      *
-     * @param date 날짜
      * @return ranking:products:{yyyy-MM-dd}
      */
     public static String productRankingByDate(java.time.LocalDate date) {
@@ -217,7 +199,6 @@ public class RedisKeyGenerator {
      * Member: user:{userId}
      * Score: timestamp (밀리초)
      *
-     * @param couponId 쿠폰 ID
      * @return queue:coupon:{couponId}
      */
     public static String couponQueue(Long couponId) {
@@ -228,7 +209,6 @@ public class RedisKeyGenerator {
      * 쿠폰 대기열 처리 중 상태 (Set)
      * 발급 처리 중인 사용자를 기록하여 중복 처리 방지
      *
-     * @param couponId 쿠폰 ID
      * @return queue:coupon:{couponId}:processing
      */
     public static String couponQueueProcessing(Long couponId) {
@@ -249,7 +229,6 @@ public class RedisKeyGenerator {
     /**
      * 기간별 인기 상품 랭킹 키 조회
      *
-     * @param days 기간 (1 또는 7)
      * @return ranking:products:{days}day(s)
      * @deprecated 날짜별 키 분리 방식으로 변경. {@link #productRankingByDate(java.time.LocalDate)} 사용
      */
@@ -266,7 +245,6 @@ public class RedisKeyGenerator {
     /**
      * 특정 도메인의 모든 락 패턴
      *
-     * @param domain 도메인
      * @return lock:{domain}:*
      */
     public static String domainLockPattern(String domain) {
@@ -276,8 +254,6 @@ public class RedisKeyGenerator {
     /**
      * 특정 usecase의 모든 락 패턴
      *
-     * @param domain 도메인
-     * @param usecase UseCase
      * @return lock:{domain}:{usecase}:*
      */
     public static String usecaseLockPattern(String domain, String usecase) {

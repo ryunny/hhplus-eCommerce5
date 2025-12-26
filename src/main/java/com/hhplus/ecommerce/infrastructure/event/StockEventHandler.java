@@ -46,41 +46,19 @@ public class StockEventHandler {
      * - Kafka에서 OrderCreatedEvent 수신
      * - 재고 차감 처리
      * - 성공/실패 이벤트를 Kafka로 발행
-     *
-     * @Transactional: 재고 차감 + Outbox 저장을 하나의 트랜잭션으로 처리
      */
-    @Transactional
     @KafkaListener(topics = KafkaConfig.ORDER_CREATED_TOPIC, groupId = "stock-service")
     public void handleOrderCreated(OrderCreatedEvent event) {
         try {
             log.info("[재고-Kafka] 재고 차감 시작: orderId={}, items={}", event.orderId(), event.items().size());
 
-            String reservationId = UUID.randomUUID().toString();
-            StockReservation reservation = new StockReservation(reservationId, event.orderId());
-
-            // 각 상품의 재고 차감
-            for (OrderCreatedEvent.OrderItem item : event.items()) {
-                Quantity quantity = new Quantity(item.quantity());
-
-                // 재고 차감 시도
-                productService.decreaseStock(item.productId(), quantity);
-
-                // 보상 트랜잭션을 위해 기록
-                reservation.addItem(item.productId(), quantity);
-
-                log.info("[재고-Kafka] 재고 차감 완료: orderId={}, productId={}, quantity={}",
-                    event.orderId(), item.productId(), quantity.getValue());
-            }
-
-            // 예약 정보 저장
-            reservations.put(event.orderId(), reservation);
+            String reservationId = reserveStockInTransaction(event);
 
             // 성공 이벤트를 Kafka로 발행
             StockReservedEvent successEvent = new StockReservedEvent(
                 event.orderId(),
                 reservationId
             );
-            outboxService.saveEvent("STOCK_RESERVED", event.orderId(), successEvent);
             kafkaTemplate.send(
                 KafkaConfig.STOCK_RESERVED_TOPIC,
                 event.orderId().toString(),
@@ -98,7 +76,6 @@ public class StockEventHandler {
                 event.orderId(),
                 e.getMessage()
             );
-            outboxService.saveEvent("STOCK_RESERVATION_FAILED", event.orderId(), failEvent);
             kafkaTemplate.send(
                 KafkaConfig.STOCK_RESERVATION_FAILED_TOPIC,
                 event.orderId().toString(),
@@ -108,6 +85,38 @@ public class StockEventHandler {
             log.info("[재고-Kafka] 재고 차감 실패 → Kafka 발행: orderId={}, topic={}",
                 event.orderId(), KafkaConfig.STOCK_RESERVATION_FAILED_TOPIC);
         }
+    }
+
+    @Transactional
+    protected String reserveStockInTransaction(OrderCreatedEvent event) {
+        String reservationId = UUID.randomUUID().toString();
+        StockReservation reservation = new StockReservation(reservationId, event.orderId());
+
+        // 각 상품의 재고 차감
+        for (OrderCreatedEvent.OrderItem item : event.items()) {
+            Quantity quantity = new Quantity(item.quantity());
+
+            // 재고 차감 시도
+            productService.decreaseStock(item.productId(), quantity);
+
+            // 보상 트랜잭션을 위해 기록
+            reservation.addItem(item.productId(), quantity);
+
+            log.info("[재고-Kafka] 재고 차감 완료: orderId={}, productId={}, quantity={}",
+                event.orderId(), item.productId(), quantity.getValue());
+        }
+
+        // 예약 정보 저장
+        reservations.put(event.orderId(), reservation);
+
+        // Outbox 저장
+        StockReservedEvent successEvent = new StockReservedEvent(
+            event.orderId(),
+            reservationId
+        );
+        outboxService.saveEvent("STOCK_RESERVED", event.orderId(), successEvent);
+
+        return reservationId;
     }
 
     /**

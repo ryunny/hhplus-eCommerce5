@@ -86,16 +86,39 @@ public class ChoreographyPlaceOrderUseCase {
      * - Outbox에 백업 저장 (안전성 보장)
      * - Kafka로 즉시 발행 (실시간성, 확장성)
      * - 실제 재고 차감, 결제, 쿠폰 사용은 Kafka Consumer가 처리
-     *
-     * @param publicId 사용자 Public ID (UUID)
-     * @param request 주문 요청 DTO
-     * @return 생성된 주문 (PENDING 상태)
      */
-    @Transactional
     public Order execute(String publicId, CreateOrderRequest request) {
         log.info("===== [Choreography] 주문 생성 시작 =====");
         log.info("사용자: {}, 상품 수: {}", publicId, request.items().size());
 
+        // DB 작업 (트랜잭션 내에서 처리)
+        OrderWithEvent result = createOrderWithEvent(publicId, request);
+
+        // Kafka 전송 (트랜잭션 밖에서 처리)
+        try {
+            kafkaTemplate.send(
+                KafkaConfig.ORDER_CREATED_TOPIC,
+                result.order().getId().toString(),
+                result.event()
+            );
+
+            log.info("===== OrderCreatedEvent Kafka 발행 완료 =====");
+            log.info("→ Kafka 토픽: {} (주문 ID: {})", KafkaConfig.ORDER_CREATED_TOPIC, result.order().getId());
+
+        } catch (Exception e) {
+            log.warn("⚠️ Kafka 전송 실패 (Outbox에 저장되어 재시도 가능): orderId={}, error={}",
+                result.order().getId(), e.getMessage());
+        }
+
+        log.info("===== [Choreography] 주문 생성 응답 반환 =====");
+        log.info("주문 ID: {}, 상태: PENDING", result.order().getId());
+        log.info("⚠️ 주문은 비동기로 처리됩니다. 최종 상태는 주문 조회 API로 확인하세요.");
+
+        return result.order();
+    }
+
+    @Transactional
+    protected OrderWithEvent createOrderWithEvent(String publicId, CreateOrderRequest request) {
         User user = userService.getUserByPublicId(publicId);
         log.info("[1/7] 사용자 조회 완료: userId={}", user.getId());
 
@@ -158,11 +181,7 @@ public class ChoreographyPlaceOrderUseCase {
 
         log.info("[7/7] 주문 생성 완료: orderId={}, status=PENDING", order.getId());
 
-        // ==========================================
-        // 이벤트 발행 (핵심 로직은 이벤트 핸들러가 처리)
-        // ==========================================
-
-        // 주문 생성 이벤트를 Outbox에 저장
+        // 이벤트 생성 및 Outbox 저장
         List<OrderCreatedEvent.OrderItem> eventItems = sortedItems.stream()
                 .map(item -> new OrderCreatedEvent.OrderItem(
                         item.productId(),
@@ -170,49 +189,20 @@ public class ChoreographyPlaceOrderUseCase {
                 ))
                 .toList();
 
-        try {
-            OrderCreatedEvent event = new OrderCreatedEvent(
-                    order.getId(),
-                    user.getId(),
-                    eventItems,
-                    totalAmount,
-                    discountAmount,
-                    finalAmount,
-                    request.userCouponId()
-            );
+        OrderCreatedEvent event = new OrderCreatedEvent(
+                order.getId(),
+                user.getId(),
+                eventItems,
+                totalAmount,
+                discountAmount,
+                finalAmount,
+                request.userCouponId()
+        );
 
-            // 1. Outbox에 저장 (백업/재시도용 - 트랜잭션과 함께 커밋됨)
-            outboxService.saveEvent("ORDER_CREATED", order.getId(), event);
+        outboxService.saveEvent("ORDER_CREATED", order.getId(), event);
 
-            // 2. Kafka로 즉시 발행 (실시간 처리 - MSA 환경 지원)
-            kafkaTemplate.send(
-                KafkaConfig.ORDER_CREATED_TOPIC,
-                order.getId().toString(),  // key (같은 주문은 같은 파티션)
-                event
-            );
-
-            log.info("===== OrderCreatedEvent Kafka 발행 완료 =====");
-            log.info("→ Kafka 토픽: {} (주문 ID: {})", KafkaConfig.ORDER_CREATED_TOPIC, order.getId());
-
-
-        } catch (Exception e) {
-            log.error("❌ OrderCreatedEvent 발행 실패: orderId={}", order.getId(), e);
-
-            // Outbox 저장 실패 시 주문 실패 처리
-            try {
-                order.markAsFailed("이벤트 저장 실패: " + e.getMessage());
-                orderService.save(order);
-            } catch (Exception updateError) {
-                log.error("❌ 주문 상태 업데이트 실패: orderId={}", order.getId(), updateError);
-            }
-
-            throw new IllegalStateException("주문 처리 중 오류가 발생했습니다", e);
-        }
-
-        log.info("===== [Choreography] 주문 생성 응답 반환 =====");
-        log.info("주문 ID: {}, 상태: PENDING", order.getId());
-        log.info("⚠️ 주문은 비동기로 처리됩니다. 최종 상태는 주문 조회 API로 확인하세요.");
-
-        return order;
+        return new OrderWithEvent(order, event);
     }
+
+    private record OrderWithEvent(Order order, OrderCreatedEvent event) {}
 }

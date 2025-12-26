@@ -33,8 +33,6 @@ public class OrderService {
     /**
      * 주문 총액 계산
      *
-     * @param products 상품 목록
-     * @param quantities 수량 목록
      * @return 총 주문 금액
      */
     public Money calculateTotalAmount(List<Product> products, List<Quantity> quantities) {
@@ -54,14 +52,7 @@ public class OrderService {
     /**
      * 주문 생성 (직접 배송 정보 입력)
      *
-     * @param user 사용자
      * @param userCoupon 사용자 쿠폰 (optional, null 가능)
-     * @param recipientName 수령인 이름
-     * @param address 배송 주소
-     * @param phone 배송 전화번호
-     * @param totalAmount 총 주문 금액
-     * @param discountAmount 할인 금액
-     * @param finalAmount 최종 결제 금액
      * @return 생성된 주문
      */
     @Transactional
@@ -86,9 +77,6 @@ public class OrderService {
     /**
      * 주문 아이템 생성
      *
-     * @param order 주문
-     * @param product 상품
-     * @param quantity 수량
      * @return 생성된 주문 아이템
      */
     @Transactional
@@ -99,9 +87,6 @@ public class OrderService {
 
     /**
      * 주문 상태 변경
-     *
-     * @param orderId 주문 ID
-     * @param status 변경할 상태
      */
     @Transactional
     public void updateOrderStatus(Long orderId, OrderStatus status) {
@@ -113,7 +98,6 @@ public class OrderService {
     /**
      * 주문 조회
      *
-     * @param orderId 주문 ID
      * @return 주문
      */
     @Transactional(readOnly = true)
@@ -124,7 +108,6 @@ public class OrderService {
     /**
      * 주문 조회 (Order Number 기반)
      *
-     * @param orderNumber 주문 번호 (UUID)
      * @return 주문
      */
     @Transactional(readOnly = true)
@@ -135,7 +118,6 @@ public class OrderService {
     /**
      * 사용자 주문 목록 조회
      *
-     * @param userId 사용자 ID
      * @return 주문 목록
      */
     @Transactional(readOnly = true)
@@ -146,7 +128,6 @@ public class OrderService {
     /**
      * 사용자 주문 목록 조회 (Public ID 기반)
      *
-     * @param publicId 사용자 Public ID (UUID)
      * @return 주문 목록
      */
     @Transactional(readOnly = true)
@@ -157,7 +138,6 @@ public class OrderService {
     /**
      * 주문 저장
      *
-     * @param order 주문
      * @return 저장된 주문
      */
     @Transactional

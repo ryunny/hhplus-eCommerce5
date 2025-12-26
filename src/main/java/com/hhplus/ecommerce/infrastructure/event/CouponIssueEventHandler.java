@@ -1,6 +1,5 @@
 package com.hhplus.ecommerce.infrastructure.event;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hhplus.ecommerce.config.KafkaConfig;
 import com.hhplus.ecommerce.domain.entity.Coupon;
 import com.hhplus.ecommerce.domain.entity.User;
@@ -31,23 +30,19 @@ public class CouponIssueEventHandler {
     private final UserService userService;
     private final RedisTemplate<String, String> redisTemplate;
     private final KafkaTemplate<String, Object> kafkaTemplate;
-    private final ObjectMapper objectMapper;
 
     public CouponIssueEventHandler(CouponRepository couponRepository,
                                   UserCouponRepository userCouponRepository,
                                   UserService userService,
                                   RedisTemplate<String, String> redisTemplate,
-                                  KafkaTemplate<String, Object> kafkaTemplate,
-                                  ObjectMapper objectMapper) {
+                                  KafkaTemplate<String, Object> kafkaTemplate) {
         this.couponRepository = couponRepository;
         this.userCouponRepository = userCouponRepository;
         this.userService = userService;
         this.redisTemplate = redisTemplate;
         this.kafkaTemplate = kafkaTemplate;
-        this.objectMapper = objectMapper;
     }
 
-    @Transactional
     @KafkaListener(
         topics = KafkaConfig.COUPON_ISSUE_REQUESTED_TOPIC,
         groupId = "coupon-issue-service",
@@ -63,27 +58,7 @@ public class CouponIssueEventHandler {
                 return;
             }
 
-            Coupon coupon = couponRepository.findByIdWithLockOrThrow(event.couponId());
-            User user = userService.getUser(event.userId());
-
-            if (!coupon.hasStock()) {
-                throw new IllegalStateException("쿠폰 재고가 소진되었습니다");
-            }
-
-            if (userCouponRepository.findByUserIdAndCouponId(user.getId(), coupon.getId()).isPresent()) {
-                throw new IllegalStateException("이미 발급받은 쿠폰입니다");
-            }
-
-            coupon.increaseIssuedQuantity();
-            couponRepository.save(coupon);
-
-            UserCoupon userCoupon = new UserCoupon(
-                user,
-                coupon,
-                CouponStatus.UNUSED,
-                coupon.getEndDate()
-            );
-            userCouponRepository.save(userCoupon);
+            UserCoupon userCoupon = issueCouponInTransaction(event);
 
             CouponIssuedEvent successEvent = new CouponIssuedEvent(
                 event.requestId(),
@@ -109,6 +84,31 @@ public class CouponIssueEventHandler {
             publishFailureEvent(event, "시스템 오류: " + e.getMessage());
             rollbackRedisCache(event);
         }
+    }
+
+    @Transactional
+    protected UserCoupon issueCouponInTransaction(CouponIssueRequestedEvent event) {
+        Coupon coupon = couponRepository.findByIdWithLockOrThrow(event.couponId());
+        User user = userService.getUser(event.userId());
+
+        if (!coupon.hasStock()) {
+            throw new IllegalStateException("쿠폰 재고가 소진되었습니다");
+        }
+
+        if (userCouponRepository.findByUserIdAndCouponId(user.getId(), coupon.getId()).isPresent()) {
+            throw new IllegalStateException("이미 발급받은 쿠폰입니다");
+        }
+
+        coupon.increaseIssuedQuantity();
+        couponRepository.save(coupon);
+
+        UserCoupon userCoupon = new UserCoupon(
+            user,
+            coupon,
+            CouponStatus.UNUSED,
+            coupon.getEndDate()
+        );
+        return userCouponRepository.save(userCoupon);
     }
 
     private void publishFailureEvent(CouponIssueRequestedEvent event, String reason) {

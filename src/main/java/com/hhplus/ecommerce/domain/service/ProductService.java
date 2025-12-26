@@ -49,10 +49,9 @@ public class ProductService {
      * CacheKeyGenerator를 통해 RedisKeyGenerator.productCacheKey() 호출
      * 실제 Redis 키: cache:products:{productId}
      *
-     * @param productId 상품 ID
      * @return 상품 엔티티
      */
-    @Cacheable(value = "ecommerce", keyGenerator = "cacheKeyGenerator")
+    @Cacheable(value = "products", keyGenerator = "cacheKeyGenerator")
     @Transactional(readOnly = true)
     public Product getProduct(Long productId) {
         return productRepository.findByIdOrThrow(productId);
@@ -61,7 +60,6 @@ public class ProductService {
     /**
      * 여러 상품 조회 (IN 쿼리로 한 번에 조회하여 N+1 문제 해결)
      *
-     * @param productIds 상품 ID 목록
      * @return 상품 엔티티 목록
      */
     @Transactional(readOnly = true)
@@ -85,8 +83,6 @@ public class ProductService {
     /**
      * 재고 충분성 검증
      *
-     * @param product 상품
-     * @param quantity 요청 수량
      * @throws IllegalStateException 재고가 부족한 경우
      */
     public void validateStock(Product product, Quantity quantity) {
@@ -101,9 +97,6 @@ public class ProductService {
      * Redis Pub/Sub Lock을 사용하여 분산 환경에서도 동시성을 제어합니다.
      * - 트랜잭션 밖: 상품 조회, 사전 검증
      * - Redis 락 획득 → DB 트랜잭션 (재검증 + 재고 차감) → Redis 락 해제
-     *
-     * @param productId 상품 ID
-     * @param quantity 차감할 수량
      */
     public void decreaseStock(Long productId, Quantity quantity) {
         // 1. 사전 조회 (트랜잭션 밖 - 일반 SELECT)
@@ -118,9 +111,6 @@ public class ProductService {
 
     /**
      * 재고 차감 (Redis Pub/Sub Lock 사용 - 트랜잭션 범위 최소화)
-     *
-     * @param productId 상품 ID
-     * @param quantity 차감할 수량
      */
     private void decreaseStockWithLock(Long productId, Quantity quantity) {
         String lockKey = RedisKeyGenerator.productStockDecreaseLock(productId);
@@ -143,11 +133,8 @@ public class ProductService {
      * 재고 차감 트랜잭션 (Redis 락으로 보호됨)
      *
      * RedisKeyGenerator를 통해 통일된 캐시 키 형식으로 무효화
-     *
-     * @param productId 상품 ID
-     * @param quantity 차감할 수량
      */
-    @CacheEvict(value = "ecommerce", key = "T(com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator).productCacheKey(#productId)")
+    @CacheEvict(value = "products", key = "T(com.hhplus.ecommerce.infrastructure.redis.RedisKeyGenerator).productCacheKey(#productId)")
     @Transactional
     public void decreaseStockTransaction(Long productId, Quantity quantity) {
         // 상품 조회 (일반 SELECT - Redis 락이 동시성 보장)
@@ -164,9 +151,6 @@ public class ProductService {
 
     /**
      * 재고 복구 (주문 취소 시 사용, Redis Pub/Sub Lock 사용)
-     *
-     * @param productId 상품 ID
-     * @param quantity 복구할 수량
      */
     public void increaseStock(Long productId, Quantity quantity) {
         String lockKey = RedisKeyGenerator.productStockIncreaseLock(productId);
@@ -187,9 +171,6 @@ public class ProductService {
 
     /**
      * 재고 복구 트랜잭션 (Redis 락으로 보호됨)
-     *
-     * @param productId 상품 ID
-     * @param quantity 복구할 수량
      */
     @Transactional
     public void increaseStockTransaction(Long productId, Quantity quantity) {
@@ -223,10 +204,9 @@ public class ProductService {
      * - CacheKeyGenerator를 통해 RedisKeyGenerator.topProductsCacheKey() 호출
      * - 실제 Redis 키: cache:topProducts:{limit}
      *
-     * @param limit 조회할 상품 개수
      * @return 상품 판매 통계 DTO 목록
      */
-    @Cacheable(value = "ecommerce", keyGenerator = "cacheKeyGenerator")
+    @Cacheable(value = "topProducts", keyGenerator = "cacheKeyGenerator")
     @Transactional(readOnly = true)
     public List<ProductSalesDto> getTopSellingProducts(int limit) {
         int calculationDays = schedulerProperties.getRanking().getCalculationDays();

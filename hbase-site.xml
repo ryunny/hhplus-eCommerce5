@@ -1,0 +1,22 @@
+<configuration>
+    <property>
+        <name>hbase.rootdir</name>
+        <value>file:///home/pinpoint/hbase</value>
+    </property>
+    <property>
+        <name>hbase.cluster.distributed</name>
+        <value>false</value>
+    </property>
+    <property>
+        <name>hbase.tmp.dir</name>
+        <value>/tmp/hbase</value>
+    </property>
+    <property>
+        <name>hbase.unsafe.stream.capability.enforce</name>
+        <value>false</value>
+    </property>
+    <property>
+        <name>hbase.zookeeper.property.dataDir</name>
+        <value>/home/pinpoint/zookeeper</value>
+    </property>
+</configuration>
